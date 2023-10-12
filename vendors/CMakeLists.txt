@@ -1,0 +1,6 @@
+add_subdirectory(glew)
+add_subdirectory(glfw)
+add_subdirectory(imgui)
+add_subdirectory(imguizmo)
+add_subdirectory(imguicolortextedit)
+add_subdirectory(imguifiledialog)

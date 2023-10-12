@@ -1,0 +1,19 @@
+[submodule "vendors/imguizmo/ImGuizmo"]
+	path = vendors/imguizmo/ImGuizmo
+	url = git@github.com:CedricGuillemet/ImGuizmo.git
+[submodule "vendors/imguifiledialog/ImGuiFileDialog"]
+	path = vendors/imguifiledialog/ImGuiFileDialog
+	url = git@github.com:aiekick/ImGuiFileDialog.git
+[submodule "vendors/imguicolortextedit/ImGuiColorTextEdit"]
+	path = vendors/imguicolortextedit/ImGuiColorTextEdit
+	url = git@github.com:BalazsJako/ImGuiColorTextEdit.git
+[submodule "vendors/imgui/imgui"]
+	path = vendors/imgui/imgui
+	url = git@github.com:ocornut/imgui.git
+	branch = docking
+[submodule "vendors/glfw"]
+	path = vendors/glfw
+	url = git@github.com:glfw/glfw.git
+[submodule "vendors/glew"]
+	path = vendors/glew
+	url = git@github.com:Perlmint/glew-cmake.git
