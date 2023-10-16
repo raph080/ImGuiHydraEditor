@@ -6,58 +6,62 @@
 
 #include <vector>
 
-using namespace pxr;
 using namespace std;
 
-GfMatrix4d GetTransform(UsdGeomXformable geom)
-{
-    GfMatrix4d transform(1);
-    bool resetsXformStack;
-    transform = geom.ComputeLocalToWorldTransform(UsdTimeCode::Default());
-    return transform;
-};
+/**
+ * @brief Get the Transform Matrix of a UsdGeomXformable object
+ *
+ * @param geom the UsdGeomXformable object to get the matrix from
+ * @return pxr::GfMatrix4d the Transform matrix of 'geom'
+ */
+pxr::GfMatrix4d GetTransformMatrix(pxr::UsdGeomXformable geom);
 
-void SetTransform(UsdGeomXformable geom, GfMatrix4d transform)
-{
-    GfMatrix4d parentTransform =
-        geom.ComputeParentToWorldTransform(UsdTimeCode::Default());
-    GfMatrix4d worldOffset = parentTransform.GetInverse() * transform;
-    GfMatrix4d localOffset =
-        parentTransform * worldOffset * parentTransform.GetInverse();
-    geom.ClearXformOpOrder();
-    geom.AddTransformOp().Set(localOffset);
-};
+/**
+ * @brief Set the Transform Matrix of USdGeomXformable object from a given
+ * matrix
+ *
+ * @param geom the UsdGeomXformable object to set the transform matrix
+ * @param transform the GfMatrix4d matrix that will be set to 'geom'
+ */
+void SetTransformMatrix(pxr::UsdGeomXformable geom, pxr::GfMatrix4d transform);
 
-bool IsParentOf(UsdPrim prim, UsdPrim childPrim)
-{
-    if (!prim.IsValid() || !childPrim.IsValid()) return false;
+/**
+ * @brief Check if a given prim is parent of another prim
+ *
+ * @param prim the UsdPrim to check if it is a parent from 'childPrim'
+ * @param childPrim the UsdPrim that acts as the child prim
+ * @return true if 'prim' is parent of 'childPrim'
+ * @return false otherwise
+ */
+bool IsParentOf(pxr::UsdPrim prim, pxr::UsdPrim childPrim);
 
-    UsdPrim curParent = childPrim.GetParent();
-    while (curParent.IsValid()) {
-        if (curParent == prim) return true;
-        curParent = curParent.GetParent();
-    }
-    return false;
-}
+/**
+ * @brief Get the first instanceable parent prim (from the root of the
+ * UsdStage) of a given prim
+ *
+ * @param prim the UsdPrim to find the first instanceable parent from.
+ * @return pxr::UsdPrim the first instanceable parent prim (from the root of
+ * the stage) of 'prim'
+ */
+pxr::UsdPrim GetInstanceableParent(pxr::UsdPrim prim);
 
-UsdPrim GetInstanceableParent(UsdPrim prim)
-{
-    if (!prim.IsValid()) return UsdPrim();
+/**
+ * @brief Check if two GfMatrix4f are nearly equal, based on a precision delta
+ *
+ * @param mat1 the first GfMatrix4f matrix to check with
+ * @param mat2 the second GfMatrix4f matrix to check with
+ * @param precision the precision delta for the comparison
+ * @return true if the difference between the two matrices is less than
+ * 'precision'.
+ * @return false otherwise
+ */
+bool AreNearlyEquals(pxr::GfMatrix4f mat1, pxr::GfMatrix4f mat2,
+                     float precision = 0.001f);
 
-    UsdPrim curParent = prim.GetParent();
-    UsdPrim lastInstanceablePrim = UsdPrim();
-    while (curParent.IsValid()) {
-        if (curParent.IsInstanceable()) lastInstanceablePrim = curParent;
-        curParent = curParent.GetParent();
-    }
-    return lastInstanceablePrim;
-}
-
-bool AreNearlyEquals(GfMatrix4f mat1, GfMatrix4f mat2,
-                     float precision = 0.001f)
-{
-    GfMatrix4f subMat = mat1 - mat2;
-    for (size_t i = 0; i < 16; i++)
-        if (GfAbs(subMat.data()[i]) > precision) return false;
-    return true;
-}
+/**
+ * @brief Get the size of a UsdPrimSiblingRange
+ *
+ * @param range the UsdPrimSiblingRange to get the size from
+ * @return int the number of UsdPrims contained in the 'range'
+ */
+int GetSize(pxr::UsdPrimSiblingRange range);

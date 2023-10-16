@@ -3,7 +3,6 @@
 #include <pxr/usd/usd/prim.h>
 #include <pxr/usd/usd/stage.h>
 
-#include <iostream>
 #include <vector>
 
 using namespace std;
@@ -34,6 +33,12 @@ class Model {
          * @param usdFilePath a string containing a Usd file path
          */
         void LoadUsdStage(const string usdFilePath);
+
+        /**
+         * @brief Set the model to an empty stage
+         *
+         */
+        void SetEmptyStage();
 
         /**
          * @brief Get the Up Axis of the model
@@ -81,10 +86,4 @@ class Model {
         pxr::UsdStageRefPtr _stage;
         vector<pxr::UsdPrim> _selection;
         pxr::SdfLayerRefPtr _rootLayer, _sessionLayer;
-
-        /**
-         * @brief Set the model to an empty stage
-         *
-         */
-        void SetEmptyStage();
 };

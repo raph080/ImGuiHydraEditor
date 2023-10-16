@@ -3,6 +3,9 @@
 #include <pxr/usd/usdGeom/metrics.h>
 #include <pxr/usd/usdGeom/tokens.h>
 
+#include <fstream>
+#include <iostream>
+
 Model::Model()
 {
     SetEmptyStage();
@@ -26,10 +29,15 @@ void Model::SetEmptyStage()
 
 void Model::LoadUsdStage(const string usdFilePath)
 {
+    if (!ifstream(usdFilePath)) {
+        cout << "Error: the file does not exist. Empty stage loaded." << endl;
+        SetEmptyStage();
+        return;
+    }
+
     _rootLayer = pxr::SdfLayer::FindOrOpen(usdFilePath);
     _sessionLayer = pxr::SdfLayer::CreateAnonymous();
     _stage = pxr::UsdStage::Open(_rootLayer, _sessionLayer);
-
     _stage->SetEditTarget(_sessionLayer);
 }
 

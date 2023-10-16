@@ -11,9 +11,9 @@
 #include <ostream>
 
 #include "layouts/layout.h"
+#include "mainwindow.h"
 #include "models/model.h"
 #include "style/imgui_spectrum.h"
-#include "views/mainwindow.h"
 
 // what is currently not working yet
 // using gizmo cube when z axis is up (y axis hardcoded in imguizmo)

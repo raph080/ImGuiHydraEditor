@@ -1,123 +1,96 @@
+/**
+ * @file outliner.h
+ * @author Raphael Jouretz (rjouretz.com)
+ * @brief Outliner view that acts as an outliner. it allows to preview and
+ * navigate into the UsdStage hierarchy.
+ * @version 0.1
+ * @date 2023-10-15
+ *
+ * @copyright Copyright (c) 2023
+ *
+ */
 #pragma once
 
 #define IMGUI_DEFINE_MATH_OPERATORS
-#include <GraphEditor.h>
-#include <ImGuizmo.h>
-#include <boost/predef/os.h>
 #include <imgui.h>
 #include <imgui_internal.h>
-#include <pxr/base/gf/camera.h>
-#include <pxr/base/plug/plugin.h>
-#include <pxr/imaging/cameraUtil/framing.h>
-#include <pxr/imaging/glf/drawTarget.h>
-#include <pxr/pxr.h>
 #include <pxr/usd/usd/prim.h>
-#include <pxr/usd/usd/stage.h>
-#include <pxr/usdImaging/usdImagingGL/engine.h>
 
 #include "utils/usd.h"
 #include "view.h"
 
 using namespace std;
 
+/**
+ * @brief Outliner view that acts as an outliner. it allows to preview and
+ * navigate into the UsdStage hierarchy.
+ *
+ */
 class Outliner : public View {
     public:
         inline static const string VIEW_TYPE = "Outliner";
 
-        Outliner(Model* model, const string label = VIEW_TYPE)
-            : View(model, label)
-        {
-        }
-        const string GetViewType() override { return VIEW_TYPE; };
+        /**
+         * @brief Construct a new Outliner object
+         *
+         * @param model the Model of the new Outliner view
+         * @param label the ImGui label of the new Outliner view
+         */
+        Outliner(Model* model, const string label = VIEW_TYPE);
+
+        /**
+         * @brief override of the View::GetViewType
+         *
+         */
+        const string GetViewType() override;
 
     private:
-        void Draw() override
-        {
-            UsdStageRefPtr stage = GetModel()->GetStage();
+        /**
+         * @brief override of the View::Draw
+         *
+         */
+        void Draw() override;
 
-            for (auto prim : stage->GetPseudoRoot().GetChildren()) {
-                RenderTree(prim);
-            }
-        }
+        /**
+         * @brief Draw the hierarchy of all the descendant UsdPrims of the
+         * given UsdPrim in the outliner
+         *
+         * @param prim the UsdPrim for which all the descendant hierarchy will
+         * be drawn in the outliner
+         * @return the ImRect rectangle of the tree node corresponding to the
+         * given 'prim'
+         */
+        ImRect DrawPrimHierarchy(pxr::UsdPrim prim);
 
-        // returns the node's rectangle
-        ImRect RenderTree(UsdPrim prim)
-        {
-            UsdPrimSiblingRange children = prim.GetChildren();
-            int childrenCount =
-                std::distance(children.begin(), children.end());
+        /**
+         * @brief Compute the display flags of the given UsdPrim
+         *
+         * @param prim the UsdPrim to compute the dislay flags from
+         * @return an ImGuiTreeNodeFlags object.
+         * Default is ImGuiTreeNodeFlags_None.
+         * If 'prim' has no children, flag contains ImGuiTreeNodeFlags_Leaf
+         * If 'prim' has children, flags contains
+         * ImGuiTreeNodeFlags_OpenOnArrow
+         * if 'prim' is part of selection, flags
+         * contains ImGuiTreeNodeFlags_Selected
+         *
+         */
+        ImGuiTreeNodeFlags ComputeDisplayFlags(pxr::UsdPrim prim);
 
-            vector<UsdPrim> sel = GetModel()->GetSelection();
-            bool isSelected = find(sel.begin(), sel.end(), prim) != sel.end();
-            bool isParentOfSelection = false;
-            for (auto&& p : sel) {
-                if (IsParentOf(prim, p)) { isParentOfSelection = true; }
-            }
+        /**
+         * @brief Draw the hierarchy tree node of the given UsdPrim. The color
+         * and the behavior of the node will bet set accordingly.
+         *
+         * @param prim the UsdPrim that will be drawn next on the outliner
+         * @return true if children 'prim' msut be drawn too
+         * @return false otherwise
+         */
+        bool DrawHierarchyNode(pxr::UsdPrim prim);
 
-            // construct the flags
-            ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_None;
+        bool IsParentOfModelSelection(pxr::UsdPrim prim);
 
-            // set the flag if leaf or not
-            if (childrenCount == 0) flags |= ImGuiTreeNodeFlags_Leaf;
-            else flags = ImGuiTreeNodeFlags_OpenOnArrow;
-            // if selected prim, set highlight flag
+        bool IsInModelSelection(pxr::UsdPrim prim);
 
-            if (isSelected) flags |= ImGuiTreeNodeFlags_Selected;
-
-            bool recurse = false;
-            const char* primName = prim.GetName().GetText();
-
-            // print node in blue if parent of selection
-
-            if (isParentOfSelection) {
-                ImU32 color = ImGui::GetColorU32(ImGuiCol_HeaderActive, 1.f);
-                ImGui::PushStyleColor(ImGuiCol_Text, color);
-                recurse = ImGui::TreeNodeEx(primName, flags);
-                ImGui::PopStyleColor();
-            }
-            else {
-                recurse = ImGui::TreeNodeEx(primName, flags);
-            }
-
-            if (ImGui::IsItemClicked() && !ImGui::IsItemToggledOpen()) {
-                GetModel()->SetSelection({prim});
-            }
-
-            const ImRect nodeRect =
-                ImRect(ImGui::GetItemRectMin(), ImGui::GetItemRectMax());
-
-            if (recurse) {
-                const ImColor TreeLineColor =
-                    ImGui::GetColorU32(ImGuiCol_Text, 0.25f);
-                const float SmallOffsetX =
-                    -11.0f;  // for now, a hardcoded value; should
-                             // take into account tree indent size
-                ImDrawList* drawList = ImGui::GetWindowDrawList();
-
-                ImVec2 verticalLineStart = ImGui::GetCursorScreenPos();
-                verticalLineStart.x +=
-                    SmallOffsetX;  // to nicely line up with the arrow symbol
-                ImVec2 verticalLineEnd = verticalLineStart;
-
-                for (auto child : children) {
-                    const float HorizontalTreeLineSize =
-                        8.0f;  // chosen arbitrarily
-                    const ImRect childRect = RenderTree(child);
-                    const float midpoint =
-                        (childRect.Min.y + childRect.Max.y) / 2.0f;
-                    drawList->AddLine(
-                        ImVec2(verticalLineStart.x, midpoint),
-                        ImVec2(verticalLineStart.x + HorizontalTreeLineSize,
-                               midpoint),
-                        TreeLineColor);
-                    verticalLineEnd.y = midpoint;
-                }
-
-                drawList->AddLine(verticalLineStart, verticalLineEnd,
-                                  TreeLineColor);
-                ImGui::TreePop();
-            }
-
-            return nodeRect;
-        }
+        void DrawChildrendHierarchyDecoration(ImRect parentRect,
+                                              vector<ImRect> childrenRects);
 };

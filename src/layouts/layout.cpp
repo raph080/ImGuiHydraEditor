@@ -227,10 +227,6 @@ DockSpace       ID=0x8B93E3BD Window=0xA787BDB4 Pos=0,19 Size=1280,701 Split=Y
     DockNode    ID=0x0000000A Parent=0x00000006 SizeRef=1197,145 Selected=0xDAFD3032
 )";
 
-/**
- * @brief Load defaut layout in ImGui
- *
- */
 void LoadDefaultLayout()
 {
     const char* layoutData = IMGUI_LAYOUT_STR.c_str();
