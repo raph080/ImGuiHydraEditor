@@ -3,8 +3,6 @@
  * @author Raphael Jouretz (rjouretz.com)
  * @brief Outliner view that acts as an outliner. it allows to preview and
  * navigate into the UsdStage hierarchy.
- * @version 0.1
- * @date 2023-10-15
  *
  * @copyright Copyright (c) 2023
  *
@@ -39,14 +37,14 @@ class Outliner : public View {
         Outliner(Model* model, const string label = VIEW_TYPE);
 
         /**
-         * @brief override of the View::GetViewType
+         * @brief Override of the View::GetViewType
          *
          */
         const string GetViewType() override;
 
     private:
         /**
-         * @brief override of the View::Draw
+         * @brief Override of the View::Draw
          *
          */
         void Draw() override;
@@ -87,10 +85,36 @@ class Outliner : public View {
          */
         bool DrawHierarchyNode(pxr::UsdPrim prim);
 
+        /**
+         * @brief Check if the given UsdPrim is parent of a UsdPrim within the
+         * current Model Selection.
+         *
+         * @param prim parent UsdPrim to check with
+         * @return true if 'prim' is parent of a UsdPrim within the current
+         * Model selection
+         * @return false otherwise
+         */
         bool IsParentOfModelSelection(pxr::UsdPrim prim);
 
+        /**
+         * @brief Check if the given UsdPrim is part of the current Model
+         * selection
+         *
+         * @param prim UsdPrim to check with
+         * @return true if 'prim' is part of the current Model selection
+         * @return false otherwise
+         */
         bool IsInModelSelection(pxr::UsdPrim prim);
 
+        /**
+         * @brief Draw the children hierarchy decoration of the outliner view
+         * (aka the vertical and horizontal lines that connect parent and child
+         * nodes).
+         *
+         * @param parentRect the ImRect rectangle of the parent node
+         * @param childrenRects a vector of ImRect rectangles of the direct
+         * children node of 'parentRect'
+         */
         void DrawChildrendHierarchyDecoration(ImRect parentRect,
                                               vector<ImRect> childrenRects);
 };

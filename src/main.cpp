@@ -1,3 +1,12 @@
+/**
+ * @file main.cpp
+ * @author Raphael Jouretz (rjouretz.com)
+ * @brief main file containing the main function.
+ *
+ * @copyright Copyright (c) 2023
+ *
+ */
+
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 #include <boost/predef/os.h>
@@ -37,6 +46,13 @@
 
 // print current version of submodules in doc
 
+// explain how to navigate in viewport
+
+/**
+ * @brief Initialize Glfw
+ *
+ * @return a pointer to the current GL context
+ */
 GLFWwindow* InitGlfw()
 {
     // Initialize GLFW
@@ -45,11 +61,18 @@ GLFWwindow* InitGlfw()
     int width = 1280;
     int height = 720;
 
+#if defined(__APPLE__)
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
     glfwWindowHint(GLFW_OPENGL_PROFILE,
-                   GLFW_OPENGL_CORE_PROFILE);  // 3.2+ only
-    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
+                   GLFW_OPENGL_CORE_PROFILE);             // 3.2+ only
+    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);  // Required on Mac
+#else
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
+    // glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);  // 3.2+
+    // only glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE); // 3.0+ only
+#endif
 
     // Create a GLFW window
     GLFWwindow* window =
@@ -63,6 +86,12 @@ GLFWwindow* InitGlfw()
     return window;
 }
 
+/**
+ * @brief initialize Glew
+ *
+ * @return true if Glew was successfully initialized
+ * @return false otherwise
+ */
 bool InitGlew()
 {
     // Initialize GLEW
@@ -74,6 +103,13 @@ bool InitGlew()
     return true;
 }
 
+/**
+ * @brief initialize ImGui
+ *
+ * @param window the current GL context
+ * @return true if ImGui was successfully initialized
+ * @return false otherwise
+ */
 bool InitImGui(GLFWwindow* window)
 {
     // Initialize ImGui
@@ -88,7 +124,14 @@ bool InitImGui(GLFWwindow* window)
     io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;  // Enable Docking
 
     ImGui::Spectrum::StyleColorsSpectrum();
-    ImGui_ImplOpenGL3_Init("#version 150");
+
+#if defined(__APPLE__)
+    const char* glsl_version = "#version 150";
+#else
+    const char* glsl_version = "#version 130";
+#endif
+
+    ImGui_ImplOpenGL3_Init(glsl_version);
     ImGui_ImplGlfw_InitForOpenGL(window, true);
 
     LoadDefaultOrCustomLayout();
@@ -96,12 +139,21 @@ bool InitImGui(GLFWwindow* window)
     return true;
 }
 
+/**
+ * @brief Terminate Glfw
+ *
+ * @param window the current GL context
+ */
 void TerminateGlfw(GLFWwindow* window)
 {
     glfwDestroyWindow(window);
     glfwTerminate();
 }
 
+/**
+ * @brief Terminate ImGui
+ *
+ */
 void TerminateImGui()
 {
     ImGui_ImplOpenGL3_Shutdown();
@@ -109,13 +161,14 @@ void TerminateImGui()
     ImGui::DestroyContext(NULL);
 }
 
+/**
+ * @brief Main function
+ *
+ */
 int main(int argc, char** argv)
 {
     GLFWwindow* window = InitGlfw();
-
-    if (!window) return 1;
-    if (!InitGlew()) return 1;
-    if (!InitImGui(window)) return 1;
+    if (!window || !InitGlew() || !InitImGui(window)) return 1;
 
     glEnable(GL_DEPTH_TEST);
 

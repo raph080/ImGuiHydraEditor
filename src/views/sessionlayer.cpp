@@ -4,7 +4,7 @@ SessionLayer::SessionLayer(Model* model, const string label)
     : View(model, label)
 {
     editor.SetPalette(GetPalette());
-    editor.SetLanguageDefinition(GetLanguageDefinitionUSD());
+    editor.SetLanguageDefinition(GetUsdLanguageDefinition());
     editor.SetShowWhitespaces(false);
 }
 
@@ -14,7 +14,7 @@ const string SessionLayer::GetViewType()
 };
 void SessionLayer::Draw()
 {
-    if (IsSessionLayerUpdated()) LoadTextFromModel();
+    if (IsSessionLayerUpdated()) LoadSessionTextFromModel();
     editor.Render("TextEditor");
 };
 
@@ -26,7 +26,7 @@ bool SessionLayer::IsSessionLayerUpdated()
     return lastLoadedText != layerText;
 }
 
-void SessionLayer::LoadTextFromModel()
+void SessionLayer::LoadSessionTextFromModel()
 {
     pxr::SdfLayerHandle sessionLayer = GetModel()->GetSessionLayer();
     string layerText;
@@ -35,7 +35,7 @@ void SessionLayer::LoadTextFromModel()
     lastLoadedText = layerText;
 }
 
-void SessionLayer::SaveTextToModel()
+void SessionLayer::SaveSessionTextToModel()
 {
     string editedText = editor.GetText();
     pxr::SdfLayerHandle sessionLayer = GetModel()->GetSessionLayer();
@@ -75,7 +75,7 @@ TextEditor::Palette SessionLayer::GetPalette()
     }};
 }
 
-TextEditor::LanguageDefinition SessionLayer::GetLanguageDefinitionUSD()
+TextEditor::LanguageDefinition SessionLayer::GetUsdLanguageDefinition()
 {
     TextEditor::LanguageDefinition langDef =
         TextEditor::LanguageDefinition::C();
@@ -171,5 +171,5 @@ void SessionLayer::FocusInEvent()
 void SessionLayer::FocusOutEvent()
 {
     isEditing = false;
-    SaveTextToModel();
+    SaveSessionTextToModel();
 };

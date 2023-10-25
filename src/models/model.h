@@ -1,3 +1,12 @@
+/**
+ * @file model.h
+ * @author Raphael Jouretz (rjouretz.com)
+ * @brief Model containing the current state of the program such as the USD
+ * stage, the session layer, the current selection, and associated data.
+ *
+ * @copyright Copyright (c) 2023
+ *
+ */
 #pragma once
 
 #include <pxr/usd/usd/prim.h>
@@ -8,7 +17,8 @@
 using namespace std;
 
 /**
- * @brief Model containing a Usd stage a associated data
+ * @brief Model containing the current state of the program such as the USD
+ * stage, the session layer, the current selection, and associated data.
  *
  */
 class Model {

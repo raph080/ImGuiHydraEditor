@@ -3,8 +3,6 @@
  * @author Raphael Jouretz (rjouretz.com)
  * @brief Editor view that acts as an attribute editor. It allows to tune
  * attributes from selected UsdPrim.
- * @version 0.1
- * @date 2023-10-15
  *
  * @copyright Copyright (c) 2023
  *
@@ -31,13 +29,13 @@ class Editor : public View {
         /**
          * @brief Construct a new Editor object
          *
-         * @param model the Model of the new view
-         * @param label the ImGui label of view
+         * @param model the Model of the new Editor view
+         * @param label the ImGui label of the new Editor view
          */
         Editor(Model* model, const string label = VIEW_TYPE);
 
         /**
-         * @brief override of the View::GetViewType
+         * @brief Override of the View::GetViewType
          *
          */
         const string GetViewType() override;
@@ -46,7 +44,7 @@ class Editor : public View {
         pxr::UsdPrim _prevSelection;
 
         /**
-         * @brief override of the View::Draw
+         * @brief Override of the View::Draw
          *
          */
         void Draw() override;

@@ -1,3 +1,11 @@
+/**
+ * @file usd.h
+ * @author Raphael Jouretz (rjouretz.com)
+ * @brief Header containing utility function to manipulate USD objects.
+ *
+ * @copyright Copyright (c) 2023
+ *
+ */
 #pragma once
 
 #include <pxr/base/gf/matrix4d.h>

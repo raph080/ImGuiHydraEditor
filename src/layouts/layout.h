@@ -1,3 +1,11 @@
+/**
+ * @file layout.h
+ * @author Raphael Jouretz (rjouretz.com)
+ * @brief Header containing function to manage ImGui layout
+ *
+ * @copyright Copyright (c) 2023
+ *
+ */
 #pragma once
 
 /**
