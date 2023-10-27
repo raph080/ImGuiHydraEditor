@@ -38,8 +38,10 @@ ImRect Outliner::DrawPrimHierarchy(pxr::UsdPrim prim)
             rects.push_back(childRect);
         }
 
-        // draw hierarchy decoration for all children
-        DrawChildrendHierarchyDecoration(curItemRect, rects);
+        if (rects.size() > 0) {
+            // draw hierarchy decoration for all children
+            DrawChildrendHierarchyDecoration(curItemRect, rects);
+        }
 
         ImGui::TreePop();
     }
@@ -53,7 +55,10 @@ ImGuiTreeNodeFlags Outliner::ComputeDisplayFlags(pxr::UsdPrim prim)
 
     // set the flag if leaf or not
     pxr::UsdPrimSiblingRange children = prim.GetChildren();
-    if (GetSize(children) == 0) flags |= ImGuiTreeNodeFlags_Leaf;
+    if (GetSize(children) == 0) {
+        flags |= ImGuiTreeNodeFlags_Leaf;
+        flags |= ImGuiTreeNodeFlags_Bullet;
+    }
     else flags = ImGuiTreeNodeFlags_OpenOnArrow;
 
     // if selected prim, set highlight flag

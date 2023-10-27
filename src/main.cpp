@@ -53,7 +53,7 @@
  *
  * @return a pointer to the current GL context
  */
-GLFWwindow* InitGlfw()
+GLFWwindow* InitGlfw(const char* title)
 {
     // Initialize GLFW
     if (!glfwInit()) return NULL;
@@ -75,8 +75,7 @@ GLFWwindow* InitGlfw()
 #endif
 
     // Create a GLFW window
-    GLFWwindow* window =
-        glfwCreateWindow(width, height, "ImGui Example", NULL, NULL);
+    GLFWwindow* window = glfwCreateWindow(width, height, title, NULL, NULL);
     if (!window) {
         glfwTerminate();
         return NULL;
@@ -167,7 +166,9 @@ void TerminateImGui()
  */
 int main(int argc, char** argv)
 {
-    GLFWwindow* window = InitGlfw();
+    const char* TITLE = "ImGui Hydra Editor";
+
+    GLFWwindow* window = InitGlfw(TITLE);
     if (!window || !InitGlew() || !InitImGui(window)) return 1;
 
     glEnable(GL_DEPTH_TEST);

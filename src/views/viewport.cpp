@@ -56,6 +56,7 @@ void Viewport::ModelChangedEvent()
 {
     delete _renderer;
     _renderer = new pxr::UsdImagingGLEngine();
+    _renderer->SetRendererPlugin(_curPlugin);
     _up = GetModel()->GetUpAxis();
 };
 
@@ -309,7 +310,7 @@ void Viewport::UpdateCubeGuizmo()
 
     ImGuizmo::ViewManipulate(
         viewF.data(), 8.f,
-        ImVec2(GetInnerRect().Max.x - 128, GetInnerRect().Min.y),
+        ImVec2(GetInnerRect().Max.x - 128, GetInnerRect().Min.y + 18),
         ImVec2(128, 128), IM_COL32_BLACK_TRANS);
 
     if (viewF != pxr::GfMatrix4f(view)) {
@@ -325,14 +326,23 @@ void Viewport::UpdateCubeGuizmo()
 
 void Viewport::UpdatePluginLabel()
 {
-    string text = pxr::UsdImagingGLEngine::GetRendererDisplayName(_curPlugin);
+    string pluginText =
+        pxr::UsdImagingGLEngine::GetRendererDisplayName(_curPlugin);
+    string text = pluginText;
 
     ImDrawList* draw_list = ImGui::GetWindowDrawList();
 
     ImVec2 textSize = ImGui::CalcTextSize(text.c_str());
+    float margin = 6;
     float xPos = (GetInnerRect().Max.x - 64 - textSize.x / 2);
-    float yPos = GetInnerRect().Min.y;
-    draw_list->AddText(ImVec2(xPos, yPos), ImColor(50.0f, 45.0f, 255.0f),
+    float yPos = GetInnerRect().Min.y + margin * 2;
+    // draw background color
+    draw_list->AddRectFilled(
+        ImVec2(xPos - margin, yPos - margin),
+        ImVec2(xPos + textSize.x + margin, yPos + textSize.y + margin),
+        ImColor(.0f, .0f, .0f, .2f), margin);
+    // draw text
+    draw_list->AddText(ImVec2(xPos, yPos), ImColor(1.f, 1.f, 1.f),
                        text.c_str());
 }
 
@@ -499,15 +509,18 @@ void Viewport::MouseMoveEvent(ImVec2 prevPos, ImVec2 curPos)
     if (io.MouseWheel) ZoomActiveCam(io.MouseWheel);
 
     if (ImGui::IsMouseDown(ImGuiMouseButton_Left) &&
-        ImGui::IsKeyDown(ImGuiKey_RightAlt)) {
+        (ImGui::IsKeyDown(ImGuiKey_LeftAlt) ||
+         ImGui::IsKeyDown(ImGuiKey_RightAlt))) {
         OrbitActiveCam(deltaMousePos);
     }
     if (ImGui::IsMouseDown(ImGuiMouseButton_Left) &&
-        ImGui::IsKeyDown(ImGuiKey_RightShift)) {
+        (ImGui::IsKeyDown(ImGuiKey_LeftShift) ||
+         ImGui::IsKeyDown(ImGuiKey_RightShift))) {
         PanActiveCam(deltaMousePos);
     }
     if (ImGui::IsMouseDown(ImGuiMouseButton_Right) &&
-        ImGui::IsKeyDown(ImGuiKey_RightAlt)) {
+        (ImGui::IsKeyDown(ImGuiKey_LeftAlt) ||
+         ImGui::IsKeyDown(ImGuiKey_RightAlt))) {
         ZoomActiveCam(deltaMousePos);
     }
 }
