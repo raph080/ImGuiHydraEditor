@@ -27,15 +27,15 @@ Embedded:
 
 ## Documentation
 
-For more information about the code, please check the headers files.
+For more information about the code, please check the header files.
 
 ## Getting Started
 
 1. Make sure gcc and cmake are installed
 
 ```bash
-> gcc --version
-> cmake --version
+gcc --version
+cmake --version
 ```
 If some version and info are printed after running the previous commands, gcc and cmake are installed. If you get `command not found` error, please be sure to install them first.
 
@@ -47,7 +47,7 @@ Don't forget to add the --embree flag to the build command if you wish to have a
 ![embree enabled in ImGui Hydra Editor](resources/storm_embree.png)
 
 ```bash
-> python3 USD/build_scripts/build_usd.py --embree /path/to/install
+python3 USD/build_scripts/build_usd.py --embree /path/to/install
 ```
 
 
@@ -56,7 +56,7 @@ Don't forget to add the --embree flag to the build command if you wish to have a
 Clone the git project using the following command:
 
 ```bash
-> git clone --recurse-submodules https://github.com/raph080/ImGuiHydraEditor.git
+git clone --recurse-submodules https://github.com/raph080/ImGuiHydraEditor.git
 ```
 
 The recursive flag will automatically include the following projects: glew, glfw, imgui, ImGuiColorTextEdit, ImGuiFileDialog, ImGuizmo
@@ -66,34 +66,34 @@ The recursive flag will automatically include the following projects: glew, glfw
 Within the cloned ImGuiHydraEditor, create a build folder and run cmake from this newly created folder by specifying the root path to OpenUSD build:
 
 ```bash
-> mkdir build
-> cd build
-> cmake -DPXR_USD_LOCATION=/path/to/OpenUSD/build/folder -DCMAKE_INSTALL_PREFIX=/path/to/install/folder ..
-> make
-> make isntall
+mkdir build
+cd build
+cmake -DPXR_USD_LOCATION=/path/to/OpenUSD/build/folder -DCMAKE_INSTALL_PREFIX=/path/to/install/folder ..
+make
+make install
 ```
 
 5. Run
    
-if everything went well, 3 new folders are created in your /path/to/install/folder: `bin`, `include` and `lib`.
+if everything went well, 3 new folders are created in your `/path/to/install/folder`: `bin`, `include` and `lib`.
 
 You can then run the ImGuiHydraEditor application as follow:
 
 Linux:
 ```bash
-> export LD_LIBRARY_PATH=/path/to/OpenUSD/build/folder/lib:/path/to/OpenUSD/build/folder/lib64:$LD_LIBRARY_PATH
-> ./ImGuiHydraEditor
+export LD_LIBRARY_PATH=/path/to/OpenUSD/build/folder/lib:/path/to/OpenUSD/build/folder/lib64:$LD_LIBRARY_PATH
+./ImGuiHydraEditor
 ```
 
 MacOS:
 ```bash
-> export DYLD_LIBRARY_PATH=/path/to/OpenUSD/build/folder/lib:$DYLD_LIBRARY_PATH
-> ./ImGuiHydraEditor
+export DYLD_LIBRARY_PATH=/path/to/OpenUSD/build/folder/lib:$DYLD_LIBRARY_PATH
+./ImGuiHydraEditor
 ```
 
 You can optionally load a USD file directly using the following command:
 ```bash
-> ./ImGuiHydraEditor /input/file.usd
+./ImGuiHydraEditor /input/file.usd
 ```
 
 ## Viewport navigation
