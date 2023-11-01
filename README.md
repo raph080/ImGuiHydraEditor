@@ -1,10 +1,10 @@
 # ImGui Hydra Editor
 
-ImGui Hydra Editor is a USD editor written in c++.
-
-This project acts as a playground for USD, and most particularly Hydra. Therefore, the structure of the application is simple and not over-engineered.
+ImGui Hydra Editor is a USD editor written in c++ with the ImGui and OpenUSD frameworks.
 
 ![UI preview of ImGui Hydra Editor](resources/preview.png)
+
+This project acts as a playground for USD, and most particularly Hydra. Therefore, the structure of the application remains simple and not over-engineered.
 
 ## Supported platforms
 
@@ -31,7 +31,9 @@ For more information about the code, please check the header files.
 
 ## Getting Started
 
-1. Make sure gcc and cmake are installed
+### Install dependencies
+
+Make sure gcc and cmake are installed
 
 ```bash
 gcc --version
@@ -39,9 +41,11 @@ cmake --version
 ```
 If some version and info are printed after running the previous commands, gcc and cmake are installed. If you get `command not found` error, please be sure to install them first.
 
-2. Download OpenUSD and build it
+### Download OpenUSD
 
-Go to the [OpenUSD release page](https://github.com/PixarAnimationStudios/OpenUSD/releases), download the last release available and build it (build info in the OpenUSD [README.md](https://github.com/PixarAnimationStudios/OpenUSD/blob/release/README.md)).
+The easy way to get a pre-built version of USD is to download the one from the [Nvidia website](https://developer.nvidia.com/usd).
+
+To build USD manually, go to the [OpenUSD release page](https://github.com/PixarAnimationStudios/OpenUSD/releases), download the last release available and build it (build info in the OpenUSD [README.md](https://github.com/PixarAnimationStudios/OpenUSD/blob/release/README.md)).
 
 Don't forget to add the --embree flag to the build command if you wish to have access to the Embree renderer from ImGui Hydra Editor.
 ![embree enabled in ImGui Hydra Editor](resources/storm_embree.png)
@@ -51,7 +55,7 @@ python3 USD/build_scripts/build_usd.py --embree /path/to/install
 ```
 
 
-1. Clone the ImGuiHydraEditor project
+### Clone ImGuiHydraEditor
 
 Clone the git project using the following command:
 
@@ -61,7 +65,7 @@ git clone --recurse-submodules https://github.com/raph080/ImGuiHydraEditor.git
 
 The recursive flag will automatically include the following projects: glew, glfw, imgui, ImGuiColorTextEdit, ImGuiFileDialog, ImGuizmo
 
-4. Build 
+### Build ImGuiHydraEditor
 
 Within the cloned ImGuiHydraEditor, create a build folder and run cmake from this newly created folder by specifying the root path to OpenUSD build:
 
@@ -73,7 +77,7 @@ make
 make install
 ```
 
-5. Run
+### Run ImGuiHydraEditor
    
 if everything went well, 3 new folders are created in your `/path/to/install/folder`: `bin`, `include` and `lib`.
 

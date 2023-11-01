@@ -18,6 +18,7 @@ find_path(USD_INCLUDE_DIR
         include
     DOC
         "USD Include directory"
+    NO_DEFAULT_PATH
 )
 
 find_file(USD_GENSCHEMA
@@ -152,9 +153,10 @@ if (USD_LIBRARY_DIR AND EXISTS "${USD_LIBRARY_DIR}/${USD_LIB_PREFIX}usdMtlx${CMA
     endif()
 endif()
 
-# message(STATUS "USD include dir: ${USD_INCLUDE_DIR}")
-# message(STATUS "USD library dir: ${USD_LIBRARY_DIR}")
-# message(STATUS "USD version: ${USD_VERSION}")
+message(STATUS "USD include dir: ${USD_INCLUDE_DIR}")
+message(STATUS "USD library dir: ${USD_LIBRARY_DIR}")
+message(STATUS "USD version: ${USD_VERSION}")
+
 if(DEFINED USD_BOOST_VERSION)
     # message(STATUS "USD Boost::boost version: ${USD_BOOST_VERSION}")
 endif()
