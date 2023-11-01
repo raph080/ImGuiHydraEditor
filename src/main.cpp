@@ -24,30 +24,6 @@
 #include "models/model.h"
 #include "style/imgui_spectrum.h"
 
-// what is currently not working yet
-// using gizmo cube when z axis is up (y axis hardcoded in imguizmo)
-// ImGui::InputTextMultiline does not yet allow horizontal scroll
-// does not support instances editing
-// imguizmo bug: guizmo not working if multiple viewport and selection empty
-
-// switch to HdEngine or HdxTaskController
-//    allow multi scene delegate
-//    add the grid 'dynamically' to the renderindex
-//    abstract model interface to hydra prim (nor usd stage or prim)
-
-// selection is single
-// no animation supported (time=default)
-// fake events
-// instanceable not fully handled (not visible in outliner and selection in
-// viewport is switched to instanceable parent if instance is selected )
-// no undo
-// grid is bottom layer (not hydra geom)
-// program does not keep multiple instances of same view when relaunched
-
-// print current version of submodules in doc
-
-// explain how to navigate in viewport
-
 /**
  * @brief Initialize Glfw
  *
