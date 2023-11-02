@@ -445,20 +445,20 @@ void Viewport::UpdateActiveCamFromViewport()
 void Viewport::UpdateProjection()
 {
     float fov = _FREE_CAM_FOV;
-    float near = _FREE_CAM_NEAR;
-    float far = _FREE_CAM_FAR;
+    float nearPlane = _FREE_CAM_NEAR;
+    float farPlane = _FREE_CAM_FAR;
 
     if (_activeCam.IsValid()) {
         pxr::UsdGeomCamera geomCam(_activeCam);
         pxr::GfCamera gfCam = geomCam.GetCamera(pxr::UsdTimeCode::Default());
         fov = gfCam.GetFieldOfView(pxr::GfCamera::FOVVertical);
-        near = gfCam.GetClippingRange().GetMin();
-        far = gfCam.GetClippingRange().GetMax();
+        nearPlane = gfCam.GetClippingRange().GetMin();
+        farPlane = gfCam.GetClippingRange().GetMax();
     }
 
     pxr::GfFrustum frustum;
     double aspectRatio = GetViewportWidth() / GetViewportHeight();
-    frustum.SetPerspective(fov, true, aspectRatio, near, far);
+    frustum.SetPerspective(fov, true, aspectRatio, nearPlane, farPlane);
     _proj = frustum.ComputeProjectionMatrix();
 }
 
