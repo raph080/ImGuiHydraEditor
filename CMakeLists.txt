@@ -51,6 +51,14 @@ target_link_libraries(${PROJECT_NAME}
         imguifiledialog
 )
 
+if(WIN32)
+    target_compile_definitions(${PROJECT_NAME}
+        PUBLIC
+            NOMINMAX
+            _USE_MATH_DEFINES
+    )
+endif()
+
 install(
     TARGETS ${PROJECT_NAME}
 )
