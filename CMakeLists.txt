@@ -53,7 +53,7 @@ target_link_libraries(${PROJECT_NAME}
 
 if(WIN32)
     target_compile_definitions(${PROJECT_NAME}
-        PUBLIC
+        PRIVATE
             NOMINMAX
             _USE_MATH_DEFINES
     )
