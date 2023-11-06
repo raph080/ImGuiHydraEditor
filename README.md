@@ -72,7 +72,7 @@ Within the cloned ImGuiHydraEditor, create a build folder and run cmake from thi
 ```bash
 mkdir build
 cd build
-cmake -DPXR_USD_LOCATION=/path/to/OpenUSD/build/folder -DCMAKE_INSTALL_PREFIX=/path/to/install/folder ..
+cmake -Dpxr_DIR=/path/to/OpenUSD/build/folder -DCMAKE_INSTALL_PREFIX=/path/to/install/folder ..
 make
 make install
 ```

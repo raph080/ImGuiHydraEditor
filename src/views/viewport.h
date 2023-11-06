@@ -12,7 +12,6 @@
 
 #define IMGUI_DEFINE_MATH_OPERATORS
 // clang-format off
-#include <boost/predef/os.h>
 #include <imgui.h>
 #include <imgui_internal.h>
 // clang-format on

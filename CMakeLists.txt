@@ -4,13 +4,10 @@ project(ImGuiHydraEditor VERSION 0.0.1 DESCRIPTION "ImGui Hydra Editor")
 
 include(GNUInstallDirs)
 
-set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
-
-find_package(USD REQUIRED)
-find_package(Python COMPONENTS Interpreter Development REQUIRED)
+find_package(pxr REQUIRED)
 
 add_subdirectory(vendors)
 
@@ -27,29 +24,12 @@ add_executable(${PROJECT_NAME} ${SRC_CPP} ${SRC_H})
 
 target_include_directories(${PROJECT_NAME}
     PRIVATE
-        # where the library itself will look for its internal headers
         ${CMAKE_CURRENT_SOURCE_DIR}/src
-    PUBLIC
-        # where top-level project will look for the library's public headers
-        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/external>
-        # where external projects will look for the library's public headers
-        $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
-
-        ${USD_INCLUDE_DIR}
-        ${Python_INCLUDE_DIRS}
-        imgui
-        imguizmo
-        imguicolortextedit
-        imguifiledialog
 )
 
-
 target_link_libraries(${PROJECT_NAME}
-    PUBLIC
-        ${USD_BOOST_LIBRARIES}
-        ${USD_LIBRARIES}
-        ${Python_LIBRARIES}
+    PRIVATE
+        usdImagingGL
         libglew_static
         glfw
         imgui
@@ -57,6 +37,14 @@ target_link_libraries(${PROJECT_NAME}
         imguicolortextedit
         imguifiledialog
 )
+
+if(WIN32)
+    target_compile_definitions(${PROJECT_NAME}
+        PRIVATE
+            NOMINMAX
+            _USE_MATH_DEFINES
+    )
+endif()
 
 install(
     TARGETS ${PROJECT_NAME}
