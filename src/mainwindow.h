@@ -52,8 +52,8 @@ class MainWindow {
         void AddView(const string viewType);
 
     private:
-        vector<View*> views;
-        Model* model;
+        vector<View*> _views;
+        Model* _model;
 
         /**
          * @brief Converts the given prim path by an indexed prim path if the
@@ -64,47 +64,47 @@ class MainWindow {
          * Model
          * @return string the next index prim path
          */
-        string GetNextAvailableIndexedPath(string primPath);
+        string _GetNextAvailableIndexedPath(string primPath);
 
         /**
          * @brief Create a Camera in the Model
          *
          */
-        void CreateCamera();
+        void _CreateCamera();
 
         /**
          * @brief Create a Capsule in the Model
          *
          */
-        void CreateCapsule();
+        void _CreateCapsule();
 
         /**
          * @brief Create a Cone in the Model
          *
          */
-        void CreateCone();
+        void _CreateCone();
 
         /**
          * @brief Create a Cube in the Model
          *
          */
-        void CreateCube();
+        void _CreateCube();
 
         /**
          * @brief Create a Cylinder in the Model
          *
          */
-        void CreateCylinder();
+        void _CreateCylinder();
 
         /**
          * @brief Create a Plane in the Model
          *
          */
-        void CreatePlane();
+        void _CreatePlane();
 
         /**
          * @brief Create a Sphere in the Model
          *
          */
-        void CreateSphere();
+        void _CreateSphere();
 };

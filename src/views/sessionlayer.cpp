@@ -1,48 +1,48 @@
 #include "sessionlayer.h"
 
 SessionLayer::SessionLayer(Model* model, const string label)
-    : View(model, label)
+    : View(model, label), _isEditing(false)
 {
-    editor.SetPalette(GetPalette());
-    editor.SetLanguageDefinition(GetUsdLanguageDefinition());
-    editor.SetShowWhitespaces(false);
+    _editor.SetPalette(_GetPalette());
+    _editor.SetLanguageDefinition(_GetUsdLanguageDefinition());
+    _editor.SetShowWhitespaces(false);
 }
 
 const string SessionLayer::GetViewType()
 {
     return VIEW_TYPE;
 };
-void SessionLayer::Draw()
+void SessionLayer::_Draw()
 {
-    if (IsSessionLayerUpdated()) LoadSessionTextFromModel();
-    editor.Render("TextEditor");
+    if (_IsSessionLayerUpdated()) _LoadSessionTextFromModel();
+    _editor.Render("TextEditor");
 };
 
-bool SessionLayer::IsSessionLayerUpdated()
+bool SessionLayer::_IsSessionLayerUpdated()
 {
     pxr::SdfLayerHandle sessionLayer = GetModel()->GetSessionLayer();
     string layerText;
     sessionLayer->ExportToString(&layerText);
-    return lastLoadedText != layerText;
+    return _lastLoadedText != layerText;
 }
 
-void SessionLayer::LoadSessionTextFromModel()
+void SessionLayer::_LoadSessionTextFromModel()
 {
     pxr::SdfLayerHandle sessionLayer = GetModel()->GetSessionLayer();
     string layerText;
     sessionLayer->ExportToString(&layerText);
-    editor.SetText(layerText);
-    lastLoadedText = layerText;
+    _editor.SetText(layerText);
+    _lastLoadedText = layerText;
 }
 
-void SessionLayer::SaveSessionTextToModel()
+void SessionLayer::_SaveSessionTextToModel()
 {
-    string editedText = editor.GetText();
+    string editedText = _editor.GetText();
     pxr::SdfLayerHandle sessionLayer = GetModel()->GetSessionLayer();
     sessionLayer->ImportFromString(editedText.c_str());
 }
 
-TextEditor::Palette SessionLayer::GetPalette()
+TextEditor::Palette SessionLayer::_GetPalette()
 {
     ImU32 normalTxtCol = ImGui::GetColorU32(ImGuiCol_Text, 1.f);
     ImU32 halfTxtCol = ImGui::GetColorU32(ImGuiCol_Text, .5f);
@@ -75,7 +75,7 @@ TextEditor::Palette SessionLayer::GetPalette()
     }};
 }
 
-TextEditor::LanguageDefinition SessionLayer::GetUsdLanguageDefinition()
+TextEditor::LanguageDefinition SessionLayer::_GetUsdLanguageDefinition()
 {
     TextEditor::LanguageDefinition langDef =
         TextEditor::LanguageDefinition::C();
@@ -164,12 +164,12 @@ TextEditor::LanguageDefinition SessionLayer::GetUsdLanguageDefinition()
     return langDef;
 }
 
-void SessionLayer::FocusInEvent()
+void SessionLayer::_FocusInEvent()
 {
-    isEditing = true;
+    _isEditing = true;
 };
-void SessionLayer::FocusOutEvent()
+void SessionLayer::_FocusOutEvent()
 {
-    isEditing = false;
-    SaveSessionTextToModel();
+    _isEditing = false;
+    _SaveSessionTextToModel();
 };

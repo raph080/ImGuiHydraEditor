@@ -16,7 +16,7 @@
 #include "views/view.h"
 #include "views/viewport.h"
 
-MainWindow::MainWindow(Model* model) : model(model)
+MainWindow::MainWindow(Model* model) : _model(model)
 {
     ResetDefaultViews();
 };
@@ -28,8 +28,8 @@ void MainWindow::Update()
     if (ImGui::BeginMainMenuBar()) {
         if (ImGui::BeginMenu("File")) {
             if (ImGui::MenuItem("New scene")) {
-                model->SetEmptyStage();
-                for (auto view : views) { view->ModelChangedEvent(); }
+                _model->SetEmptyStage();
+                for (auto view : _views) { view->ModelChangedEvent(); }
             }
 
             if (ImGui::MenuItem("Load ...")) {
@@ -45,14 +45,14 @@ void MainWindow::Update()
         }
         if (ImGui::BeginMenu("Objects")) {
             if (ImGui::BeginMenu("Create")) {
-                if (ImGui::MenuItem("Camera")) CreateCamera();
+                if (ImGui::MenuItem("Camera")) _CreateCamera();
                 ImGui::Separator();
-                if (ImGui::MenuItem("Capsule")) CreateCapsule();
-                if (ImGui::MenuItem("Cone")) CreateCone();
-                if (ImGui::MenuItem("Cube")) CreateCube();
-                if (ImGui::MenuItem("Cylinder")) CreateCylinder();
-                if (ImGui::MenuItem("Plane")) CreatePlane();
-                if (ImGui::MenuItem("Sphere")) CreateSphere();
+                if (ImGui::MenuItem("Capsule")) _CreateCapsule();
+                if (ImGui::MenuItem("Cone")) _CreateCone();
+                if (ImGui::MenuItem("Cube")) _CreateCube();
+                if (ImGui::MenuItem("Cylinder")) _CreateCylinder();
+                if (ImGui::MenuItem("Plane")) _CreatePlane();
+                if (ImGui::MenuItem("Sphere")) _CreateSphere();
                 ImGui::EndMenu();
             }
             ImGui::EndMenu();
@@ -77,20 +77,20 @@ void MainWindow::Update()
         ImGui::EndMainMenuBar();
     }
 
-    vector<View*> viewsCopy(views);
-    views.clear();
+    vector<View*> viewsCopy(_views);
+    _views.clear();
 
     for (auto view : viewsCopy) {
         view->Update();
-        if (view->IsDisplayed()) views.push_back(view);
+        if (view->IsDisplayed()) _views.push_back(view);
         else delete view;
     }
 
     if (ImGuiFileDialog::Instance()->Display("LoadFile")) {
         if (ImGuiFileDialog::Instance()->IsOk()) {
             string filePath = ImGuiFileDialog::Instance()->GetFilePathName();
-            model->LoadUsdStage(filePath);
-            for (auto view : views) { view->ModelChangedEvent(); }
+            _model->LoadUsdStage(filePath);
+            for (auto view : _views) { view->ModelChangedEvent(); }
         }
         ImGuiFileDialog::Instance()->Close();
     }
@@ -98,7 +98,7 @@ void MainWindow::Update()
     if (ImGuiFileDialog::Instance()->Display("ExportFile")) {
         if (ImGuiFileDialog::Instance()->IsOk()) {
             string filePath = ImGuiFileDialog::Instance()->GetFilePathName();
-            model->GetStage()->Export(filePath, false);
+            _model->GetStage()->Export(filePath, false);
         }
         ImGuiFileDialog::Instance()->Close();
     }
@@ -107,8 +107,8 @@ void MainWindow::Update()
 void MainWindow::ResetDefaultViews()
 {
     // delete all existing views
-    for (auto view : views) { delete view; }
-    views.clear();
+    for (auto view : _views) { delete view; }
+    _views.clear();
 
     // // add default views
     AddView(Outliner::VIEW_TYPE);
@@ -121,7 +121,7 @@ void MainWindow::AddView(const string viewType)
 {
     // count the occurences of views of type 'viewType'
     int occ = 1;
-    for (auto view : views) {
+    for (auto view : _views) {
         if (view->GetViewType() == viewType) occ++;
     }
 
@@ -130,22 +130,22 @@ void MainWindow::AddView(const string viewType)
     if (occ > 1) viewLabel += " " + to_string(occ);
 
     if (viewType == Editor::VIEW_TYPE) {
-        views.push_back(new Editor(model, viewLabel));
+        _views.push_back(new Editor(_model, viewLabel));
     }
     else if (viewType == Outliner::VIEW_TYPE) {
-        views.push_back(new Outliner(model, viewLabel));
+        _views.push_back(new Outliner(_model, viewLabel));
     }
     else if (viewType == SessionLayer::VIEW_TYPE) {
-        views.push_back(new SessionLayer(model, viewLabel));
+        _views.push_back(new SessionLayer(_model, viewLabel));
     }
     else if (viewType == Viewport::VIEW_TYPE) {
-        views.push_back(new Viewport(model, viewLabel));
+        _views.push_back(new Viewport(_model, viewLabel));
     }
 }
 
-string MainWindow::GetNextAvailableIndexedPath(string primPath)
+string MainWindow::_GetNextAvailableIndexedPath(string primPath)
 {
-    pxr::UsdStageRefPtr stage = model->GetStage();
+    pxr::UsdStageRefPtr stage = _model->GetStage();
     pxr::UsdPrim prim;
     int i = -1;
     string newPath;
@@ -158,49 +158,49 @@ string MainWindow::GetNextAvailableIndexedPath(string primPath)
     return newPath;
 }
 
-void MainWindow::CreateCamera()
+void MainWindow::_CreateCamera()
 {
-    string primPath = GetNextAvailableIndexedPath("/camera");
-    pxr::UsdStageRefPtr stage = model->GetStage();
+    string primPath = _GetNextAvailableIndexedPath("/camera");
+    pxr::UsdStageRefPtr stage = _model->GetStage();
     pxr::UsdGeomCamera::Define(stage, pxr::SdfPath(primPath));
 }
 
-void MainWindow::CreateCapsule()
+void MainWindow::_CreateCapsule()
 {
-    string primPath = GetNextAvailableIndexedPath("/capsule");
-    pxr::UsdStageRefPtr stage = model->GetStage();
+    string primPath = _GetNextAvailableIndexedPath("/capsule");
+    pxr::UsdStageRefPtr stage = _model->GetStage();
     pxr::UsdGeomCapsule::Define(stage, pxr::SdfPath(primPath));
 }
-void MainWindow::CreateCone()
+void MainWindow::_CreateCone()
 {
-    string primPath = GetNextAvailableIndexedPath("/cone");
-    pxr::UsdStageRefPtr stage = model->GetStage();
+    string primPath = _GetNextAvailableIndexedPath("/cone");
+    pxr::UsdStageRefPtr stage = _model->GetStage();
     pxr::UsdGeomCone::Define(stage, pxr::SdfPath(primPath));
 }
-void MainWindow::CreateCube()
+void MainWindow::_CreateCube()
 {
-    string primPath = GetNextAvailableIndexedPath("/cube");
-    pxr::UsdStageRefPtr stage = model->GetStage();
+    string primPath = _GetNextAvailableIndexedPath("/cube");
+    pxr::UsdStageRefPtr stage = _model->GetStage();
     pxr::UsdGeomCube::Define(stage, pxr::SdfPath(primPath));
 }
 
-void MainWindow::CreateCylinder()
+void MainWindow::_CreateCylinder()
 {
-    string primPath = GetNextAvailableIndexedPath("/cylinder");
-    pxr::UsdStageRefPtr stage = model->GetStage();
+    string primPath = _GetNextAvailableIndexedPath("/cylinder");
+    pxr::UsdStageRefPtr stage = _model->GetStage();
     pxr::UsdGeomCylinder::Define(stage, pxr::SdfPath(primPath));
 }
 
-void MainWindow::CreatePlane()
+void MainWindow::_CreatePlane()
 {
-    string primPath = GetNextAvailableIndexedPath("/plane");
-    pxr::UsdStageRefPtr stage = model->GetStage();
+    string primPath = _GetNextAvailableIndexedPath("/plane");
+    pxr::UsdStageRefPtr stage = _model->GetStage();
     pxr::UsdGeomPlane::Define(stage, pxr::SdfPath(primPath));
 }
 
-void MainWindow::CreateSphere()
+void MainWindow::_CreateSphere()
 {
-    string primPath = GetNextAvailableIndexedPath("/sphere");
-    pxr::UsdStageRefPtr stage = model->GetStage();
+    string primPath = _GetNextAvailableIndexedPath("/sphere");
+    pxr::UsdStageRefPtr stage = _model->GetStage();
     pxr::UsdGeomSphere::Define(stage, pxr::SdfPath(primPath));
 }

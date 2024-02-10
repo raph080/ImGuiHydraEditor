@@ -15,25 +15,25 @@ const string Editor::GetViewType()
     return VIEW_TYPE;
 };
 
-void Editor::Draw()
+void Editor::_Draw()
 {
-    pxr::UsdPrim prim = GetPrimToDisplay();
+    pxr::UsdPrim prim = _GetPrimToDisplay();
 
     if (prim.IsValid()) {
         if (ImGui::CollapsingHeader("Transform attributes"))
-            AppendTransformAttrs(prim);
+            _AppendTransformAttrs(prim);
 
         if (prim.GetTypeName() == pxr::UsdGeomTokens->Camera)
             if (ImGui::CollapsingHeader("Camera attributes"))
-                AppendCamAttrs(prim);
+                _AppendCamAttrs(prim);
 
         if (prim.HasAttribute(pxr::UsdGeomTokens->primvarsDisplayColor))
             if (ImGui::CollapsingHeader("Extra attributes"))
-                AppendDisplayColorAttr(prim);
+                _AppendDisplayColorAttr(prim);
     }
 }
 
-pxr::UsdPrim Editor::GetPrimToDisplay()
+pxr::UsdPrim Editor::_GetPrimToDisplay()
 {
     vector<pxr::UsdPrim> prims = GetModel()->GetSelection();
 
@@ -42,7 +42,7 @@ pxr::UsdPrim Editor::GetPrimToDisplay()
     return _prevSelection;
 }
 
-void Editor::AppendTransformAttrs(pxr::UsdPrim prim)
+void Editor::_AppendTransformAttrs(pxr::UsdPrim prim)
 {
     pxr::UsdGeomGprim gprim(prim);
 
@@ -64,7 +64,7 @@ void Editor::AppendTransformAttrs(pxr::UsdPrim prim)
         SetTransformMatrix(gprim, pxr::GfMatrix4d(transformF));
 }
 
-void Editor::AppendCamAttrs(pxr::UsdPrim prim)
+void Editor::_AppendCamAttrs(pxr::UsdPrim prim)
 {
     pxr::UsdGeomCamera cam(prim);
 
@@ -94,7 +94,7 @@ void Editor::AppendCamAttrs(pxr::UsdPrim prim)
     }
 }
 
-void Editor::AppendDisplayColorAttr(pxr::UsdPrim prim)
+void Editor::_AppendDisplayColorAttr(pxr::UsdPrim prim)
 {
     // get the display color attr from pxr::UsdGeomGprim
     pxr::UsdGeomGprim gprim(prim);

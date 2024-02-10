@@ -40,15 +40,15 @@ class SessionLayer : public View {
         const string GetViewType() override;
 
     private:
-        TextEditor editor;
-        bool isEditing = false;
-        string lastLoadedText;
+        TextEditor _editor;
+        bool _isEditing;
+        string _lastLoadedText;
 
         /**
          * @brief Override of the View::Draw
          *
          */
-        void Draw() override;
+        void _Draw() override;
 
         /**
          * @brief Check if USD session layer was updated since the last load
@@ -58,27 +58,27 @@ class SessionLayer : public View {
          * data
          * @return false otherwise
          */
-        bool IsSessionLayerUpdated();
+        bool _IsSessionLayerUpdated();
 
         /**
          * @brief Load text from the USD session layer of the Model
          *
          */
-        void LoadSessionTextFromModel();
+        void _LoadSessionTextFromModel();
 
         /**
          * @brief Save the text from the session layer view to the USD session
          * layer of the Model
          *
          */
-        void SaveSessionTextToModel();
+        void _SaveSessionTextToModel();
 
         /**
          * @brief Get a Palette object for the TextEditor (ImGui plugin)
          *
          * @return TextEditor::Palette
          */
-        TextEditor::Palette GetPalette();
+        TextEditor::Palette _GetPalette();
 
         /**
          * @brief Get the Usd Language Definition object for the TextEditor
@@ -86,17 +86,17 @@ class SessionLayer : public View {
          *
          * @return TextEditor::LanguageDefinition
          */
-        TextEditor::LanguageDefinition GetUsdLanguageDefinition();
+        TextEditor::LanguageDefinition _GetUsdLanguageDefinition();
 
         /**
-         * @brief Override of the View::FocusInEvent
+         * @brief Override of the View::_FocusInEvent
          *
          */
-        void FocusInEvent() override;
+        void _FocusInEvent() override;
 
         /**
-         * @brief Override of the View::FocusOutEvent
+         * @brief Override of the View::_FocusOutEvent
          *
          */
-        void FocusOutEvent() override;
+        void _FocusOutEvent() override;
 };

@@ -47,7 +47,7 @@ class Outliner : public View {
          * @brief Override of the View::Draw
          *
          */
-        void Draw() override;
+        void _Draw() override;
 
         /**
          * @brief Draw the hierarchy of all the descendant UsdPrims of the
@@ -58,7 +58,7 @@ class Outliner : public View {
          * @return the ImRect rectangle of the tree node corresponding to the
          * given 'prim'
          */
-        ImRect DrawPrimHierarchy(pxr::UsdPrim prim);
+        ImRect _DrawPrimHierarchy(pxr::UsdPrim prim);
 
         /**
          * @brief Compute the display flags of the given UsdPrim
@@ -73,7 +73,7 @@ class Outliner : public View {
          * contains ImGuiTreeNodeFlags_Selected
          *
          */
-        ImGuiTreeNodeFlags ComputeDisplayFlags(pxr::UsdPrim prim);
+        ImGuiTreeNodeFlags _ComputeDisplayFlags(pxr::UsdPrim prim);
 
         /**
          * @brief Draw the hierarchy tree node of the given UsdPrim. The color
@@ -83,7 +83,7 @@ class Outliner : public View {
          * @return true if children 'prim' msut be drawn too
          * @return false otherwise
          */
-        bool DrawHierarchyNode(pxr::UsdPrim prim);
+        bool _DrawHierarchyNode(pxr::UsdPrim prim);
 
         /**
          * @brief Check if the given UsdPrim is parent of a UsdPrim within the
@@ -94,7 +94,7 @@ class Outliner : public View {
          * Model selection
          * @return false otherwise
          */
-        bool IsParentOfModelSelection(pxr::UsdPrim prim);
+        bool _IsParentOfModelSelection(pxr::UsdPrim prim);
 
         /**
          * @brief Check if the given UsdPrim is part of the current Model
@@ -104,7 +104,7 @@ class Outliner : public View {
          * @return true if 'prim' is part of the current Model selection
          * @return false otherwise
          */
-        bool IsInModelSelection(pxr::UsdPrim prim);
+        bool _IsInModelSelection(pxr::UsdPrim prim);
 
         /**
          * @brief Draw the children hierarchy decoration of the outliner view
@@ -115,6 +115,6 @@ class Outliner : public View {
          * @param childrenRects a vector of ImRect rectangles of the direct
          * children node of 'parentRect'
          */
-        void DrawChildrendHierarchyDecoration(ImRect parentRect,
-                                              vector<ImRect> childrenRects);
+        void _DrawChildrendHierarchyDecoration(ImRect parentRect,
+                                               vector<ImRect> childrenRects);
 };

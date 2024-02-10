@@ -47,7 +47,7 @@ class Editor : public View {
          * @brief Override of the View::Draw
          *
          */
-        void Draw() override;
+        void _Draw() override;
 
         /**
          * @brief Get the UsdPrim to display the attributes in the editor.
@@ -56,7 +56,7 @@ class Editor : public View {
          *
          * @return The current prim to display the attributes from
          */
-        pxr::UsdPrim GetPrimToDisplay();
+        pxr::UsdPrim _GetPrimToDisplay();
 
         /**
          * @brief Append the transform attributes of the given prim to the
@@ -64,7 +64,7 @@ class Editor : public View {
          *
          * @param prim the UsdPrim to get the transform attributes from
          */
-        void AppendTransformAttrs(pxr::UsdPrim prim);
+        void _AppendTransformAttrs(pxr::UsdPrim prim);
 
         /**
          * @brief Append the camera attributes of the given prim to the
@@ -72,7 +72,7 @@ class Editor : public View {
          *
          * @param prim the UsdPrim to get the camera attributes from
          */
-        void AppendCamAttrs(pxr::UsdPrim prim);
+        void _AppendCamAttrs(pxr::UsdPrim prim);
 
         /**
          * @brief Append the display color attributes of the given prim to the
@@ -80,5 +80,5 @@ class Editor : public View {
          *
          * @param prim the UsdPrim to get the display color attributes from
          */
-        void AppendDisplayColorAttr(pxr::UsdPrim prim);
+        void _AppendDisplayColorAttr(pxr::UsdPrim prim);
 };

@@ -56,10 +56,10 @@ class Viewport : public View {
         const string GetViewType() override;
 
         /**
-         * @brief Override of the View::GetGizmoWindowFlags
+         * @brief Override of the View::_GetGizmoWindowFlags
          *
          */
-        ImGuiWindowFlags GetGizmoWindowFlags() override;
+        ImGuiWindowFlags _GetGizmoWindowFlags() override;
 
         /**
          * @brief Override of the View::ModelChangeEvent
@@ -89,165 +89,165 @@ class Viewport : public View {
          *
          * @return the width of the viewport
          */
-        float GetViewportWidth();
+        float _GetViewportWidth();
 
         /**
          * @brief Get the height of the viewport
          *
          * @return the height of the viewport
          */
-        float GetViewportHeight();
+        float _GetViewportHeight();
 
         /**
          * @brief Override of the View::Draw
          *
          */
-        void Draw() override;
+        void _Draw() override;
 
         /**
          * @brief Draw the Menu bar of the viewport
          *
          */
-        void DrawMenuBar();
+        void _DrawMenuBar();
 
         /**
          * @brief Configure ImGuizmo
          *
          */
-        void ConfigureImGuizmo();
+        void _ConfigureImGuizmo();
 
         /**
          * @brief Update the grid within the viewport
          *
          */
-        void UpdateGrid();
+        void _UpdateGrid();
 
         /**
          * @brief Update the USD render
          *
          */
-        void UpdateUsdRender();
+        void _UpdateUsdRender();
 
         /**
          * @brief Update the transform Guizmo (the 3 axis of a selection)
          *
          */
-        void UpdateTransformGuizmo();
+        void _UpdateTransformGuizmo();
 
         /**
          * @brief Update the gizmo cube (cube at top right)
          *
          */
-        void UpdateCubeGuizmo();
+        void _UpdateCubeGuizmo();
 
         /**
          * @brief Update the label of the current Usd Hydra plugin used by the
          * viewport (above the gizmo cube)
          *
          */
-        void UpdatePluginLabel();
+        void _UpdatePluginLabel();
 
         /**
          * @brief Pan the active camera by the mouse position delta
          *
          * @param mouseDeltaPos the mouse position delta for the pan
          */
-        void PanActiveCam(ImVec2 mouseDeltaPos);
+        void _PanActiveCam(ImVec2 mouseDeltaPos);
 
         /**
          * @brief Orbit the active camera by the mouse position delta
          *
          * @param mouseDeltaPos the mouse position delta for the orbit
          */
-        void OrbitActiveCam(ImVec2 mouseDeltaPos);
+        void _OrbitActiveCam(ImVec2 mouseDeltaPos);
 
         /**
          * @brief Zoom the active camera by the mouse position delta
          *
          * @param mouseDeltaPos the mouse position delta for the zoom
          */
-        void ZoomActiveCam(ImVec2 mouseDeltaPos);
+        void _ZoomActiveCam(ImVec2 mouseDeltaPos);
 
         /**
          * @brief Zoom the active calera by the scroll whell value
          *
          * @param scrollWheel the scroll wheel value for the zoom
          */
-        void ZoomActiveCam(float scrollWheel);
+        void _ZoomActiveCam(float scrollWheel);
 
         /**
          * @brief Set the free camera as the active one
          *
          */
-        void SetFreeCamAsActive();
+        void _SetFreeCamAsActive();
 
         /**
          * @brief Set the given camera as the active one
          *
          * @param cam the camera to set as active
          */
-        void SetActiveCam(pxr::UsdPrim cam);
+        void _SetActiveCam(pxr::UsdPrim cam);
 
         /**
          * @brief Update the viewport from the active camera
          *
          */
-        void UpdateViewportFromActiveCam();
+        void _UpdateViewportFromActiveCam();
 
         /**
          * @brief Get the view matrix of the viewport
          *
          * @return the view matrix
          */
-        pxr::GfMatrix4d getCurViewMatrix();
+        pxr::GfMatrix4d _getCurViewMatrix();
 
         /**
          * @brief Update active camera from viewport
          *
          */
-        void UpdateActiveCamFromViewport();
+        void _UpdateActiveCamFromViewport();
 
         /**
          * @brief Update Viewport projection matrix from the active camera
          *
          */
-        void UpdateProjection();
+        void _UpdateProjection();
 
         /**
          * @brief Focus the active camera and the viewport on the given prim
          *
          * @param prim the prim to focus on
          */
-        void FocusOnPrim(pxr::UsdPrim prim);
+        void _FocusOnPrim(pxr::UsdPrim prim);
 
         /**
-         * @brief Override of the View::KeyPressEvent
+         * @brief Override of the View::_KeyPressEvent
          *
          */
-        void KeyPressEvent(ImGuiKey key) override;
+        void _KeyPressEvent(ImGuiKey key) override;
 
         /**
-         * @brief Override of the View::MouseMoveEvent
+         * @brief Override of the View::_MouseMoveEvent
          *
          */
-        void MouseMoveEvent(ImVec2 prevPos, ImVec2 curPos) override;
+        void _MouseMoveEvent(ImVec2 prevPos, ImVec2 curPos) override;
 
         /**
-         * @brief Override of the View::MouseReleaseEvent
+         * @brief Override of the View::_MouseReleaseEvent
          *
          */
-        void MouseReleaseEvent(ImGuiMouseButton_ button,
-                               ImVec2 mousePos) override;
+        void _MouseReleaseEvent(ImGuiMouseButton_ button,
+                                ImVec2 mousePos) override;
 
         /**
-         * @brief Override of the View::HoverInEvent
+         * @brief Override of the View::_HoverInEvent
          *
          */
-        void HoverInEvent() override;
+        void _HoverInEvent() override;
 
         /**
-         * @brief Override of the View::HoverOutEvent
+         * @brief Override of the View::_HoverOutEvent
          *
          */
-        void HoverOutEvent() override;
+        void _HoverOutEvent() override;
 };

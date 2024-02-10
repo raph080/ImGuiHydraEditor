@@ -9,19 +9,19 @@ const string Outliner::GetViewType()
     return VIEW_TYPE;
 };
 
-void Outliner::Draw()
+void Outliner::_Draw()
 {
     pxr::UsdStageRefPtr stage = GetModel()->GetStage();
 
     for (auto prim : stage->GetPseudoRoot().GetChildren()) {
-        DrawPrimHierarchy(prim);
+        _DrawPrimHierarchy(prim);
     }
 }
 
 // returns the node's rectangle
-ImRect Outliner::DrawPrimHierarchy(pxr::UsdPrim prim)
+ImRect Outliner::_DrawPrimHierarchy(pxr::UsdPrim prim)
 {
-    bool recurse = DrawHierarchyNode(prim);
+    bool recurse = _DrawHierarchyNode(prim);
 
     if (ImGui::IsItemClicked() && !ImGui::IsItemToggledOpen()) {
         GetModel()->SetSelection({prim});
@@ -34,13 +34,13 @@ ImRect Outliner::DrawPrimHierarchy(pxr::UsdPrim prim)
         // draw all children and store their rect position
         vector<ImRect> rects;
         for (auto child : prim.GetChildren()) {
-            ImRect childRect = DrawPrimHierarchy(child);
+            ImRect childRect = _DrawPrimHierarchy(child);
             rects.push_back(childRect);
         }
 
         if (rects.size() > 0) {
             // draw hierarchy decoration for all children
-            DrawChildrendHierarchyDecoration(curItemRect, rects);
+            _DrawChildrendHierarchyDecoration(curItemRect, rects);
         }
 
         ImGui::TreePop();
@@ -49,7 +49,7 @@ ImRect Outliner::DrawPrimHierarchy(pxr::UsdPrim prim)
     return curItemRect;
 }
 
-ImGuiTreeNodeFlags Outliner::ComputeDisplayFlags(pxr::UsdPrim prim)
+ImGuiTreeNodeFlags Outliner::_ComputeDisplayFlags(pxr::UsdPrim prim)
 {
     ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_None;
 
@@ -62,20 +62,20 @@ ImGuiTreeNodeFlags Outliner::ComputeDisplayFlags(pxr::UsdPrim prim)
     else flags = ImGuiTreeNodeFlags_OpenOnArrow;
 
     // if selected prim, set highlight flag
-    bool isSelected = IsInModelSelection(prim);
+    bool isSelected = _IsInModelSelection(prim);
     if (isSelected) flags |= ImGuiTreeNodeFlags_Selected;
 
     return flags;
 }
 
-bool Outliner::DrawHierarchyNode(pxr::UsdPrim prim)
+bool Outliner::_DrawHierarchyNode(pxr::UsdPrim prim)
 {
     bool recurse = false;
     const char* primName = prim.GetName().GetText();
-    ImGuiTreeNodeFlags flags = ComputeDisplayFlags(prim);
+    ImGuiTreeNodeFlags flags = _ComputeDisplayFlags(prim);
 
     // print node in blue if parent of selection
-    if (IsParentOfModelSelection(prim)) {
+    if (_IsParentOfModelSelection(prim)) {
         ImU32 color = ImGui::GetColorU32(ImGuiCol_HeaderActive, 1.f);
         ImGui::PushStyleColor(ImGuiCol_Text, color);
         recurse = ImGui::TreeNodeEx(primName, flags);
@@ -87,7 +87,7 @@ bool Outliner::DrawHierarchyNode(pxr::UsdPrim prim)
     return recurse;
 }
 
-bool Outliner::IsParentOfModelSelection(pxr::UsdPrim prim)
+bool Outliner::_IsParentOfModelSelection(pxr::UsdPrim prim)
 {
     // check if prim is parent of selection
     for (auto&& p : GetModel()->GetSelection())
@@ -96,14 +96,14 @@ bool Outliner::IsParentOfModelSelection(pxr::UsdPrim prim)
     return false;
 }
 
-bool Outliner::IsInModelSelection(pxr::UsdPrim prim)
+bool Outliner::_IsInModelSelection(pxr::UsdPrim prim)
 {
     vector<pxr::UsdPrim> sel = GetModel()->GetSelection();
     // check if prim in model selection
     return find(sel.begin(), sel.end(), prim) != sel.end();
 }
 
-void Outliner::DrawChildrendHierarchyDecoration(ImRect parentRect,
+void Outliner::_DrawChildrendHierarchyDecoration(ImRect parentRect,
                                                 vector<ImRect> childrenRects)
 {
     ImDrawList* drawList = ImGui::GetWindowDrawList();

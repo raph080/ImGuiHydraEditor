@@ -24,7 +24,7 @@ Viewport::Viewport(Model* model, const string label) : View(model, label)
     _at = pxr::GfVec3d(0, 0, 0);
     _up = GetModel()->GetUpAxis();
 
-    UpdateActiveCamFromViewport();
+    _UpdateActiveCamFromViewport();
 
     pxr::TfToken plugin = Engine::GetDefaultRendererPlugin();
     pxr::UsdStageRefPtr stage = GetModel()->GetStage();
@@ -41,7 +41,7 @@ const string Viewport::GetViewType()
     return VIEW_TYPE;
 };
 
-ImGuiWindowFlags Viewport::GetGizmoWindowFlags()
+ImGuiWindowFlags Viewport::_GetGizmoWindowFlags()
 {
     return _gizmoWindowFlags;
 };
@@ -57,39 +57,39 @@ void Viewport::ModelChangedEvent()
     _up = GetModel()->GetUpAxis();
 };
 
-float Viewport::GetViewportWidth()
+float Viewport::_GetViewportWidth()
 {
     return GetInnerRect().GetWidth();
 }
-float Viewport::GetViewportHeight()
+float Viewport::_GetViewportHeight()
 {
     return GetInnerRect().GetHeight();
 }
 
-void Viewport::Draw()
+void Viewport::_Draw()
 {
-    DrawMenuBar();
+    _DrawMenuBar();
 
-    if (GetViewportWidth() <= 0 || GetViewportHeight() <= 0) return;
+    if (_GetViewportWidth() <= 0 || _GetViewportHeight() <= 0) return;
 
     ImGui::BeginChild("GameRender");
 
-    ConfigureImGuizmo();
+    _ConfigureImGuizmo();
 
     // read from active cam in case it is modify by another view
-    if (!ImGui::IsWindowFocused()) UpdateViewportFromActiveCam();
+    if (!ImGui::IsWindowFocused()) _UpdateViewportFromActiveCam();
 
-    UpdateProjection();
-    UpdateGrid();
-    UpdateUsdRender();
-    UpdateTransformGuizmo();
-    UpdateCubeGuizmo();
-    UpdatePluginLabel();
+    _UpdateProjection();
+    _UpdateGrid();
+    _UpdateUsdRender();
+    _UpdateTransformGuizmo();
+    _UpdateCubeGuizmo();
+    _UpdatePluginLabel();
 
     ImGui::EndChild();
 };
 
-void Viewport::DrawMenuBar()
+void Viewport::_DrawMenuBar()
 {
     if (ImGui::BeginMenuBar()) {
         if (ImGui::BeginMenu("transform")) {
@@ -138,12 +138,12 @@ void Viewport::DrawMenuBar()
         if (ImGui::BeginMenu("cameras")) {
             bool enabled = (!_activeCam.IsValid());
             if (ImGui::MenuItem("free camera", NULL, &enabled)) {
-                SetFreeCamAsActive();
+                _SetFreeCamAsActive();
             }
             for (pxr::UsdPrim cam : GetModel()->GetCameras()) {
                 bool enabled = (cam == _activeCam);
                 if (ImGui::MenuItem(cam.GetName().GetText(), NULL, enabled)) {
-                    SetActiveCam(cam);
+                    _SetActiveCam(cam);
                 }
             }
             ImGui::EndMenu();
@@ -161,7 +161,7 @@ void Viewport::DrawMenuBar()
     }
 }
 
-void Viewport::ConfigureImGuizmo()
+void Viewport::_ConfigureImGuizmo()
 {
     ImGuizmo::BeginFrame();
 
@@ -171,26 +171,26 @@ void Viewport::ConfigureImGuizmo()
 
     ImGuizmo::SetDrawlist();
     ImGuizmo::SetRect(GetInnerRect().Min.x, GetInnerRect().Min.y,
-                      GetViewportWidth(), GetViewportHeight());
+                      _GetViewportWidth(), _GetViewportHeight());
 }
 
-void Viewport::UpdateGrid()
+void Viewport::_UpdateGrid()
 {
     if (!_isGridEnabled) return;
 
-    pxr::GfMatrix4f viewF(getCurViewMatrix());
+    pxr::GfMatrix4f viewF(_getCurViewMatrix());
     pxr::GfMatrix4f projF(_proj);
     pxr::GfMatrix4f identity(1);
 
     ImGuizmo::DrawGrid(viewF.data(), projF.data(), identity.data(), 10);
 }
 
-void Viewport::UpdateUsdRender()
+void Viewport::_UpdateUsdRender()
 {
     pxr::UsdStageRefPtr stage = GetModel()->GetStage();
-    pxr::GfMatrix4d view = getCurViewMatrix();
-    float width = GetViewportWidth();
-    float height = GetViewportHeight();
+    pxr::GfMatrix4d view = _getCurViewMatrix();
+    float width = _GetViewportWidth();
+    float height = _GetViewportHeight();
 
     // set selection
     pxr::SdfPathVector paths;
@@ -210,7 +210,7 @@ void Viewport::UpdateUsdRender()
     ImGui::Image(id, ImVec2(width, height), ImVec2(0, 1), ImVec2(1, 0));
 }
 
-void Viewport::UpdateTransformGuizmo()
+void Viewport::_UpdateTransformGuizmo()
 {
     vector<pxr::UsdPrim> prims = GetModel()->GetSelection();
     if (prims.size() == 0 || !prims[0].IsValid()) return;
@@ -220,7 +220,7 @@ void Viewport::UpdateTransformGuizmo()
     pxr::GfMatrix4d transform = GetTransformMatrix(geom);
     pxr::GfMatrix4f transformF(transform);
 
-    pxr::GfMatrix4d view = getCurViewMatrix();
+    pxr::GfMatrix4d view = _getCurViewMatrix();
 
     pxr::GfMatrix4f viewF(view);
     pxr::GfMatrix4f projF(_proj);
@@ -232,9 +232,9 @@ void Viewport::UpdateTransformGuizmo()
         SetTransformMatrix(geom, pxr::GfMatrix4d(transformF));
 }
 
-void Viewport::UpdateCubeGuizmo()
+void Viewport::_UpdateCubeGuizmo()
 {
-    pxr::GfMatrix4d view = getCurViewMatrix();
+    pxr::GfMatrix4d view = _getCurViewMatrix();
     pxr::GfMatrix4f viewF(view);
 
     ImGuizmo::ViewManipulate(
@@ -249,11 +249,11 @@ void Viewport::UpdateCubeGuizmo()
         _eye = frustum.GetPosition();
         _at = frustum.ComputeLookAtPoint();
 
-        UpdateActiveCamFromViewport();
+        _UpdateActiveCamFromViewport();
     }
 }
 
-void Viewport::UpdatePluginLabel()
+void Viewport::_UpdatePluginLabel()
 {
     pxr::TfToken curPlugin = _engine->GetCurrentRendererPlugin();
     string pluginText = _engine->GetRendererPluginName(curPlugin);
@@ -275,7 +275,7 @@ void Viewport::UpdatePluginLabel()
                        text.c_str());
 }
 
-void Viewport::PanActiveCam(ImVec2 mouseDeltaPos)
+void Viewport::_PanActiveCam(ImVec2 mouseDeltaPos)
 {
     pxr::GfVec3d camFront = _at - _eye;
     pxr::GfVec3d camRight = GfCross(camFront, _up).GetNormalized();
@@ -287,10 +287,10 @@ void Viewport::PanActiveCam(ImVec2 mouseDeltaPos)
     _eye += delta;
     _at += delta;
 
-    UpdateActiveCamFromViewport();
+    _UpdateActiveCamFromViewport();
 }
 
-void Viewport::OrbitActiveCam(ImVec2 mouseDeltaPos)
+void Viewport::_OrbitActiveCam(ImVec2 mouseDeltaPos)
 {
     pxr::GfRotation rot(_up, mouseDeltaPos.x / 2);
     pxr::GfMatrix4d rotMatrix = pxr::GfMatrix4d(1).SetRotate(rot);
@@ -306,37 +306,37 @@ void Viewport::OrbitActiveCam(ImVec2 mouseDeltaPos)
     vec4 = rotMatrix * pxr::GfVec4d(e[0], e[1], e[2], 1.f);
     _eye = _at + pxr::GfVec3d(vec4[0], vec4[1], vec4[2]);
 
-    UpdateActiveCamFromViewport();
+    _UpdateActiveCamFromViewport();
 }
 
-void Viewport::ZoomActiveCam(ImVec2 mouseDeltaPos)
+void Viewport::_ZoomActiveCam(ImVec2 mouseDeltaPos)
 {
     pxr::GfVec3d camFront = (_at - _eye).GetNormalized();
     _eye += camFront * mouseDeltaPos.x / 100.f;
 
-    UpdateActiveCamFromViewport();
+    _UpdateActiveCamFromViewport();
 }
 
-void Viewport::ZoomActiveCam(float scrollWheel)
+void Viewport::_ZoomActiveCam(float scrollWheel)
 {
     pxr::GfVec3d camFront = (_at - _eye).GetNormalized();
     _eye += camFront * scrollWheel / 10.f;
 
-    UpdateActiveCamFromViewport();
+    _UpdateActiveCamFromViewport();
 }
 
-void Viewport::SetFreeCamAsActive()
+void Viewport::_SetFreeCamAsActive()
 {
     _activeCam = pxr::UsdPrim();
 }
 
-void Viewport::SetActiveCam(pxr::UsdPrim cam)
+void Viewport::_SetActiveCam(pxr::UsdPrim cam)
 {
     _activeCam = cam;
-    UpdateViewportFromActiveCam();
+    _UpdateViewportFromActiveCam();
 }
 
-void Viewport::UpdateViewportFromActiveCam()
+void Viewport::_UpdateViewportFromActiveCam()
 {
     if (!_activeCam.IsValid()) return;
 
@@ -347,12 +347,12 @@ void Viewport::UpdateViewportFromActiveCam()
     _at = frustum.ComputeLookAtPoint();
 }
 
-pxr::GfMatrix4d Viewport::getCurViewMatrix()
+pxr::GfMatrix4d Viewport::_getCurViewMatrix()
 {
     return pxr::GfMatrix4d().SetLookAt(_eye, _at, _up);
 }
 
-void Viewport::UpdateActiveCamFromViewport()
+void Viewport::_UpdateActiveCamFromViewport()
 {
     if (!_activeCam.IsValid()) return;
 
@@ -361,7 +361,7 @@ void Viewport::UpdateActiveCamFromViewport()
 
     pxr::GfFrustum prevFrustum = gfCam.GetFrustum();
 
-    pxr::GfMatrix4d view = getCurViewMatrix();
+    pxr::GfMatrix4d view = _getCurViewMatrix();
     ;
     pxr::GfMatrix4d prevView = prevFrustum.ComputeViewMatrix();
     pxr::GfMatrix4d prevProj = prevFrustum.ComputeProjectionMatrix();
@@ -371,7 +371,7 @@ void Viewport::UpdateActiveCamFromViewport()
     SetTransformMatrix(geomCam, view.GetInverse());
 }
 
-void Viewport::UpdateProjection()
+void Viewport::_UpdateProjection()
 {
     float fov = _FREE_CAM_FOV;
     float nearPlane = _FREE_CAM_NEAR;
@@ -386,12 +386,12 @@ void Viewport::UpdateProjection()
     }
 
     pxr::GfFrustum frustum;
-    double aspectRatio = GetViewportWidth() / GetViewportHeight();
+    double aspectRatio = _GetViewportWidth() / _GetViewportHeight();
     frustum.SetPerspective(fov, true, aspectRatio, nearPlane, farPlane);
     _proj = frustum.ComputeProjectionMatrix();
 }
 
-void Viewport::FocusOnPrim(pxr::UsdPrim prim)
+void Viewport::_FocusOnPrim(pxr::UsdPrim prim)
 {
     if (!prim.IsValid()) return;
 
@@ -407,14 +407,14 @@ void Viewport::FocusOnPrim(pxr::UsdPrim prim)
     _eye = _at + (_eye - _at).GetNormalized() *
                      bbox.GetBox().GetSize().GetLength() * 2;
 
-    UpdateActiveCamFromViewport();
+    _UpdateActiveCamFromViewport();
 }
 
-void Viewport::KeyPressEvent(ImGuiKey key)
+void Viewport::_KeyPressEvent(ImGuiKey key)
 {
     if (key == ImGuiKey_F) {
         vector<pxr::UsdPrim> prims = GetModel()->GetSelection();
-        if (prims.size() > 0) FocusOnPrim(prims[0]);
+        if (prims.size() > 0) _FocusOnPrim(prims[0]);
     }
     else if (key == ImGuiKey_W) {
         _curOperation = ImGuizmo::TRANSLATE;
@@ -430,31 +430,31 @@ void Viewport::KeyPressEvent(ImGuiKey key)
     }
 }
 
-void Viewport::MouseMoveEvent(ImVec2 prevPos, ImVec2 curPos)
+void Viewport::_MouseMoveEvent(ImVec2 prevPos, ImVec2 curPos)
 {
     ImVec2 deltaMousePos = curPos - prevPos;
 
     ImGuiIO& io = ImGui::GetIO();
-    if (io.MouseWheel) ZoomActiveCam(io.MouseWheel);
+    if (io.MouseWheel) _ZoomActiveCam(io.MouseWheel);
 
     if (ImGui::IsMouseDown(ImGuiMouseButton_Left) &&
         (ImGui::IsKeyDown(ImGuiKey_LeftAlt) ||
          ImGui::IsKeyDown(ImGuiKey_RightAlt))) {
-        OrbitActiveCam(deltaMousePos);
+        _OrbitActiveCam(deltaMousePos);
     }
     if (ImGui::IsMouseDown(ImGuiMouseButton_Left) &&
         (ImGui::IsKeyDown(ImGuiKey_LeftShift) ||
          ImGui::IsKeyDown(ImGuiKey_RightShift))) {
-        PanActiveCam(deltaMousePos);
+        _PanActiveCam(deltaMousePos);
     }
     if (ImGui::IsMouseDown(ImGuiMouseButton_Right) &&
         (ImGui::IsKeyDown(ImGuiKey_LeftAlt) ||
          ImGui::IsKeyDown(ImGuiKey_RightAlt))) {
-        ZoomActiveCam(deltaMousePos);
+        _ZoomActiveCam(deltaMousePos);
     }
 }
 
-void Viewport::MouseReleaseEvent(ImGuiMouseButton_ button, ImVec2 mousePos)
+void Viewport::_MouseReleaseEvent(ImGuiMouseButton_ button, ImVec2 mousePos)
 {
     if (button == ImGuiMouseButton_Left) {
         ImVec2 delta = ImGui::GetMouseDragDelta(ImGuiMouseButton_Left);
@@ -473,11 +473,11 @@ void Viewport::MouseReleaseEvent(ImGuiMouseButton_ button, ImVec2 mousePos)
     }
 }
 
-void Viewport::HoverInEvent()
+void Viewport::_HoverInEvent()
 {
     _gizmoWindowFlags |= ImGuiWindowFlags_NoMove;
 }
-void Viewport::HoverOutEvent()
+void Viewport::_HoverOutEvent()
 {
     _gizmoWindowFlags &= ~ImGuiWindowFlags_NoMove;
 }
