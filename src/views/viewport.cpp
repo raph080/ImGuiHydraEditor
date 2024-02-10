@@ -1,6 +1,7 @@
 #include "viewport.h"
 
 #include <pxr/base/gf/camera.h>
+#include <pxr/base/gf/frustum.h>
 #include <pxr/base/gf/matrix4f.h>
 #include <pxr/base/plug/plugin.h>
 #include <pxr/imaging/cameraUtil/framing.h>
@@ -11,14 +12,6 @@
 
 Viewport::Viewport(Model* model, const string label) : View(model, label)
 {
-    _drawTarget = pxr::GlfDrawTarget::New(pxr::GfVec2i(100));
-    _drawTarget->Bind();
-    _drawTarget->AddAttachment(pxr::HdAovTokens->color, GL_RGBA, GL_FLOAT,
-                               GL_RGBA);
-    _drawTarget->AddAttachment(pxr::HdAovTokens->depth, GL_DEPTH_COMPONENT,
-                               GL_FLOAT, GL_DEPTH_COMPONENT);
-    _drawTarget->Unbind();
-
     _gizmoWindowFlags = ImGuiWindowFlags_MenuBar;
     _isAmbientLightEnabled = true;
     _isDomeLightEnabled = false;
@@ -33,13 +26,14 @@ Viewport::Viewport(Model* model, const string label) : View(model, label)
 
     UpdateActiveCamFromViewport();
 
-    _renderer = new pxr::UsdImagingGLEngine();
-    _curPlugin = _renderer->GetCurrentRendererId();
+    pxr::TfToken plugin = Engine::GetDefaultRendererPlugin();
+    pxr::UsdStageRefPtr stage = GetModel()->GetStage();
+    _engine = new Engine(stage, plugin);
 };
+
 Viewport::~Viewport()
 {
-    _drawTarget = pxr::GlfDrawTargetRefPtr();
-    delete _renderer;
+    delete _engine;
 }
 
 const string Viewport::GetViewType()
@@ -54,9 +48,12 @@ ImGuiWindowFlags Viewport::GetGizmoWindowFlags()
 
 void Viewport::ModelChangedEvent()
 {
-    delete _renderer;
-    _renderer = new pxr::UsdImagingGLEngine();
-    _renderer->SetRendererPlugin(_curPlugin);
+    pxr::TfToken plugin = _engine->GetCurrentRendererPlugin();
+    delete _engine;
+
+    pxr::UsdStageRefPtr stage = GetModel()->GetStage();
+    _engine = new Engine(stage, plugin);
+
     _up = GetModel()->GetUpAxis();
 };
 
@@ -125,14 +122,14 @@ void Viewport::DrawMenuBar()
         }
         if (ImGui::BeginMenu("renderer")) {
             // get all possible renderer plugins
-            pxr::TfTokenVector plugins = _renderer->GetRendererPlugins();
+            pxr::TfTokenVector plugins = _engine->GetRendererPlugins();
+            pxr::TfToken curPlugin = _engine->GetCurrentRendererPlugin();
             for (auto p : plugins) {
-                bool enabled = (p == _curPlugin);
-                string name =
-                    pxr::UsdImagingGLEngine::GetRendererDisplayName(p);
+                bool enabled = (p == curPlugin);
+                string name = _engine->GetRendererPluginName(p);
                 if (ImGui::MenuItem(name.c_str(), NULL, enabled)) {
-                    _renderer->SetRendererPlugin(p);
-                    _curPlugin = p;
+                    delete _engine;
+                    _engine = new Engine(GetModel()->GetStage(), p);
                 }
             }
             ImGui::EndMenu();
@@ -195,90 +192,22 @@ void Viewport::UpdateUsdRender()
     float width = GetViewportWidth();
     float height = GetViewportHeight();
 
-    _renderer->SetRendererAov(pxr::HdAovTokens->color);
-    _renderer->SetRenderBufferSize(pxr::GfVec2i(width, height));
-    _renderer->SetCameraState(view, _proj);
-    _renderer->SetOverrideWindowPolicy(
-        {false,
-         pxr::CameraUtilConformWindowPolicy::CameraUtilMatchVertically});
-
     // set selection
     pxr::SdfPathVector paths;
     for (auto&& prim : GetModel()->GetSelection())
         paths.push_back(prim.GetPrimPath());
 
-    _renderer->SetSelected(paths);
-
-    // set the framing
-    auto displayWindow =
-        pxr::GfRange2f(pxr::GfVec2f(0.0, 0.0), pxr::GfVec2f(width, height));
-    // -1 to prevent error "dataWindow is larger than render buffer"
-    auto dataWindow =
-        pxr::GfRect2i(pxr::GfVec2i(0, 0), pxr::GfVec2i(width - 1, height - 1));
-    _renderer->SetFraming(pxr::CameraUtilFraming(displayWindow, dataWindow));
-
-    // set lighting state
-    auto sceneAmbient = pxr::GfVec4f(0.01, 0.01, 0.01, 1.0);
-    auto material = pxr::GlfSimpleMaterial();
-    auto lights = pxr::GlfSimpleLightVector();
-
-    if (_isAmbientLightEnabled) {
-        pxr::GlfSimpleLight l;
-        l.SetAmbient(pxr::GfVec4f(0, 0, 0, 0));
-        l.SetPosition(pxr::GfVec4f(_eye[0], _eye[1], _eye[2], 1));
-        lights.push_back(l);
-    }
-    if (_isDomeLightEnabled) {
-        pxr::GlfSimpleLight l;
-        l.SetIsDomeLight(true);
-        if (GetModel()->GetUpAxis() == pxr::GfVec3d::ZAxis()) {
-            pxr::GfMatrix4d rotMat = pxr::GfMatrix4d().SetRotate(
-                pxr::GfRotation(pxr::GfVec3d::XAxis(), 90));
-            l.SetTransform(rotMat);
-        }
-        lights.push_back(l);
-    }
-
-    material.SetAmbient(pxr::GfVec4f(0.2, 0.2, 0.2, 1));
-    material.SetSpecular(pxr::GfVec4f(0.1, 0.1, 0.1, 1));
-    material.SetShininess(32.0);
-
-    _renderer->SetLightingState(lights, material, sceneAmbient);
-
-    // set render params
-    _renderParams.frame = pxr::UsdTimeCode::Default();
-    _renderParams.complexity = 1.0;
-    _renderParams.drawMode = pxr::UsdImagingGLDrawMode::DRAW_SHADED_SMOOTH;
-    _renderParams.showGuides = false;
-    _renderParams.showProxy = true;
-    _renderParams.showRender = false;
-    _renderParams.forceRefresh = true;
-    _renderParams.cullStyle = pxr::UsdImagingGLCullStyle::CULL_STYLE_NOTHING;
-    _renderParams.gammaCorrectColors = false;
-    _renderParams.enableIdRender = false;
-    _renderParams.enableSampleAlphaToCoverage = true;
-    _renderParams.highlight = true;
-    _renderParams.enableSceneMaterials = true;
-    _renderParams.enableSceneLights = true;
-    _renderParams.clearColor = pxr::GfVec4f(0.7, 0.7, 0.7, 0);
-
-    // do the actual render in the draw target
-    _drawTarget->Bind();
-    _drawTarget->SetSize(pxr::GfVec2i(width, height));
-
-    glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    _engine->SetSelection(paths);
+    _engine->SetRenderSize(width, height);
+    _engine->SetCameraMatrices(view, _proj);
+    _engine->Prepare();
 
     // do the render
-    _renderer->Render(stage->GetPseudoRoot(), _renderParams);
-
-    _drawTarget->Unbind();
+    _engine->Render();
 
     // create an imgui image with the drawtarget color data
-    GLuint id = _drawTarget->GetAttachment(pxr::HdAovTokens->color)
-                    ->GetGlTextureName();
-    ImGui::Image((ImTextureID)id, ImVec2(width, height), ImVec2(0, 1),
-                 ImVec2(1, 0));
+    void* id = _engine->GetRenderBufferData();
+    ImGui::Image(id, ImVec2(width, height), ImVec2(0, 1), ImVec2(1, 0));
 }
 
 void Viewport::UpdateTransformGuizmo()
@@ -326,8 +255,8 @@ void Viewport::UpdateCubeGuizmo()
 
 void Viewport::UpdatePluginLabel()
 {
-    string pluginText =
-        pxr::UsdImagingGLEngine::GetRendererDisplayName(_curPlugin);
+    pxr::TfToken curPlugin = _engine->GetCurrentRendererPlugin();
+    string pluginText = _engine->GetRendererPluginName(curPlugin);
     string text = pluginText;
 
     ImDrawList* draw_list = ImGui::GetWindowDrawList();
@@ -530,10 +459,11 @@ void Viewport::MouseReleaseEvent(ImGuiMouseButton_ button, ImVec2 mousePos)
     if (button == ImGuiMouseButton_Left) {
         ImVec2 delta = ImGui::GetMouseDragDelta(ImGuiMouseButton_Left);
         if (fabs(delta.x) + fabs(delta.y) < 0.001f) {
-            pxr::UsdPrim prim = FindIntersection(mousePos);
+            pxr::GfVec2f gfMousePos(mousePos[0], mousePos[1]);
+            pxr::UsdPrim prim = _engine->FinderIntersection(gfMousePos);
 
             // TODO: tmp fix: if parent is instanceable,
-            // modify the selection to the instanceable parent
+            // switch the selection to the instanceable parent
             // since instanceable is not handle currently
             pxr::UsdPrim instParent = GetInstanceableParent(prim);
             if (instParent.IsValid()) prim = instParent;
@@ -541,43 +471,6 @@ void Viewport::MouseReleaseEvent(ImGuiMouseButton_ button, ImVec2 mousePos)
             GetModel()->SetSelection({prim});
         }
     }
-}
-
-pxr::UsdPrim Viewport::FindIntersection(ImVec2 mousePos)
-{
-    // create a cam from the current view and proj matrices
-    pxr::GfCamera gfCam;
-    gfCam.SetFromViewAndProjectionMatrix(getCurViewMatrix(), _proj);
-    pxr::GfFrustum frustum = gfCam.GetFrustum();
-
-    // create a narrowed frustum on the mouse position
-    float normalizedMousePosX = mousePos.x / GetViewportWidth();
-    float normalizedMousePosY = mousePos.y / GetViewportHeight();
-
-    pxr::GfVec2d size(1.0 / GetViewportWidth(), 1.0 / GetViewportHeight());
-
-    auto nFrustum = frustum.ComputeNarrowedFrustum(
-        pxr::GfVec2d(2.0 * normalizedMousePosX - 1.0,
-                     2.0 * (1.0 - normalizedMousePosY) - 1.0),
-        size);
-
-    // check the intersection from the narrowed frustum
-    pxr::GfVec3d outHitPoint;
-    pxr::GfVec3d outHitNormal;
-    pxr::SdfPath outHitPrimPath;
-    pxr::SdfPath outHitInstancerPath;
-    int outHitInstanceIndex;
-
-    pxr::UsdStageRefPtr stage = GetModel()->GetStage();
-    auto prim = stage->GetPseudoRoot();
-
-    if (_renderer->TestIntersection(
-            nFrustum.ComputeViewMatrix(), nFrustum.ComputeProjectionMatrix(),
-            prim, _renderParams, &outHitPoint, &outHitNormal, &outHitPrimPath,
-            &outHitInstancerPath, &outHitInstanceIndex)) {
-        return stage->GetPrimAtPath(outHitPrimPath);
-    }
-    else return pxr::UsdPrim();
 }
 
 void Viewport::HoverInEvent()

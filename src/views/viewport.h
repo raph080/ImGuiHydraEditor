@@ -16,10 +16,9 @@
 #include <imgui_internal.h>
 // clang-format on
 #include <ImGuizmo.h>
-#include <pxr/imaging/glf/drawTarget.h>
 #include <pxr/usd/usd/prim.h>
-#include <pxr/usdImaging/usdImagingGL/engine.h>
 
+#include "engine.h"
 #include "models/model.h"
 #include "utils/usd.h"
 #include "view.h"
@@ -79,11 +78,8 @@ class Viewport : public View {
         pxr::GfVec3d _eye, _at, _up;
         pxr::GfMatrix4d _proj;
 
-        pxr::GlfDrawTargetRefPtr _drawTarget;
+        Engine* _engine;
         ImGuiWindowFlags _gizmoWindowFlags;
-        pxr::UsdImagingGLEngine* _renderer;
-        pxr::UsdImagingGLRenderParams _renderParams;
-        pxr::TfToken _curPlugin;
 
         ImGuizmo::OPERATION _curOperation;
         ImGuizmo::MODE _curMode;
@@ -242,15 +238,6 @@ class Viewport : public View {
          */
         void MouseReleaseEvent(ImGuiMouseButton_ button,
                                ImVec2 mousePos) override;
-
-        /**
-         * @brief Find the prim that is intersected by a ray casted at the
-         * given position of the view
-         *
-         * @param pos the position to cast the ray from
-         * @return pxr::UsdPrim
-         */
-        pxr::UsdPrim FindIntersection(ImVec2 pos);
 
         /**
          * @brief Override of the View::HoverInEvent
