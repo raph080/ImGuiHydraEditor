@@ -102,7 +102,7 @@ You can optionally load a USD file directly using the following command:
 
 ## Viewport navigation
 
-There is two way to navigate within the viewport: using the guizmo cube or the mouse and keyboard.
+There is two ways to navigate within the viewport: using the guizmo cube or the mouse and keyboard.
 
 ![Viewport navigation](resources/viewport_navigation.gif)
 
@@ -114,7 +114,7 @@ Note: guizmo cube navigation is not working properly with z up axis (see [Limita
 
 ### Mouse and Keyboard
 
-Here are the shortcut to navigate using the mouse and the keyboard:
+Here are the shortcuts to navigate using the mouse and the keyboard:
 * LMB + Alt: Rotate
 * LMB + Shift: Pan
 * RMB + Alt or Scroll wheel: Zoom
