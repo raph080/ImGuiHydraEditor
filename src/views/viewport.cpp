@@ -81,7 +81,7 @@ void Viewport::_Draw()
 
     _UpdateProjection();
     _UpdateGrid();
-    _UpdateUsdRender();
+    _UpdateHydraRender();
     _UpdateTransformGuizmo();
     _UpdateCubeGuizmo();
     _UpdatePluginLabel();
@@ -185,7 +185,7 @@ void Viewport::_UpdateGrid()
     ImGuizmo::DrawGrid(viewF.data(), projF.data(), identity.data(), 10);
 }
 
-void Viewport::_UpdateUsdRender()
+void Viewport::_UpdateHydraRender()
 {
     pxr::UsdStageRefPtr stage = GetModel()->GetStage();
     pxr::GfMatrix4d view = _getCurViewMatrix();
@@ -460,7 +460,7 @@ void Viewport::_MouseReleaseEvent(ImGuiMouseButton_ button, ImVec2 mousePos)
         ImVec2 delta = ImGui::GetMouseDragDelta(ImGuiMouseButton_Left);
         if (fabs(delta.x) + fabs(delta.y) < 0.001f) {
             pxr::GfVec2f gfMousePos(mousePos[0], mousePos[1]);
-            pxr::UsdPrim prim = _engine->FinderIntersection(gfMousePos);
+            pxr::UsdPrim prim = _engine->FindIntersection(gfMousePos);
 
             // TODO: tmp fix: if parent is instanceable,
             // switch the selection to the instanceable parent

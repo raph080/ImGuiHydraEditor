@@ -12,12 +12,15 @@
 #include <pxr/base/tf/token.h>
 #include <pxr/imaging/glf/drawTarget.h>
 #include <pxr/imaging/hd/engine.h>
+#include <pxr/imaging/hd/pluginRenderDelegateUniqueHandle.h>
 #include <pxr/imaging/hd/renderDelegate.h>
+#include <pxr/imaging/hd/sceneIndex.h>
 #include <pxr/imaging/hdx/taskController.h>
 #include <pxr/imaging/hgi/hgi.h>
 #include <pxr/imaging/hgiInterop/hgiInterop.h>
 #include <pxr/usd/usd/prim.h>
 #include <pxr/usdImaging/usdImaging/delegate.h>
+#include <pxr/usdImaging/usdImaging/stageSceneIndex.h>
 
 using HgiUniquePtr = std::unique_ptr<class pxr::Hgi>;
 
@@ -112,7 +115,7 @@ class Engine {
          *
          * @return the USD Prim visible at the given screen position
          */
-        pxr::UsdPrim FinderIntersection(pxr::GfVec2f screenPos);
+        pxr::UsdPrim FindIntersection(pxr::GfVec2f screenPos);
 
         /**
          * @brief Get the data from the render buffer
@@ -131,11 +134,13 @@ class Engine {
         pxr::HdDriver _hgiDriver;
 
         pxr::HdEngine _engine;
-        pxr::HdRenderDelegate *_renderDelegate;
+        pxr::HdPluginRenderDelegateUniqueHandle _renderDelegate;
         pxr::HdRenderIndex *_renderIndex;
-        pxr::UsdImagingDelegate *_usdImagingDelegate;
         pxr::HdxTaskController *_taskController;
         pxr::HdRprimCollection _collection;
+        pxr::UsdImagingStageSceneIndexRefPtr _stageSceneIndex;
+        pxr::HdSceneIndexBaseRefPtr _sceneIndex;
+        pxr::SdfPath _taskControllerId;
 
         pxr::HgiInterop _interop;
         pxr::HdxSelectionTrackerSharedPtr _selTracker;
@@ -149,8 +154,8 @@ class Engine {
          *
          * @return the renderer delegate fro, the given renderer plugin
          */
-        static pxr::HdRenderDelegate *GetRenderDelegateFromPlugin(
-            pxr::TfToken plugin);
+        static pxr::HdPluginRenderDelegateUniqueHandle
+        GetRenderDelegateFromPlugin(pxr::TfToken plugin);
 
         /**
          * @brief Initialize the renderer

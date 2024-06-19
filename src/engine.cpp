@@ -7,6 +7,7 @@
 #include <pxr/imaging/hdx/pickTask.h>
 #include <pxr/imaging/hgi/tokens.h>
 #include <pxr/usd/usd/stage.h>
+#include <pxr/usdImaging/usdImaging/sceneIndices.h>
 
 Engine::Engine(pxr::UsdStageRefPtr stage, pxr::TfToken plugin)
     : _stage(stage),
@@ -17,7 +18,7 @@ Engine::Engine(pxr::UsdStageRefPtr stage, pxr::TfToken plugin)
       _renderDelegate(nullptr),
       _renderIndex(nullptr),
       _taskController(nullptr),
-      _usdImagingDelegate(nullptr)
+      _taskControllerId("/defaultTaskController")
 {
     _width = 512;
     _height = 512;
@@ -28,9 +29,18 @@ Engine::Engine(pxr::UsdStageRefPtr stage, pxr::TfToken plugin)
 Engine::~Engine()
 {
     _drawTarget = pxr::GlfDrawTargetRefPtr();
+
+    // Destroy objects in opposite order of construction.
     delete _taskController;
-    delete _usdImagingDelegate;
+
+    if (_renderIndex && _sceneIndex) {
+        _renderIndex->RemoveSceneIndex(_sceneIndex);
+        _stageSceneIndex = nullptr;
+        _sceneIndex = nullptr;
+    }
+
     delete _renderIndex;
+    _renderDelegate = nullptr;
 }
 
 void Engine::Initialize()
@@ -48,17 +58,24 @@ void Engine::Initialize()
     _renderDelegate = GetRenderDelegateFromPlugin(_curRendererPlugin);
 
     // init render index
-    _renderIndex = pxr::HdRenderIndex::New(_renderDelegate, {&_hgiDriver});
+    _renderIndex =
+        pxr::HdRenderIndex::New(_renderDelegate.Get(), {&_hgiDriver});
 
-    // init scene delegate
-    _usdImagingDelegate = new pxr::UsdImagingDelegate(
-        _renderIndex, pxr::SdfPath::AbsoluteRootPath());
-    _usdImagingDelegate->Populate(_stage->GetPseudoRoot());
+    pxr::UsdImagingCreateSceneIndicesInfo info;
+    info.displayUnloadedPrimsWithBounds = false;
+    const pxr::UsdImagingSceneIndices sceneIndices =
+        UsdImagingCreateSceneIndices(info);
+
+    _stageSceneIndex = sceneIndices.stageSceneIndex;
+    _sceneIndex = sceneIndices.finalSceneIndex;
+
+    _renderIndex->InsertSceneIndex(_sceneIndex, _taskControllerId);
+    _stageSceneIndex->SetStage(_stage);
 
     // init task controller
-    pxr::SdfPath taskControllerId = pxr::SdfPath("/taskController");
+
     _taskController =
-        new pxr::HdxTaskController(_renderIndex, taskControllerId);
+        new pxr::HdxTaskController(_renderIndex, _taskControllerId);
 
     // init render paramss
     pxr::HdxRenderTaskParams params;
@@ -98,7 +115,7 @@ void Engine::Initialize()
     pxr::VtValue selectionValue(_selTracker);
     _engine.SetTaskContextData(pxr::HdxTokens->selectionState, selectionValue);
 
-    _taskController->SetOverrideWindowPolicy({false, pxr::CameraUtilFit});
+    _taskController->SetOverrideWindowPolicy(pxr::CameraUtilFit);
 }
 
 pxr::TfTokenVector Engine::GetRendererPlugins()
@@ -126,15 +143,15 @@ pxr::TfToken Engine::GetCurrentRendererPlugin()
     return _curRendererPlugin;
 }
 
-pxr::HdRenderDelegate* Engine::GetRenderDelegateFromPlugin(pxr::TfToken plugin)
+pxr::HdPluginRenderDelegateUniqueHandle Engine::GetRenderDelegateFromPlugin(
+    pxr::TfToken plugin)
 {
-    pxr::HdRendererPlugin* rendererPlugin =
-        pxr::HdRendererPluginRegistry::GetInstance().GetRendererPlugin(plugin);
+    pxr::HdRendererPluginRegistry& registry =
+        pxr::HdRendererPluginRegistry::GetInstance();
 
-    pxr::HdRenderDelegate* renderDelegate =
-        rendererPlugin->CreateRenderDelegate();
+    pxr::TfToken resolvedId = registry.GetDefaultPluginId(true);
 
-    return renderDelegate;
+    return registry.CreateRenderDelegate(plugin);
 }
 
 string Engine::GetRendererPluginName(pxr::TfToken plugin)
@@ -170,7 +187,11 @@ void Engine::SetSelection(pxr::SdfPathVector paths)
     pxr::HdSelection::HighlightMode mode =
         pxr::HdSelection::HighlightModeSelect;
 
-    for (auto&& path : paths) selection->AddRprim(mode, path);
+    for (auto&& path : paths) {
+        pxr::SdfPath realPath = path.ReplacePrefix(
+            pxr::SdfPath::AbsoluteRootPath(), _taskControllerId);
+        selection->AddRprim(mode, realPath);
+    }
 
     _selTracker->SetSelection(selection);
 }
@@ -244,8 +265,8 @@ void Engine::Prepare()
 {
     PrepareDefaultLighting();
 
-    _usdImagingDelegate->ApplyPendingUpdates();
-    _usdImagingDelegate->SetTime(1.0);
+    _stageSceneIndex->ApplyPendingUpdates();
+    _stageSceneIndex->SetTime(pxr::UsdTimeCode::Default());
     _taskController->SetFreeCameraMatrices(_camView, _camProj);
 }
 
@@ -262,7 +283,7 @@ void Engine::Render()
     _drawTarget->Unbind();
 }
 
-pxr::UsdPrim Engine::FinderIntersection(pxr::GfVec2f screenPos)
+pxr::UsdPrim Engine::FindIntersection(pxr::GfVec2f screenPos)
 {
     // create a narrowed frustum on the given position
     float normalizedXPos = screenPos[0] / _width;
@@ -298,8 +319,10 @@ pxr::UsdPrim Engine::FinderIntersection(pxr::GfVec2f screenPos)
     // get the hitting point
     if (allHits.size() != 1) return pxr::UsdPrim();
 
-    pxr::HdxPickHit& hit = allHits[0];
-    return _stage->GetPrimAtPath(hit.objectId);
+    const pxr::SdfPath path = allHits[0].objectId.ReplacePrefix(
+        _taskControllerId, pxr::SdfPath::AbsoluteRootPath());
+
+    return _stage->GetPrimAtPath(path);
 }
 
 void* Engine::GetRenderBufferData()

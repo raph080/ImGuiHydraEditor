@@ -34,12 +34,13 @@ void MainWindow::Update()
 
             if (ImGui::MenuItem("Load ...")) {
                 ImGuiFileDialog::Instance()->OpenDialog(
-                    "LoadFile", "Choose File", ".usd,.usdc,.usda", ".");
+                    "LoadFile", "Choose File", ".usd,.usdc,.usda,.usdz", ".");
             }
 
             if (ImGui::MenuItem("Export to ...")) {
                 ImGuiFileDialog::Instance()->OpenDialog(
-                    "ExportFile", "Choose File", ".usd,.usdc,.usda", ".");
+                    "ExportFile", "Choose File", ".usd,.usdc,.usda,.usdz",
+                    ".");
             }
             ImGui::EndMenu();
         }

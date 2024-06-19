@@ -126,7 +126,7 @@ class Viewport : public View {
          * @brief Update the USD render
          *
          */
-        void _UpdateUsdRender();
+        void _UpdateHydraRender();
 
         /**
          * @brief Update the transform Guizmo (the 3 axis of a selection)
