@@ -13,6 +13,7 @@
 #define IMGUI_DEFINE_MATH_OPERATORS
 #include <imgui.h>
 #include <imgui_internal.h>
+#include <pxr/imaging/hd/sceneIndex.h>
 
 #include "models/model.h"
 
@@ -73,6 +74,7 @@ class View {
         bool IsDisplayed();
 
     protected:
+        pxr::HdSceneIndexBaseRefPtr _sceneIndex;
         /**
          * @brief Get the inner rectangle object of the current ImGui view
          *

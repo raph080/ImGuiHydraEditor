@@ -27,7 +27,7 @@ Viewport::Viewport(Model* model, const string label) : View(model, label)
     _UpdateActiveCamFromViewport();
 
     pxr::TfToken plugin = Engine::GetDefaultRendererPlugin();
-    _engine = new Engine(GetModel()->GetSceneIndex(), plugin);
+    _engine = new Engine(GetModel()->GetFinalSceneIndex(), plugin);
 };
 
 Viewport::~Viewport()
@@ -118,7 +118,7 @@ void Viewport::_DrawMenuBar()
                 string name = _engine->GetRendererPluginName(p);
                 if (ImGui::MenuItem(name.c_str(), NULL, enabled)) {
                     delete _engine;
-                    _engine = new Engine(GetModel()->GetSceneIndex(), p);
+                    _engine = new Engine(GetModel()->GetFinalSceneIndex(), p);
                 }
             }
             ImGui::EndMenu();
@@ -204,7 +204,7 @@ void Viewport::_UpdateTransformGuizmo()
     pxr::SdfPathVector primPath = GetModel()->GetSelection();
     if (primPath.size() == 0 || primPath[0].IsEmpty()) return;
 
-    pxr::UsdPrim prim = GetModel()->GetPrim(primPath[0]);
+    pxr::UsdPrim prim = GetModel()->GetUsdPrim(primPath[0]);
     pxr::UsdGeomGprim geom(prim);
 
     pxr::GfMatrix4d transform = GetTransformMatrix(geom);
@@ -332,7 +332,7 @@ void Viewport::_UpdateViewportFromActiveCam()
 {
     if (_activeCam.IsEmpty()) return;
 
-    pxr::UsdPrim primCam = GetModel()->GetPrim(_activeCam);
+    pxr::UsdPrim primCam = GetModel()->GetUsdPrim(_activeCam);
     pxr::UsdGeomCamera geomCam(primCam);
     pxr::GfCamera gfCam = geomCam.GetCamera(pxr::UsdTimeCode::Default());
     pxr::GfFrustum frustum = gfCam.GetFrustum();
@@ -349,7 +349,7 @@ void Viewport::_UpdateActiveCamFromViewport()
 {
     if (_activeCam.IsEmpty()) return;
 
-    pxr::UsdPrim primCam = GetModel()->GetPrim(_activeCam);
+    pxr::UsdPrim primCam = GetModel()->GetUsdPrim(_activeCam);
     pxr::UsdGeomCamera geomCam(primCam);
     pxr::GfCamera gfCam = geomCam.GetCamera(pxr::UsdTimeCode::Default());
 
@@ -372,7 +372,7 @@ void Viewport::_UpdateProjection()
     float farPlane = _FREE_CAM_FAR;
 
     if (!_activeCam.IsEmpty()) {
-        pxr::UsdPrim primCam = GetModel()->GetPrim(_activeCam);
+        pxr::UsdPrim primCam = GetModel()->GetUsdPrim(_activeCam);
         pxr::UsdGeomCamera geomCam(primCam);
         pxr::GfCamera gfCam = geomCam.GetCamera(pxr::UsdTimeCode::Default());
         fov = gfCam.GetFieldOfView(pxr::GfCamera::FOVVertical);
@@ -396,7 +396,7 @@ void Viewport::_FocusOnPrim(pxr::SdfPath primPath)
     bool useExtentHints = true;
     pxr::UsdGeomBBoxCache bboxCache(pxr::UsdTimeCode::Default(), purposes,
                                     useExtentHints);
-    pxr::UsdPrim prim = GetModel()->GetPrim(primPath);
+    pxr::UsdPrim prim = GetModel()->GetUsdPrim(primPath);
     pxr::GfBBox3d bbox = bboxCache.ComputeWorldBound(prim);
 
     _at = bbox.ComputeCentroid();

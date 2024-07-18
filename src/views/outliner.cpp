@@ -1,6 +1,5 @@
 #include "outliner.h"
 
-#include <pxr/imaging/hd/sceneIndexPrimView.h>
 #include <pxr/usd/usd/stage.h>
 
 Outliner::Outliner(Model* model, const string label) : View(model, label) {}
@@ -12,8 +11,8 @@ const string Outliner::GetViewType()
 
 void Outliner::_Draw()
 {
-    pxr::SdfPathVector paths = GetModel()->GetSceneIndex()->GetChildPrimPaths(
-        pxr::SdfPath::AbsoluteRootPath());
+    pxr::SdfPath root = pxr::SdfPath::AbsoluteRootPath();
+    pxr::SdfPathVector paths = _sceneIndex->GetChildPrimPaths(root);
     for (auto primPath : paths) _DrawPrimHierarchy(primPath);
 }
 
@@ -33,7 +32,7 @@ ImRect Outliner::_DrawPrimHierarchy(pxr::SdfPath primPath)
         // draw all children and store their rect position
         vector<ImRect> rects;
         pxr::SdfPathVector primPaths =
-            GetModel()->GetSceneIndex()->GetChildPrimPaths(primPath);
+            _sceneIndex->GetChildPrimPaths(primPath);
 
         for (auto child : primPaths) {
             ImRect childRect = _DrawPrimHierarchy(child.GetPrimPath());
@@ -56,8 +55,7 @@ ImGuiTreeNodeFlags Outliner::_ComputeDisplayFlags(pxr::SdfPath primPath)
     ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_None;
 
     // set the flag if leaf or not
-    pxr::SdfPathVector primPaths =
-        GetModel()->GetSceneIndex()->GetChildPrimPaths(primPath);
+    pxr::SdfPathVector primPaths = _sceneIndex->GetChildPrimPaths(primPath);
 
     if (primPaths.size() == 0) {
         flags |= ImGuiTreeNodeFlags_Leaf;

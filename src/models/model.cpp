@@ -6,13 +6,18 @@
 
 Model::Model()
 {
+    _sceneIndices = pxr::HdMergingSceneIndex::New();
+    _finalSceneIndex = pxr::HdMergingSceneIndex::New();
+    _editableSceneIndex = _sceneIndices;
+    SetEditableSceneIndex(_editableSceneIndex);
+
     pxr::UsdImagingCreateSceneIndicesInfo info;
     info.displayUnloadedPrimsWithBounds = false;
     const pxr::UsdImagingSceneIndices sceneIndices =
         UsdImagingCreateSceneIndices(info);
 
     _stageSceneIndex = sceneIndices.stageSceneIndex;
-    _sceneIndex = sceneIndices.finalSceneIndex;
+    AddSceneIndex(sceneIndices.finalSceneIndex);
 }
 
 pxr::GfVec3d Model::GetUpAxis()
@@ -36,9 +41,27 @@ void Model::SetStage(pxr::UsdStageRefPtr stage)
     _stageSceneIndex->SetTime(pxr::UsdTimeCode::Default());
 }
 
-pxr::HdSceneIndexBaseRefPtr Model::GetSceneIndex()
+void Model::AddSceneIndex(pxr::HdSceneIndexBaseRefPtr sceneIndex)
 {
-    return _sceneIndex;
+    _sceneIndices->AddInputScene(sceneIndex, pxr::SdfPath::AbsoluteRootPath());
+}
+
+pxr::HdSceneIndexBaseRefPtr Model::GetEditableSceneIndex()
+{
+    return _editableSceneIndex;
+}
+
+void Model::SetEditableSceneIndex(pxr::HdSceneIndexBaseRefPtr sceneIndex)
+{
+    _finalSceneIndex->RemoveInputScene(_editableSceneIndex);
+    _editableSceneIndex = sceneIndex;
+    _finalSceneIndex->AddInputScene(_editableSceneIndex,
+                                    pxr::SdfPath::AbsoluteRootPath());
+}
+
+pxr::HdSceneIndexBaseRefPtr Model::GetFinalSceneIndex()
+{
+    return _finalSceneIndex;
 }
 
 void Model::ApplyModelUpdates()
@@ -46,7 +69,12 @@ void Model::ApplyModelUpdates()
     _stageSceneIndex->ApplyPendingUpdates();
 }
 
-pxr::UsdPrim Model::GetPrim(pxr::SdfPath path)
+pxr::HdSceneIndexPrim Model::GetPrim(pxr::SdfPath primPath)
+{
+    return _finalSceneIndex->GetPrim(primPath);
+}
+
+pxr::UsdPrim Model::GetUsdPrim(pxr::SdfPath path)
 {
     return _stage->GetPrimAtPath(path);
 }

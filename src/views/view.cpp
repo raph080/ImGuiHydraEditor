@@ -5,9 +5,10 @@ View::View(Model* model, const string label)
       _label(label),
       _wasFocused(false),
       _wasHovered(false),
-      _wasDisplayed(true){
-
-      };
+      _wasDisplayed(true)
+{
+    _sceneIndex = GetModel()->GetFinalSceneIndex();
+};
 
 Model* View::GetModel()
 {
@@ -99,23 +100,23 @@ ImRect View::GetInnerRect()
     return _innerRect;
 }
 
-void View::_Draw(){};
+void View::_Draw() {};
 
-void View::_FocusInEvent(){};
+void View::_FocusInEvent() {};
 
-void View::_FocusOutEvent(){};
+void View::_FocusOutEvent() {};
 
-void View::_HoverInEvent(){};
+void View::_HoverInEvent() {};
 
-void View::_HoverOutEvent(){};
+void View::_HoverOutEvent() {};
 
-void View::_KeyPressEvent(ImGuiKey key){};
+void View::_KeyPressEvent(ImGuiKey key) {};
 
-void View::_MousePressEvent(ImGuiMouseButton_ button, ImVec2 pos){};
+void View::_MousePressEvent(ImGuiMouseButton_ button, ImVec2 pos) {};
 
-void View::_MouseReleaseEvent(ImGuiMouseButton_ button, ImVec2 pos){};
+void View::_MouseReleaseEvent(ImGuiMouseButton_ button, ImVec2 pos) {};
 
-void View::_MouseMoveEvent(ImVec2 prevPos, ImVec2 curPos){};
+void View::_MouseMoveEvent(ImVec2 prevPos, ImVec2 curPos) {};
 
 ImGuiWindowFlags View::_GetGizmoWindowFlags()
 {

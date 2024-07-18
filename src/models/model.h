@@ -9,6 +9,7 @@
  */
 #pragma once
 
+#include <pxr/imaging/hd/mergingSceneIndex.h>
 #include <pxr/imaging/hd/sceneIndex.h>
 #include <pxr/usd/usd/prim.h>
 #include <pxr/usd/usd/primRange.h>
@@ -54,12 +55,18 @@ class Model {
          */
         void SetStage(pxr::UsdStageRefPtr stage);
 
+        void AddSceneIndex(pxr::HdSceneIndexBaseRefPtr sceneIndex);
+
+        pxr::HdSceneIndexBaseRefPtr GetEditableSceneIndex();
+
+        void SetEditableSceneIndex(pxr::HdSceneIndexBaseRefPtr sceneIndex);
+
         /**
          * @brief Get a reference to the Scene Index from the model
          *
          * @return pxr::HdSceneIndexBaseRefPtr a reference to the Scene Index
          */
-        pxr::HdSceneIndexBaseRefPtr GetSceneIndex();
+        pxr::HdSceneIndexBaseRefPtr GetFinalSceneIndex();
 
         /**
          * @brief Apply pending updates from the scene index
@@ -68,13 +75,22 @@ class Model {
         void ApplyModelUpdates();
 
         /**
+         * @brief Get the Hydra Prim from the model at a specific path
+         *
+         * @param primPath pxr::SdfPath the path to the prim to get
+         *
+         * @return pxr::HdSceneIndexPrim the Hydra Prim at the given path
+         */
+        pxr::HdSceneIndexPrim GetPrim(pxr::SdfPath primPath);
+
+        /**
          * @brief Get the Usd Prim from the model at a specific path
          *
-         * @param path pxr::SdfPath the path to the prim to get
+         * @param primPath pxr::SdfPath the path to the prim to get
          *
-         * @return pxr::UsdPrim the prim at the given path
+         * @return pxr::UsdPrim the Usd Prim at the given path
          */
-        pxr::UsdPrim GetPrim(pxr::SdfPath path);
+        pxr::UsdPrim GetUsdPrim(pxr::SdfPath primPath);
 
         /**
          * @brief Get the Usd Prim from the model
@@ -107,6 +123,7 @@ class Model {
     private:
         pxr::UsdStageRefPtr _stage;
         pxr::SdfPathVector _selection;
-        pxr::HdSceneIndexBaseRefPtr _sceneIndex;
+        pxr::HdSceneIndexBaseRefPtr _editableSceneIndex;
+        pxr::HdMergingSceneIndexRefPtr _sceneIndices, _finalSceneIndex;
         pxr::UsdImagingStageSceneIndexRefPtr _stageSceneIndex;
 };
