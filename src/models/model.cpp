@@ -1,5 +1,7 @@
 #include "model.h"
 
+#include <pxr/imaging/hd/sceneIndexPrimView.h>
+#include <pxr/imaging/hd/tokens.h>
 #include <pxr/usd/usd/stage.h>
 #include <pxr/usd/usdGeom/metrics.h>
 #include <pxr/usd/usdGeom/tokens.h>
@@ -68,13 +70,13 @@ pxr::UsdPrimRange Model::GetAllPrims()
 
 pxr::SdfPathVector Model::GetCameras()
 {
-    pxr::UsdPrimSubtreeRange prims =
-        _stage->GetPseudoRoot().GetAllDescendants();
-
+    pxr::SdfPath root = pxr::SdfPath::AbsoluteRootPath();
+    pxr::HdSceneIndexPrimView primView(_finalSceneIndex, root);
     pxr::SdfPathVector camPaths;
-    for (auto prim : prims) {
-        if (prim.GetTypeName().GetString() == pxr::UsdGeomTokens->Camera) {
-            camPaths.push_back(prim.GetPrimPath());
+    for (auto primPath : primView) {
+        pxr::HdSceneIndexPrim prim = _finalSceneIndex->GetPrim(primPath);
+        if (prim.primType == pxr::HdPrimTypeTokens->camera) {
+            camPaths.push_back(primPath);
         }
     }
     return camPaths;
