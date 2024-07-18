@@ -5,10 +5,13 @@
 #include <pxr/base/gf/matrix4f.h>
 #include <pxr/base/plug/plugin.h>
 #include <pxr/imaging/cameraUtil/framing.h>
+#include <pxr/imaging/hd/cameraSchema.h>
 #include <pxr/usd/usd/stage.h>
 #include <pxr/usd/usdGeom/bboxCache.h>
 #include <pxr/usd/usdGeom/camera.h>
 #include <pxr/usd/usdGeom/gprim.h>
+
+#include <iostream>
 
 Viewport::Viewport(Model* model, const string label) : View(model, label)
 {
@@ -25,6 +28,9 @@ Viewport::Viewport(Model* model, const string label) : View(model, label)
     _up = GetModel()->GetUpAxis();
 
     _UpdateActiveCamFromViewport();
+
+    _gridSceneIndex = pxr::GridSceneIndex::New();
+    GetModel()->AddSceneIndexBase(_gridSceneIndex);
 
     pxr::TfToken plugin = Engine::GetDefaultRendererPlugin();
     _engine = new Engine(GetModel()->GetFinalSceneIndex(), plugin);
@@ -165,6 +171,8 @@ void Viewport::_ConfigureImGuizmo()
 
 void Viewport::_UpdateGrid()
 {
+    _gridSceneIndex->Populate(_isGridEnabled);
+
     if (!_isGridEnabled) return;
 
     pxr::GfMatrix4f viewF(_getCurViewMatrix());
@@ -330,9 +338,8 @@ void Viewport::_UpdateViewportFromActiveCam()
 {
     if (_activeCam.IsEmpty()) return;
 
-    pxr::UsdPrim primCam = GetModel()->GetUsdPrim(_activeCam);
-    pxr::UsdGeomCamera geomCam(primCam);
-    pxr::GfCamera gfCam = geomCam.GetCamera(pxr::UsdTimeCode::Default());
+    pxr::HdSceneIndexPrim prim = _sceneIndex->GetPrim(_activeCam);
+    pxr::GfCamera gfCam = _ToGfCamera(prim);
     pxr::GfFrustum frustum = gfCam.GetFrustum();
     _eye = frustum.GetPosition();
     _at = frustum.ComputeLookAtPoint();
@@ -347,9 +354,8 @@ void Viewport::_UpdateActiveCamFromViewport()
 {
     if (_activeCam.IsEmpty()) return;
 
-    pxr::UsdPrim primCam = GetModel()->GetUsdPrim(_activeCam);
-    pxr::UsdGeomCamera geomCam(primCam);
-    pxr::GfCamera gfCam = geomCam.GetCamera(pxr::UsdTimeCode::Default());
+    pxr::HdSceneIndexPrim prim = _sceneIndex->GetPrim(_activeCam);
+    pxr::GfCamera gfCam = _ToGfCamera(prim);
 
     pxr::GfFrustum prevFrustum = gfCam.GetFrustum();
 
@@ -359,6 +365,9 @@ void Viewport::_UpdateActiveCamFromViewport()
     pxr::GfMatrix4d prevProj = prevFrustum.ComputeProjectionMatrix();
 
     if (view == prevView && _proj == prevProj) return;
+
+    pxr::UsdPrim primCam = GetModel()->GetUsdPrim(_activeCam);
+    pxr::UsdGeomCamera geomCam(primCam);
 
     SetTransformMatrix(geomCam, view.GetInverse());
 }
@@ -370,9 +379,8 @@ void Viewport::_UpdateProjection()
     float farPlane = _FREE_CAM_FAR;
 
     if (!_activeCam.IsEmpty()) {
-        pxr::UsdPrim primCam = GetModel()->GetUsdPrim(_activeCam);
-        pxr::UsdGeomCamera geomCam(primCam);
-        pxr::GfCamera gfCam = geomCam.GetCamera(pxr::UsdTimeCode::Default());
+        pxr::HdSceneIndexPrim prim = _sceneIndex->GetPrim(_activeCam);
+        pxr::GfCamera gfCam = _ToGfCamera(prim);
         fov = gfCam.GetFieldOfView(pxr::GfCamera::FOVVertical);
         nearPlane = gfCam.GetClippingRange().GetMin();
         farPlane = gfCam.GetClippingRange().GetMax();
@@ -382,6 +390,47 @@ void Viewport::_UpdateProjection()
     double aspectRatio = _GetViewportWidth() / _GetViewportHeight();
     frustum.SetPerspective(fov, true, aspectRatio, nearPlane, farPlane);
     _proj = frustum.ComputeProjectionMatrix();
+}
+
+pxr::GfCamera Viewport::_ToGfCamera(pxr::HdSceneIndexPrim prim)
+{
+    pxr::GfCamera cam;
+
+    if (prim.primType != pxr::HdPrimTypeTokens->camera) return cam;
+
+    pxr::HdSampledDataSource::Time time(0);
+
+    pxr::HdCameraSchema camSchema =
+        pxr::HdCameraSchema::GetFromParent(prim.dataSource);
+
+    pxr::TfToken projection =
+        camSchema.GetProjection()->GetValue(time).Get<pxr::TfToken>();
+    float hAperture =
+        camSchema.GetHorizontalAperture()->GetValue(time).Get<float>();
+    float vAperture =
+        camSchema.GetVerticalAperture()->GetValue(time).Get<float>();
+    float hApertureOffest =
+        camSchema.GetHorizontalApertureOffset()->GetValue(time).Get<float>();
+    float vApertureOffest =
+        camSchema.GetVerticalApertureOffset()->GetValue(time).Get<float>();
+    float focalLength =
+        camSchema.GetFocalLength()->GetValue(time).Get<float>();
+    pxr::GfVec2f clippingRange =
+        camSchema.GetClippingRange()->GetValue(time).Get<pxr::GfVec2f>();
+
+    cam.SetProjection(projection == pxr::HdCameraSchemaTokens->orthographic
+                          ? pxr::GfCamera::Orthographic
+                          : pxr::GfCamera::Perspective);
+    cam.SetHorizontalAperture(hAperture / pxr::GfCamera::APERTURE_UNIT);
+    cam.SetVerticalAperture(vAperture / pxr::GfCamera::APERTURE_UNIT);
+    cam.SetHorizontalApertureOffset(hApertureOffest /
+                                    pxr::GfCamera::APERTURE_UNIT);
+    cam.SetVerticalApertureOffset(vApertureOffest /
+                                  pxr::GfCamera::APERTURE_UNIT);
+    cam.SetFocalLength(focalLength / pxr::GfCamera::FOCAL_LENGTH_UNIT);
+    cam.SetClippingRange(pxr::GfRange1f(clippingRange[0], clippingRange[1]));
+
+    return cam;
 }
 
 void Viewport::_FocusOnPrim(pxr::SdfPath primPath)

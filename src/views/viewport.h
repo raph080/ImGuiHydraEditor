@@ -21,6 +21,7 @@
 #include "engine.h"
 #include "models/model.h"
 #include "utils/usd.h"
+#include "sceneindices/gridsceneindex.h"
 #include "view.h"
 
 using namespace std;
@@ -73,6 +74,7 @@ class Viewport : public View {
         pxr::GfMatrix4d _proj;
 
         Engine* _engine;
+        pxr::GridSceneIndexRefPtr _gridSceneIndex;
         ImGuiWindowFlags _gizmoWindowFlags;
 
         ImGuizmo::OPERATION _curOperation;
@@ -206,6 +208,14 @@ class Viewport : public View {
          *
          */
         void _UpdateProjection();
+
+        /**
+         * @brief Convert a Hydra Prim to a GfCamera
+         *
+         * @param prim the Prim to create the camera from
+         * @return pxr::GfCamera the camera
+         */
+        pxr::GfCamera _ToGfCamera(pxr::HdSceneIndexPrim prim);
 
         /**
          * @brief Focus the active camera and the viewport on the given prim
