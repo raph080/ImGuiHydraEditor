@@ -94,8 +94,6 @@ bool View::IsDisplayed()
     return _wasDisplayed;
 }
 
-void View::ModelChangedEvent(){};
-
 ImRect View::GetInnerRect()
 {
     return _innerRect;

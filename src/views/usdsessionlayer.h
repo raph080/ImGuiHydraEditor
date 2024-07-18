@@ -1,8 +1,8 @@
 /**
- * @file sessionlayer.h
+ * @file usdsessionlayer.h
  * @author Raphael Jouretz (rjouretz.com)
- * @brief SessionLayer view acts as a text editor for the session layer of the
- * current UsdStage. It allows to preview and edit the session layer.
+ * @brief UsdSessionLayer view acts as a text editor for the session layer of
+ * the current UsdStage. It allows to preview and edit the session layer.
  *
  * @copyright Copyright (c) 2023
  *
@@ -17,21 +17,21 @@
 using namespace std;
 
 /**
- * @brief SessionLayer view acts as a text editor for the session layer of the
- * current UsdStage. It allows to preview and edit the USD session layer.
+ * @brief UsdSessionLayer view acts as a text editor for the session layer of
+ * the current UsdStage. It allows to preview and edit the USD session layer.
  *
  */
-class SessionLayer : public View {
+class UsdSessionLayer : public View {
     public:
         inline static const string VIEW_TYPE = "Session Layer";
 
         /**
-         * @brief Construct a new SessionLayer object
+         * @brief Construct a new UsdSessionLayer object
          *
-         * @param model the Model of the new SessionLayer view
-         * @param label the ImGui label of the new SessionLayer view
+         * @param model the Model of the new UsdSessionLayer view
+         * @param label the ImGui label of the new UsdSessionLayer view
          */
-        SessionLayer(Model* model, const string label = VIEW_TYPE);
+        UsdSessionLayer(Model* model, const string label = VIEW_TYPE);
 
         /**
          * @brief Override of the View::GetViewType
@@ -39,16 +39,37 @@ class SessionLayer : public View {
          */
         const string GetViewType() override;
 
+        /**
+         * @brief Override of the View::_GetGizmoWindowFlags
+         *
+         */
+        ImGuiWindowFlags _GetGizmoWindowFlags() override;
+
     private:
         TextEditor _editor;
         bool _isEditing;
         string _lastLoadedText;
+        ImGuiWindowFlags _gizmoWindowFlags;
+        pxr::SdfLayerRefPtr _rootLayer, _sessionLayer;
 
         /**
          * @brief Override of the View::Draw
          *
          */
         void _Draw() override;
+
+        /**
+         * @brief Load a Usd Stage based on the given Usd file path
+         *
+         * @param usdFilePath a string containing a Usd file path
+         */
+        void _LoadUsdStage(const string usdFilePath);
+
+        /**
+         * @brief Set the model to an empty stage
+         *
+         */
+        void _SetEmptyStage();
 
         /**
          * @brief Check if USD session layer was updated since the last load
@@ -58,7 +79,7 @@ class SessionLayer : public View {
          * data
          * @return false otherwise
          */
-        bool _IsSessionLayerUpdated();
+        bool _IsUsdSessionLayerUpdated();
 
         /**
          * @brief Load text from the USD session layer of the Model
@@ -72,6 +93,24 @@ class SessionLayer : public View {
          *
          */
         void _SaveSessionTextToModel();
+
+        /**
+         * @brief Convert the given prim path by an indexed prim path if the
+         * given prim path is already used in the Model. Indexing consist of
+         * adding a number at the end of the path.
+         *
+         * @param primPath the given prim path to index if already exists in
+         * Model
+         * @return string the next index prim path
+         */
+        string _GetNextAvailableIndexedPath(string primPath);
+
+        /**
+         * @brief Create a new prim to the current state
+         *
+         * @param primType the type of the prim to create
+         */
+        void _CreatePrim(pxr::TfToken primType);
 
         /**
          * @brief Get a Palette object for the TextEditor (ImGui plugin)

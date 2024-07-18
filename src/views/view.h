@@ -72,12 +72,6 @@ class View {
          */
         bool IsDisplayed();
 
-        /**
-         * @brief Called when the model changes
-         *
-         */
-        virtual void ModelChangedEvent();
-
     protected:
         /**
          * @brief Get the inner rectangle object of the current ImGui view

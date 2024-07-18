@@ -61,12 +61,6 @@ class Viewport : public View {
          */
         ImGuiWindowFlags _GetGizmoWindowFlags() override;
 
-        /**
-         * @brief Override of the View::ModelChangeEvent
-         *
-         */
-        void ModelChangedEvent() override;
-
     private:
         const float _FREE_CAM_FOV = 45.f;
         const float _FREE_CAM_NEAR = 0.1f;

@@ -9,9 +9,12 @@
  */
 #pragma once
 
+#include <pxr/imaging/hd/sceneIndex.h>
 #include <pxr/usd/usd/prim.h>
 #include <pxr/usd/usd/primRange.h>
 #include <pxr/usd/usd/stage.h>
+#include <pxr/usdImaging/usdImaging/sceneIndices.h>
+#include <pxr/usdImaging/usdImaging/stageSceneIndex.h>
 
 #include <vector>
 
@@ -31,27 +34,6 @@ class Model {
         Model();
 
         /**
-         * @brief Construct a new Model object and load the given Usd file as
-         * root layer
-         *
-         * @param usdFilePath a string containing a Usd file path
-         */
-        Model(const string usdFilePath);
-
-        /**
-         * @brief Load a Usd Stage based on the given Usd file path
-         *
-         * @param usdFilePath a string containing a Usd file path
-         */
-        void LoadUsdStage(const string usdFilePath);
-
-        /**
-         * @brief Set the model to an empty stage
-         *
-         */
-        void SetEmptyStage();
-
-        /**
          * @brief Get the Up Axis of the model
          *
          * @return the up vector
@@ -64,6 +46,26 @@ class Model {
          * @return pxr::UsdStageRefPtr a reference to the Usd Stage
          */
         pxr::UsdStageRefPtr GetStage();
+
+        /**
+         * @brief Set a reference of a Usd Stage to the model
+         *
+         * @param stage pxr::UsdStageRefPtr a reference to the Usd Stage
+         */
+        void SetStage(pxr::UsdStageRefPtr stage);
+
+        /**
+         * @brief Get a reference to the Scene Index from the model
+         *
+         * @return pxr::HdSceneIndexBaseRefPtr a reference to the Scene Index
+         */
+        pxr::HdSceneIndexBaseRefPtr GetSceneIndex();
+
+        /**
+         * @brief Apply pending updates from the scene index
+         *
+         */
+        void ApplyModelUpdates();
 
         /**
          * @brief Get the Usd Prim from the model at a specific path
@@ -102,15 +104,9 @@ class Model {
          */
         void SetSelection(pxr::SdfPathVector primPaths);
 
-        /**
-         * @brief Get a reference to the session layer of the model
-         *
-         * @return pxr::SdfLayerRefPtr a reference to the session layer
-         */
-        pxr::SdfLayerRefPtr GetSessionLayer();
-
     private:
         pxr::UsdStageRefPtr _stage;
         pxr::SdfPathVector _selection;
-        pxr::SdfLayerRefPtr _rootLayer, _sessionLayer;
+        pxr::HdSceneIndexBaseRefPtr _sceneIndex;
+        pxr::UsdImagingStageSceneIndexRefPtr _stageSceneIndex;
 };

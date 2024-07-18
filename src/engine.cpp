@@ -2,14 +2,14 @@
 
 #include <pxr/base/gf/camera.h>
 #include <pxr/base/gf/frustum.h>
+#include <pxr/imaging/cameraUtil/conformWindow.h>
 #include <pxr/imaging/hd/rendererPlugin.h>
 #include <pxr/imaging/hd/rendererPluginRegistry.h>
 #include <pxr/imaging/hdx/pickTask.h>
 #include <pxr/imaging/hgi/tokens.h>
-#include <pxr/usdImaging/usdImaging/sceneIndices.h>
 
-Engine::Engine(pxr::UsdStageRefPtr stage, pxr::TfToken plugin)
-    : _stage(stage),
+Engine::Engine(pxr::HdSceneIndexBaseRefPtr sceneIndex, pxr::TfToken plugin)
+    : _sceneIndex(sceneIndex),
       _curRendererPlugin(plugin),
       _hgi(pxr::Hgi::CreatePlatformDefaultHgi()),
       _hgiDriver{pxr::HgiTokens->renderDriver, pxr::VtValue(_hgi.get())},
@@ -34,7 +34,6 @@ Engine::~Engine()
 
     if (_renderIndex && _sceneIndex) {
         _renderIndex->RemoveSceneIndex(_sceneIndex);
-        _stageSceneIndex = nullptr;
         _sceneIndex = nullptr;
     }
 
@@ -60,16 +59,7 @@ void Engine::Initialize()
     _renderIndex =
         pxr::HdRenderIndex::New(_renderDelegate.Get(), {&_hgiDriver});
 
-    pxr::UsdImagingCreateSceneIndicesInfo info;
-    info.displayUnloadedPrimsWithBounds = false;
-    const pxr::UsdImagingSceneIndices sceneIndices =
-        UsdImagingCreateSceneIndices(info);
-
-    _stageSceneIndex = sceneIndices.stageSceneIndex;
-    _sceneIndex = sceneIndices.finalSceneIndex;
-
     _renderIndex->InsertSceneIndex(_sceneIndex, _taskControllerId);
-    _stageSceneIndex->SetStage(_stage);
 
     // init task controller
 
@@ -95,7 +85,7 @@ void Engine::Initialize()
     pxr::TfTokenVector _aovOutputs{pxr::HdAovTokens->color};
     _taskController->SetRenderOutputs(_aovOutputs);
 
-    pxr::GfVec4f clearColor = pxr::GfVec4f(.1f, .1f, .1f, 1.0f);
+    pxr::GfVec4f clearColor = pxr::GfVec4f(.2f, .2f, .2f, 1.0f);
     pxr::HdAovDescriptor colorAovDesc =
         _taskController->GetRenderOutputSettings(pxr::HdAovTokens->color);
     if (colorAovDesc.format != pxr::HdFormatInvalid) {
@@ -263,15 +253,13 @@ void Engine::PrepareDefaultLighting()
 void Engine::Prepare()
 {
     PrepareDefaultLighting();
-
-    _stageSceneIndex->ApplyPendingUpdates();
-    _stageSceneIndex->SetTime(pxr::UsdTimeCode::Default());
     _taskController->SetFreeCameraMatrices(_camView, _camProj);
 }
 
 void Engine::Render()
 {
     _drawTarget->Bind();
+    glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     pxr::HdTaskSharedPtrVector tasks = _taskController->GetRenderingTasks();

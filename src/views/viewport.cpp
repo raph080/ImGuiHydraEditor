@@ -27,8 +27,7 @@ Viewport::Viewport(Model* model, const string label) : View(model, label)
     _UpdateActiveCamFromViewport();
 
     pxr::TfToken plugin = Engine::GetDefaultRendererPlugin();
-    pxr::UsdStageRefPtr stage = GetModel()->GetStage();
-    _engine = new Engine(stage, plugin);
+    _engine = new Engine(GetModel()->GetSceneIndex(), plugin);
 };
 
 Viewport::~Viewport()
@@ -46,21 +45,11 @@ ImGuiWindowFlags Viewport::_GetGizmoWindowFlags()
     return _gizmoWindowFlags;
 };
 
-void Viewport::ModelChangedEvent()
-{
-    pxr::TfToken plugin = _engine->GetCurrentRendererPlugin();
-    delete _engine;
-
-    pxr::UsdStageRefPtr stage = GetModel()->GetStage();
-    _engine = new Engine(stage, plugin);
-
-    _up = GetModel()->GetUpAxis();
-};
-
 float Viewport::_GetViewportWidth()
 {
     return GetInnerRect().GetWidth();
 }
+
 float Viewport::_GetViewportHeight()
 {
     return GetInnerRect().GetHeight();
@@ -129,7 +118,7 @@ void Viewport::_DrawMenuBar()
                 string name = _engine->GetRendererPluginName(p);
                 if (ImGui::MenuItem(name.c_str(), NULL, enabled)) {
                     delete _engine;
-                    _engine = new Engine(GetModel()->GetStage(), p);
+                    _engine = new Engine(GetModel()->GetSceneIndex(), p);
                 }
             }
             ImGui::EndMenu();
@@ -229,8 +218,10 @@ void Viewport::_UpdateTransformGuizmo()
     ImGuizmo::Manipulate(viewF.data(), projF.data(), _curOperation, _curMode,
                          transformF.data());
 
-    if (transformF != pxr::GfMatrix4f(transform))
+    if (transformF != pxr::GfMatrix4f(transform)) {
         SetTransformMatrix(geom, pxr::GfMatrix4d(transformF));
+        GetModel()->ApplyModelUpdates();
+    }
 }
 
 void Viewport::_UpdateCubeGuizmo()

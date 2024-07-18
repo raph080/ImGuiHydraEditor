@@ -19,8 +19,6 @@
 #include <pxr/imaging/hgi/hgi.h>
 #include <pxr/imaging/hgiInterop/hgiInterop.h>
 #include <pxr/usd/usd/prim.h>
-#include <pxr/usdImaging/usdImaging/delegate.h>
-#include <pxr/usdImaging/usdImaging/stageSceneIndex.h>
 
 using HgiUniquePtr = std::unique_ptr<class pxr::Hgi>;
 
@@ -36,10 +34,10 @@ class Engine {
         /**
          * @brief Construct a new Engine object
          *
-         * @param stage the USD Stage to render
+         * @param sceneIndex the Scene Index to render
          * @param plugin the renderer plugin that specify the render
          */
-        Engine(pxr::UsdStageRefPtr stage, pxr::TfToken plugin);
+        Engine(pxr::HdSceneIndexBaseRefPtr sceneIndex, pxr::TfToken plugin);
 
         /**
          * @brief Destroy the Engine object
@@ -139,7 +137,6 @@ class Engine {
         pxr::HdRenderIndex *_renderIndex;
         pxr::HdxTaskController *_taskController;
         pxr::HdRprimCollection _collection;
-        pxr::UsdImagingStageSceneIndexRefPtr _stageSceneIndex;
         pxr::HdSceneIndexBaseRefPtr _sceneIndex;
         pxr::SdfPath _taskControllerId;
 

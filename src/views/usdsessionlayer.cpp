@@ -1,48 +1,187 @@
-#include "sessionlayer.h"
+#include "usdsessionlayer.h"
 
-SessionLayer::SessionLayer(Model* model, const string label)
+#include <ImGuiFileDialog.h>
+#include <pxr/usd/usdGeom/camera.h>
+#include <pxr/usd/usdGeom/capsule.h>
+#include <pxr/usd/usdGeom/cone.h>
+#include <pxr/usd/usdGeom/cube.h>
+#include <pxr/usd/usdGeom/cylinder.h>
+#include <pxr/usd/usdGeom/metrics.h>
+#include <pxr/usd/usdGeom/plane.h>
+#include <pxr/usd/usdGeom/sphere.h>
+
+#include <fstream>
+#include <iostream>
+
+#include "pxr/imaging/hd/tokens.h"
+
+UsdSessionLayer::UsdSessionLayer(Model* model, const string label)
     : View(model, label), _isEditing(false)
 {
+    _gizmoWindowFlags = ImGuiWindowFlags_MenuBar;
+
     _editor.SetPalette(_GetPalette());
     _editor.SetLanguageDefinition(_GetUsdLanguageDefinition());
     _editor.SetShowWhitespaces(false);
+
+    _SetEmptyStage();
 }
 
-const string SessionLayer::GetViewType()
+const string UsdSessionLayer::GetViewType()
 {
     return VIEW_TYPE;
 };
-void SessionLayer::_Draw()
+
+ImGuiWindowFlags UsdSessionLayer::_GetGizmoWindowFlags()
 {
-    if (_IsSessionLayerUpdated()) _LoadSessionTextFromModel();
-    _editor.Render("TextEditor");
+    return _gizmoWindowFlags;
 };
 
-bool SessionLayer::_IsSessionLayerUpdated()
+void UsdSessionLayer::_Draw()
 {
-    pxr::SdfLayerHandle sessionLayer = GetModel()->GetSessionLayer();
+    if (ImGui::BeginMenuBar()) {
+        if (ImGui::BeginMenu("File")) {
+            if (ImGui::MenuItem("New scene")) { _SetEmptyStage(); }
+
+            if (ImGui::MenuItem("Load ...")) {
+                ImGuiFileDialog::Instance()->OpenDialog(
+                    "LoadFile", "Choose File", ".usd,.usdc,.usda,.usdz", ".");
+            }
+
+            if (ImGui::MenuItem("Export to ...")) {
+                ImGuiFileDialog::Instance()->OpenDialog(
+                    "ExportFile", "Choose File", ".usd,.usdc,.usda,.usdz",
+                    ".");
+            }
+            ImGui::EndMenu();
+        }
+        if (ImGui::BeginMenu("Objects")) {
+            if (ImGui::BeginMenu("Create")) {
+                if (ImGui::MenuItem("Camera"))
+                    _CreatePrim(pxr::HdPrimTypeTokens->camera);
+                ImGui::Separator();
+                if (ImGui::MenuItem("Capsule"))
+                    _CreatePrim(pxr::HdPrimTypeTokens->capsule);
+                if (ImGui::MenuItem("Cone"))
+                    _CreatePrim(pxr::HdPrimTypeTokens->cone);
+                if (ImGui::MenuItem("Cube"))
+                    _CreatePrim(pxr::HdPrimTypeTokens->cube);
+                if (ImGui::MenuItem("Cylinder"))
+                    _CreatePrim(pxr::HdPrimTypeTokens->cylinder);
+                if (ImGui::MenuItem("Sphere"))
+                    _CreatePrim(pxr::HdPrimTypeTokens->sphere);
+                ImGui::EndMenu();
+            }
+            ImGui::EndMenu();
+        }
+        ImGui::EndMenuBar();
+    }
+
+    if (_IsUsdSessionLayerUpdated()) _LoadSessionTextFromModel();
+    _editor.Render("TextEditor");
+
+    if (ImGuiFileDialog::Instance()->Display("LoadFile")) {
+        if (ImGuiFileDialog::Instance()->IsOk()) {
+            string filePath = ImGuiFileDialog::Instance()->GetFilePathName();
+            _LoadUsdStage(filePath);
+        }
+        ImGuiFileDialog::Instance()->Close();
+    }
+
+    if (ImGuiFileDialog::Instance()->Display("ExportFile")) {
+        if (ImGuiFileDialog::Instance()->IsOk()) {
+            string filePath = ImGuiFileDialog::Instance()->GetFilePathName();
+            GetModel()->GetStage()->Export(filePath, false);
+        }
+        ImGuiFileDialog::Instance()->Close();
+    }
+};
+
+void UsdSessionLayer::_SetEmptyStage()
+{
+    auto stage = pxr::UsdStage::CreateInMemory();
+    UsdGeomSetStageUpAxis(stage, pxr::UsdGeomTokens->y);
+
+    _rootLayer = stage->GetRootLayer();
+    _sessionLayer = stage->GetSessionLayer();
+
+    stage->SetEditTarget(_sessionLayer);
+    GetModel()->SetStage(stage);
+}
+
+void UsdSessionLayer::_LoadUsdStage(const string usdFilePath)
+{
+    if (!ifstream(usdFilePath)) {
+        cout << "Error: the file does not exist. Empty stage loaded." << endl;
+        _SetEmptyStage();
+        return;
+    }
+
+    _rootLayer = pxr::SdfLayer::FindOrOpen(usdFilePath);
+    _sessionLayer = pxr::SdfLayer::CreateAnonymous();
+    auto stage = pxr::UsdStage::Open(_rootLayer, _sessionLayer);
+    stage->SetEditTarget(_sessionLayer);
+    GetModel()->SetStage(stage);
+}
+
+string UsdSessionLayer::_GetNextAvailableIndexedPath(string primPath)
+{
+    pxr::UsdStageRefPtr stage = GetModel()->GetStage();
+    pxr::UsdPrim prim;
+    int i = -1;
+    string newPath;
+    do {
+        i++;
+        if (i == 0) newPath = primPath;
+        else newPath = primPath + to_string(i);
+        prim = stage->GetPrimAtPath(pxr::SdfPath(newPath));
+    } while (prim.IsValid());
+    return newPath;
+}
+
+void UsdSessionLayer::_CreatePrim(pxr::TfToken primType)
+{
+    string primPath = _GetNextAvailableIndexedPath("/" + primType.GetString());
+    pxr::UsdStageRefPtr stage = GetModel()->GetStage();
+
+    if (primType == pxr::HdPrimTypeTokens->camera)
+        pxr::UsdGeomCamera::Define(stage, pxr::SdfPath(primPath));
+    if (primType == pxr::HdPrimTypeTokens->capsule)
+        pxr::UsdGeomCapsule::Define(stage, pxr::SdfPath(primPath));
+    if (primType == pxr::HdPrimTypeTokens->cone)
+        pxr::UsdGeomCone::Define(stage, pxr::SdfPath(primPath));
+    if (primType == pxr::HdPrimTypeTokens->cube)
+        pxr::UsdGeomCube::Define(stage, pxr::SdfPath(primPath));
+    if (primType == pxr::HdPrimTypeTokens->cylinder)
+        pxr::UsdGeomCylinder::Define(stage, pxr::SdfPath(primPath));
+    if (primType == pxr::HdPrimTypeTokens->sphere)
+        pxr::UsdGeomSphere::Define(stage, pxr::SdfPath(primPath));
+
+    GetModel()->ApplyModelUpdates();
+}
+
+bool UsdSessionLayer::_IsUsdSessionLayerUpdated()
+{
     string layerText;
-    sessionLayer->ExportToString(&layerText);
+    _sessionLayer->ExportToString(&layerText);
     return _lastLoadedText != layerText;
 }
 
-void SessionLayer::_LoadSessionTextFromModel()
+void UsdSessionLayer::_LoadSessionTextFromModel()
 {
-    pxr::SdfLayerHandle sessionLayer = GetModel()->GetSessionLayer();
     string layerText;
-    sessionLayer->ExportToString(&layerText);
+    _sessionLayer->ExportToString(&layerText);
     _editor.SetText(layerText);
     _lastLoadedText = layerText;
 }
 
-void SessionLayer::_SaveSessionTextToModel()
+void UsdSessionLayer::_SaveSessionTextToModel()
 {
     string editedText = _editor.GetText();
-    pxr::SdfLayerHandle sessionLayer = GetModel()->GetSessionLayer();
-    sessionLayer->ImportFromString(editedText.c_str());
+    _sessionLayer->ImportFromString(editedText.c_str());
 }
 
-TextEditor::Palette SessionLayer::_GetPalette()
+TextEditor::Palette UsdSessionLayer::_GetPalette()
 {
     ImU32 normalTxtCol = ImGui::GetColorU32(ImGuiCol_Text, 1.f);
     ImU32 halfTxtCol = ImGui::GetColorU32(ImGuiCol_Text, .5f);
@@ -75,7 +214,7 @@ TextEditor::Palette SessionLayer::_GetPalette()
     }};
 }
 
-TextEditor::LanguageDefinition SessionLayer::_GetUsdLanguageDefinition()
+TextEditor::LanguageDefinition UsdSessionLayer::_GetUsdLanguageDefinition()
 {
     TextEditor::LanguageDefinition langDef =
         TextEditor::LanguageDefinition::C();
@@ -164,12 +303,13 @@ TextEditor::LanguageDefinition SessionLayer::_GetUsdLanguageDefinition()
     return langDef;
 }
 
-void SessionLayer::_FocusInEvent()
+void UsdSessionLayer::_FocusInEvent()
 {
     _isEditing = true;
 };
-void SessionLayer::_FocusOutEvent()
+void UsdSessionLayer::_FocusOutEvent()
 {
     _isEditing = false;
     _SaveSessionTextToModel();
+    GetModel()->ApplyModelUpdates();
 };

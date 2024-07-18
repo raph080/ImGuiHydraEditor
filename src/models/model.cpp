@@ -1,44 +1,18 @@
 #include "model.h"
 
+#include <pxr/usd/usd/stage.h>
 #include <pxr/usd/usdGeom/metrics.h>
 #include <pxr/usd/usdGeom/tokens.h>
 
-#include <fstream>
-#include <iostream>
-
 Model::Model()
 {
-    SetEmptyStage();
-}
+    pxr::UsdImagingCreateSceneIndicesInfo info;
+    info.displayUnloadedPrimsWithBounds = false;
+    const pxr::UsdImagingSceneIndices sceneIndices =
+        UsdImagingCreateSceneIndices(info);
 
-Model::Model(const string usdFilePath)
-{
-    LoadUsdStage(usdFilePath);
-}
-
-void Model::SetEmptyStage()
-{
-    _stage = pxr::UsdStage::CreateInMemory();
-    UsdGeomSetStageUpAxis(_stage, pxr::UsdGeomTokens->y);
-
-    _rootLayer = _stage->GetRootLayer();
-    _sessionLayer = _stage->GetSessionLayer();
-
-    _stage->SetEditTarget(_sessionLayer);
-}
-
-void Model::LoadUsdStage(const string usdFilePath)
-{
-    if (!ifstream(usdFilePath)) {
-        cout << "Error: the file does not exist. Empty stage loaded." << endl;
-        SetEmptyStage();
-        return;
-    }
-
-    _rootLayer = pxr::SdfLayer::FindOrOpen(usdFilePath);
-    _sessionLayer = pxr::SdfLayer::CreateAnonymous();
-    _stage = pxr::UsdStage::Open(_rootLayer, _sessionLayer);
-    _stage->SetEditTarget(_sessionLayer);
+    _stageSceneIndex = sceneIndices.stageSceneIndex;
+    _sceneIndex = sceneIndices.finalSceneIndex;
 }
 
 pxr::GfVec3d Model::GetUpAxis()
@@ -53,6 +27,23 @@ pxr::GfVec3d Model::GetUpAxis()
 pxr::UsdStageRefPtr Model::GetStage()
 {
     return _stage;
+}
+
+void Model::SetStage(pxr::UsdStageRefPtr stage)
+{
+    _stage = stage;
+    _stageSceneIndex->SetStage(_stage);
+    _stageSceneIndex->SetTime(pxr::UsdTimeCode::Default());
+}
+
+pxr::HdSceneIndexBaseRefPtr Model::GetSceneIndex()
+{
+    return _sceneIndex;
+}
+
+void Model::ApplyModelUpdates()
+{
+    _stageSceneIndex->ApplyPendingUpdates();
 }
 
 pxr::UsdPrim Model::GetPrim(pxr::SdfPath path)
@@ -87,9 +78,4 @@ pxr::SdfPathVector Model::GetSelection()
 void Model::SetSelection(pxr::SdfPathVector primPaths)
 {
     _selection = primPaths;
-}
-
-pxr::SdfLayerRefPtr Model::GetSessionLayer()
-{
-    return _sessionLayer;
 }
