@@ -20,8 +20,9 @@
 
 #include "engine.h"
 #include "models/model.h"
-#include "utils/usd.h"
 #include "sceneindices/gridsceneindex.h"
+#include "sceneindices/xformfiltersceneindex.h"
+#include "utils/usd.h"
 #include "view.h"
 
 using namespace std;
@@ -75,6 +76,7 @@ class Viewport : public View {
 
         Engine* _engine;
         pxr::GridSceneIndexRefPtr _gridSceneIndex;
+        pxr::XformFilterSceneIndexRefPtr _xformSceneIndex;
         ImGuiWindowFlags _gizmoWindowFlags;
 
         ImGuizmo::OPERATION _curOperation;

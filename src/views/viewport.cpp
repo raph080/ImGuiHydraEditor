@@ -8,8 +8,6 @@
 #include <pxr/imaging/hd/cameraSchema.h>
 #include <pxr/usd/usd/stage.h>
 #include <pxr/usd/usdGeom/bboxCache.h>
-#include <pxr/usd/usdGeom/camera.h>
-#include <pxr/usd/usdGeom/gprim.h>
 
 #include <iostream>
 
@@ -31,6 +29,10 @@ Viewport::Viewport(Model* model, const string label) : View(model, label)
 
     _gridSceneIndex = pxr::GridSceneIndex::New();
     GetModel()->AddSceneIndexBase(_gridSceneIndex);
+
+    auto editableSceneIndex = GetModel()->GetEditableSceneIndex();
+    _xformSceneIndex = pxr::XformFilterSceneIndex::New(editableSceneIndex);
+    GetModel()->SetEditableSceneIndex(_xformSceneIndex);
 
     pxr::TfToken plugin = Engine::GetDefaultRendererPlugin();
     _engine = new Engine(GetModel()->GetFinalSceneIndex(), plugin);
@@ -208,13 +210,12 @@ void Viewport::_UpdateHydraRender()
 
 void Viewport::_UpdateTransformGuizmo()
 {
-    pxr::SdfPathVector primPath = GetModel()->GetSelection();
-    if (primPath.size() == 0 || primPath[0].IsEmpty()) return;
+    pxr::SdfPathVector primPaths = GetModel()->GetSelection();
+    if (primPaths.size() == 0 || primPaths[0].IsEmpty()) return;
 
-    pxr::UsdPrim prim = GetModel()->GetUsdPrim(primPath[0]);
-    pxr::UsdGeomGprim geom(prim);
+    pxr::SdfPath primPath = primPaths[0];
 
-    pxr::GfMatrix4d transform = GetTransformMatrix(geom);
+    pxr::GfMatrix4d transform = _xformSceneIndex->GetXform(primPath);
     pxr::GfMatrix4f transformF(transform);
 
     pxr::GfMatrix4d view = _getCurViewMatrix();
@@ -225,9 +226,8 @@ void Viewport::_UpdateTransformGuizmo()
     ImGuizmo::Manipulate(viewF.data(), projF.data(), _curOperation, _curMode,
                          transformF.data());
 
-    if (transformF != pxr::GfMatrix4f(transform)) {
-        SetTransformMatrix(geom, pxr::GfMatrix4d(transformF));
-    }
+    if (transformF != pxr::GfMatrix4f(transform))
+        _xformSceneIndex->SetXform(primPath, pxr::GfMatrix4d(transformF));
 }
 
 void Viewport::_UpdateCubeGuizmo()
@@ -366,10 +366,7 @@ void Viewport::_UpdateActiveCamFromViewport()
 
     if (view == prevView && _proj == prevProj) return;
 
-    pxr::UsdPrim primCam = GetModel()->GetUsdPrim(_activeCam);
-    pxr::UsdGeomCamera geomCam(primCam);
-
-    SetTransformMatrix(geomCam, view.GetInverse());
+    _xformSceneIndex->SetXform(_activeCam, view.GetInverse());
 }
 
 void Viewport::_UpdateProjection()
@@ -400,6 +397,12 @@ pxr::GfCamera Viewport::_ToGfCamera(pxr::HdSceneIndexPrim prim)
 
     pxr::HdSampledDataSource::Time time(0);
 
+    pxr::HdXformSchema xformSchema =
+        pxr::HdXformSchema::GetFromParent(prim.dataSource);
+
+    pxr::GfMatrix4d xform =
+        xformSchema.GetMatrix()->GetValue(time).Get<pxr::GfMatrix4d>();
+
     pxr::HdCameraSchema camSchema =
         pxr::HdCameraSchema::GetFromParent(prim.dataSource);
 
@@ -418,6 +421,7 @@ pxr::GfCamera Viewport::_ToGfCamera(pxr::HdSceneIndexPrim prim)
     pxr::GfVec2f clippingRange =
         camSchema.GetClippingRange()->GetValue(time).Get<pxr::GfVec2f>();
 
+    cam.SetTransform(xform);
     cam.SetProjection(projection == pxr::HdCameraSchemaTokens->orthographic
                           ? pxr::GfCamera::Orthographic
                           : pxr::GfCamera::Perspective);
