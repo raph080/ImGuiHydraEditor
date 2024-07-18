@@ -144,8 +144,10 @@ void UsdSessionLayer::_CreatePrim(pxr::TfToken primType)
     string primPath = _GetNextAvailableIndexedPath("/" + primType.GetString());
     pxr::UsdStageRefPtr stage = GetModel()->GetStage();
 
-    if (primType == pxr::HdPrimTypeTokens->camera)
-        pxr::UsdGeomCamera::Define(stage, pxr::SdfPath(primPath));
+    if (primType == pxr::HdPrimTypeTokens->camera) {
+        auto cam = pxr::UsdGeomCamera::Define(stage, pxr::SdfPath(primPath));
+        cam.CreateFocalLengthAttr(pxr::VtValue(18.46f));
+    }
     if (primType == pxr::HdPrimTypeTokens->capsule)
         pxr::UsdGeomCapsule::Define(stage, pxr::SdfPath(primPath));
     if (primType == pxr::HdPrimTypeTokens->cone)
