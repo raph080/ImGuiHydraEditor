@@ -19,20 +19,22 @@ void Editor::_Draw()
 {
     pxr::SdfPath primPath = _GetPrimToDisplay();
 
-    if (!primPath.IsEmpty()) {
-        pxr::UsdPrim prim = GetModel()->GetPrim(primPath);
+    if (primPath.IsEmpty()) return;
 
-        if (ImGui::CollapsingHeader("Transform attributes"))
-            _AppendTransformAttrs(prim);
+    pxr::UsdPrim prim = GetModel()->GetUsdPrim(primPath);
 
-        if (prim.GetTypeName() == pxr::UsdGeomTokens->Camera)
-            if (ImGui::CollapsingHeader("Camera attributes"))
-                _AppendCamAttrs(prim);
+    if (!prim.IsValid()) return;
 
-        if (prim.HasAttribute(pxr::UsdGeomTokens->primvarsDisplayColor))
-            if (ImGui::CollapsingHeader("Extra attributes"))
-                _AppendDisplayColorAttr(prim);
-    }
+    if (ImGui::CollapsingHeader("Transform attributes"))
+        _AppendTransformAttrs(prim);
+
+    if (prim.GetTypeName() == pxr::UsdGeomTokens->Camera)
+        if (ImGui::CollapsingHeader("Camera attributes"))
+            _AppendCamAttrs(prim);
+
+    if (prim.HasAttribute(pxr::UsdGeomTokens->primvarsDisplayColor))
+        if (ImGui::CollapsingHeader("Extra attributes"))
+            _AppendDisplayColorAttr(prim);
 }
 
 pxr::SdfPath Editor::_GetPrimToDisplay()
