@@ -9,6 +9,7 @@
  */
 #pragma once
 
+#include <pxr/base/gf/vec3d.h>
 #include <pxr/imaging/hd/mergingSceneIndex.h>
 #include <pxr/imaging/hd/sceneIndex.h>
 #include <pxr/usd/usd/prim.h>
@@ -55,10 +56,25 @@ class Model {
          */
         void SetStage(pxr::UsdStageRefPtr stage);
 
-        void AddSceneIndex(pxr::HdSceneIndexBaseRefPtr sceneIndex);
+        /**
+         * @brief Add a Scene Index Base to the model
+         *
+         * @param sceneIndex pxr::HdSceneIndexBaseRefPtr Scene Index to add
+         */
+        void AddSceneIndexBase(pxr::HdSceneIndexBaseRefPtr sceneIndex);
 
+        /**
+         * @brief Get the Editable Scene Index from the model
+         *
+         * @return pxr::HdSceneIndexBaseRefPtr the editable Scene Index
+         */
         pxr::HdSceneIndexBaseRefPtr GetEditableSceneIndex();
 
+        /**
+         * @brief Set the Editable Scene Index to the model
+         *
+         * @param sceneIndex the Editable Scene Index to set to the model
+         */
         void SetEditableSceneIndex(pxr::HdSceneIndexBaseRefPtr sceneIndex);
 
         /**
@@ -67,12 +83,6 @@ class Model {
          * @return pxr::HdSceneIndexBaseRefPtr a reference to the Scene Index
          */
         pxr::HdSceneIndexBaseRefPtr GetFinalSceneIndex();
-
-        /**
-         * @brief Apply pending updates from the scene index
-         *
-         */
-        void ApplyModelUpdates();
 
         /**
          * @brief Get the Hydra Prim from the model at a specific path
@@ -124,6 +134,5 @@ class Model {
         pxr::UsdStageRefPtr _stage;
         pxr::SdfPathVector _selection;
         pxr::HdSceneIndexBaseRefPtr _editableSceneIndex;
-        pxr::HdMergingSceneIndexRefPtr _sceneIndices, _finalSceneIndex;
-        pxr::UsdImagingStageSceneIndexRefPtr _stageSceneIndex;
+        pxr::HdMergingSceneIndexRefPtr _sceneIndexBases, _finalSceneIndex;
 };

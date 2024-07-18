@@ -67,7 +67,6 @@ void Editor::_AppendTransformAttrs(pxr::UsdPrim prim)
 
     if (!AreNearlyEquals(transformF, pxr::GfMatrix4f(transform))) {
         SetTransformMatrix(gprim, pxr::GfMatrix4d(transformF));
-        GetModel()->ApplyModelUpdates();
     }
 }
 
@@ -89,20 +88,14 @@ void Editor::_AppendCamAttrs(pxr::UsdPrim prim)
             attr.Get(&value);
             float oldValue(value);
             ImGui::InputFloat(attr.GetName().GetText(), &value);
-            if (value != oldValue) {
-                attr.Set(value);
-                GetModel()->ApplyModelUpdates();
-            }
+            if (value != oldValue) attr.Set(value);
         }
         else if (attr.GetTypeName() == pxr::SdfValueTypeNames->Float2) {
             pxr::GfVec2f value;
             attr.Get(&value);
             pxr::GfVec2f oldValue(value);
             ImGui::InputFloat2(attr.GetName().GetText(), value.data());
-            if (value != oldValue) {
-                attr.Set(value);
-                GetModel()->ApplyModelUpdates();
-            }
+            if (value != oldValue) attr.Set(value);
         }
     }
 }
@@ -125,8 +118,5 @@ void Editor::_AppendDisplayColorAttr(pxr::UsdPrim prim)
     ImGui::SliderFloat3("Display Color", data, 0, 1);
 
     // add opinion only if values change
-    if (values != prevValues) {
-        attr.Set(values, pxr::UsdTimeCode::Default());
-        GetModel()->ApplyModelUpdates();
-    }
+    if (values != prevValues) attr.Set(values, pxr::UsdTimeCode::Default());
 }

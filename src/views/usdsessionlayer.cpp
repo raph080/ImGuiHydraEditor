@@ -9,6 +9,7 @@
 #include <pxr/usd/usdGeom/metrics.h>
 #include <pxr/usd/usdGeom/plane.h>
 #include <pxr/usd/usdGeom/sphere.h>
+#include <pxr/usdImaging/usdImaging/sceneIndices.h>
 
 #include <fstream>
 #include <iostream>
@@ -23,6 +24,14 @@ UsdSessionLayer::UsdSessionLayer(Model* model, const string label)
     _editor.SetPalette(_GetPalette());
     _editor.SetLanguageDefinition(_GetUsdLanguageDefinition());
     _editor.SetShowWhitespaces(false);
+
+    pxr::UsdImagingCreateSceneIndicesInfo info;
+    info.displayUnloadedPrimsWithBounds = false;
+    const pxr::UsdImagingSceneIndices sceneIndices =
+        UsdImagingCreateSceneIndices(info);
+
+    _stageSceneIndex = sceneIndices.stageSceneIndex;
+    GetModel()->AddSceneIndexBase(sceneIndices.finalSceneIndex);
 
     _SetEmptyStage();
 }
@@ -91,7 +100,7 @@ void UsdSessionLayer::_Draw()
     if (ImGuiFileDialog::Instance()->Display("ExportFile")) {
         if (ImGuiFileDialog::Instance()->IsOk()) {
             string filePath = ImGuiFileDialog::Instance()->GetFilePathName();
-            GetModel()->GetStage()->Export(filePath, false);
+            _stage->Export(filePath, false);
         }
         ImGuiFileDialog::Instance()->Close();
     }
@@ -99,14 +108,17 @@ void UsdSessionLayer::_Draw()
 
 void UsdSessionLayer::_SetEmptyStage()
 {
-    auto stage = pxr::UsdStage::CreateInMemory();
-    UsdGeomSetStageUpAxis(stage, pxr::UsdGeomTokens->y);
+    _stage = pxr::UsdStage::CreateInMemory();
+    UsdGeomSetStageUpAxis(_stage, pxr::UsdGeomTokens->y);
 
-    _rootLayer = stage->GetRootLayer();
-    _sessionLayer = stage->GetSessionLayer();
+    _rootLayer = _stage->GetRootLayer();
+    _sessionLayer = _stage->GetSessionLayer();
 
-    stage->SetEditTarget(_sessionLayer);
-    GetModel()->SetStage(stage);
+    _stage->SetEditTarget(_sessionLayer);
+    _stageSceneIndex->SetStage(_stage);
+    _stageSceneIndex->SetTime(pxr::UsdTimeCode::Default());
+
+    GetModel()->SetStage(_stage);
 }
 
 void UsdSessionLayer::_LoadUsdStage(const string usdFilePath)
@@ -119,14 +131,16 @@ void UsdSessionLayer::_LoadUsdStage(const string usdFilePath)
 
     _rootLayer = pxr::SdfLayer::FindOrOpen(usdFilePath);
     _sessionLayer = pxr::SdfLayer::CreateAnonymous();
-    auto stage = pxr::UsdStage::Open(_rootLayer, _sessionLayer);
-    stage->SetEditTarget(_sessionLayer);
-    GetModel()->SetStage(stage);
+    _stage = pxr::UsdStage::Open(_rootLayer, _sessionLayer);
+    _stage->SetEditTarget(_sessionLayer);
+    _stageSceneIndex->SetStage(_stage);
+    _stageSceneIndex->SetTime(pxr::UsdTimeCode::Default());
+
+    GetModel()->SetStage(_stage);
 }
 
 string UsdSessionLayer::_GetNextAvailableIndexedPath(string primPath)
 {
-    pxr::UsdStageRefPtr stage = GetModel()->GetStage();
     pxr::UsdPrim prim;
     int i = -1;
     string newPath;
@@ -134,7 +148,7 @@ string UsdSessionLayer::_GetNextAvailableIndexedPath(string primPath)
         i++;
         if (i == 0) newPath = primPath;
         else newPath = primPath + to_string(i);
-        prim = stage->GetPrimAtPath(pxr::SdfPath(newPath));
+        prim = _stage->GetPrimAtPath(pxr::SdfPath(newPath));
     } while (prim.IsValid());
     return newPath;
 }
@@ -142,24 +156,23 @@ string UsdSessionLayer::_GetNextAvailableIndexedPath(string primPath)
 void UsdSessionLayer::_CreatePrim(pxr::TfToken primType)
 {
     string primPath = _GetNextAvailableIndexedPath("/" + primType.GetString());
-    pxr::UsdStageRefPtr stage = GetModel()->GetStage();
 
     if (primType == pxr::HdPrimTypeTokens->camera) {
-        auto cam = pxr::UsdGeomCamera::Define(stage, pxr::SdfPath(primPath));
+        auto cam = pxr::UsdGeomCamera::Define(_stage, pxr::SdfPath(primPath));
         cam.CreateFocalLengthAttr(pxr::VtValue(18.46f));
     }
     if (primType == pxr::HdPrimTypeTokens->capsule)
-        pxr::UsdGeomCapsule::Define(stage, pxr::SdfPath(primPath));
+        pxr::UsdGeomCapsule::Define(_stage, pxr::SdfPath(primPath));
     if (primType == pxr::HdPrimTypeTokens->cone)
-        pxr::UsdGeomCone::Define(stage, pxr::SdfPath(primPath));
+        pxr::UsdGeomCone::Define(_stage, pxr::SdfPath(primPath));
     if (primType == pxr::HdPrimTypeTokens->cube)
-        pxr::UsdGeomCube::Define(stage, pxr::SdfPath(primPath));
+        pxr::UsdGeomCube::Define(_stage, pxr::SdfPath(primPath));
     if (primType == pxr::HdPrimTypeTokens->cylinder)
-        pxr::UsdGeomCylinder::Define(stage, pxr::SdfPath(primPath));
+        pxr::UsdGeomCylinder::Define(_stage, pxr::SdfPath(primPath));
     if (primType == pxr::HdPrimTypeTokens->sphere)
-        pxr::UsdGeomSphere::Define(stage, pxr::SdfPath(primPath));
+        pxr::UsdGeomSphere::Define(_stage, pxr::SdfPath(primPath));
 
-    GetModel()->ApplyModelUpdates();
+    _stageSceneIndex->ApplyPendingUpdates();
 }
 
 bool UsdSessionLayer::_IsUsdSessionLayerUpdated()
@@ -313,5 +326,5 @@ void UsdSessionLayer::_FocusOutEvent()
 {
     _isEditing = false;
     _SaveSessionTextToModel();
-    GetModel()->ApplyModelUpdates();
+    _stageSceneIndex->ApplyPendingUpdates();
 };

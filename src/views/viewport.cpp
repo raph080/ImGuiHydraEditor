@@ -176,7 +176,6 @@ void Viewport::_UpdateGrid()
 
 void Viewport::_UpdateHydraRender()
 {
-    pxr::UsdStageRefPtr stage = GetModel()->GetStage();
     pxr::GfMatrix4d view = _getCurViewMatrix();
     float width = _GetViewportWidth();
     float height = _GetViewportHeight();
@@ -220,7 +219,6 @@ void Viewport::_UpdateTransformGuizmo()
 
     if (transformF != pxr::GfMatrix4f(transform)) {
         SetTransformMatrix(geom, pxr::GfMatrix4d(transformF));
-        GetModel()->ApplyModelUpdates();
     }
 }
 

@@ -11,6 +11,7 @@
 
 #define IMGUI_DEFINE_MATH_OPERATORS
 #include <TextEditor.h>
+#include <pxr/usdImaging/usdImaging/stageSceneIndex.h>
 
 #include "view.h"
 
@@ -51,6 +52,8 @@ class UsdSessionLayer : public View {
         string _lastLoadedText;
         ImGuiWindowFlags _gizmoWindowFlags;
         pxr::SdfLayerRefPtr _rootLayer, _sessionLayer;
+        pxr::UsdImagingStageSceneIndexRefPtr _stageSceneIndex;
+        pxr::UsdStageRefPtr _stage;
 
         /**
          * @brief Override of the View::Draw
