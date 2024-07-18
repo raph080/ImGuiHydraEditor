@@ -1,5 +1,6 @@
 #include "outliner.h"
 
+#include <pxr/imaging/hd/sceneIndexPrimView.h>
 #include <pxr/usd/usd/stage.h>
 
 Outliner::Outliner(Model* model, const string label) : View(model, label) {}
@@ -11,8 +12,10 @@ const string Outliner::GetViewType()
 
 void Outliner::_Draw()
 {
-    for (auto prim : GetModel()->GetAllPrims()) {
-        _DrawPrimHierarchy(prim.GetPath());
+    pxr::HdSceneIndexPrimView primView(GetModel()->GetSceneIndex(),
+                                       pxr::SdfPath::AbsoluteRootPath());
+    for (const pxr::SdfPath& primPath : primView) {
+        _DrawPrimHierarchy(primPath);
     }
 }
 
@@ -31,8 +34,10 @@ ImRect Outliner::_DrawPrimHierarchy(pxr::SdfPath primPath)
     if (recurse) {
         // draw all children and store their rect position
         vector<ImRect> rects;
-        pxr::UsdPrim prim = GetModel()->GetPrim(primPath);
-        for (auto child : prim.GetChildren()) {
+        pxr::SdfPathVector primPaths =
+            GetModel()->GetSceneIndex()->GetChildPrimPaths(primPath);
+
+        for (auto child : primPaths) {
             ImRect childRect = _DrawPrimHierarchy(child.GetPrimPath());
             rects.push_back(childRect);
         }
@@ -53,9 +58,10 @@ ImGuiTreeNodeFlags Outliner::_ComputeDisplayFlags(pxr::SdfPath primPath)
     ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_None;
 
     // set the flag if leaf or not
-    pxr::UsdPrim prim = GetModel()->GetPrim(primPath);
-    pxr::UsdPrimSiblingRange children = prim.GetChildren();
-    if (GetSize(children) == 0) {
+    pxr::SdfPathVector primPaths =
+        GetModel()->GetSceneIndex()->GetChildPrimPaths(primPath);
+
+    if (primPaths.size() == 0) {
         flags |= ImGuiTreeNodeFlags_Leaf;
         flags |= ImGuiTreeNodeFlags_Bullet;
     }
@@ -94,7 +100,7 @@ bool Outliner::IsParentOf(pxr::SdfPath primPath, pxr::SdfPath childPrimPath)
 
 bool Outliner::_IsParentOfModelSelection(pxr::SdfPath primPath)
 {
-    // check if prim is parent of selection
+    // check if primPath is parent of selection
     for (auto&& p : GetModel()->GetSelection())
         if (IsParentOf(primPath, p)) return true;
 
@@ -104,7 +110,7 @@ bool Outliner::_IsParentOfModelSelection(pxr::SdfPath primPath)
 bool Outliner::_IsInModelSelection(pxr::SdfPath primPath)
 {
     pxr::SdfPathVector sel = GetModel()->GetSelection();
-    // check if prim in model selection
+    // check if primPath in model selection
     return find(sel.begin(), sel.end(), primPath) != sel.end();
 }
 

@@ -45,11 +45,3 @@ void SetTransformMatrix(pxr::UsdGeomXformable geom, pxr::GfMatrix4d transform);
  */
 bool AreNearlyEquals(pxr::GfMatrix4f mat1, pxr::GfMatrix4f mat2,
                      float precision = 0.001f);
-
-/**
- * @brief Get the size of a UsdPrimSiblingRange
- *
- * @param range the UsdPrimSiblingRange to get the size from
- * @return int the number of UsdPrims contained in the 'range'
- */
-int GetSize(pxr::UsdPrimSiblingRange range);

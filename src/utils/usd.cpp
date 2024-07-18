@@ -27,8 +27,3 @@ bool AreNearlyEquals(pxr::GfMatrix4f mat1, pxr::GfMatrix4f mat2,
         if (pxr::GfAbs(subMat.data()[i]) > precision) return false;
     return true;
 }
-
-int GetSize(pxr::UsdPrimSiblingRange range)
-{
-    return std::distance(range.begin(), range.end());
-}
