@@ -12,11 +12,9 @@ const string Outliner::GetViewType()
 
 void Outliner::_Draw()
 {
-    pxr::HdSceneIndexPrimView primView(GetModel()->GetSceneIndex(),
-                                       pxr::SdfPath::AbsoluteRootPath());
-    for (const pxr::SdfPath& primPath : primView) {
-        _DrawPrimHierarchy(primPath);
-    }
+    pxr::SdfPathVector paths = GetModel()->GetSceneIndex()->GetChildPrimPaths(
+        pxr::SdfPath::AbsoluteRootPath());
+    for (auto primPath : paths) _DrawPrimHierarchy(primPath);
 }
 
 // returns the node's rectangle
