@@ -73,7 +73,7 @@ class Viewport : public View {
         const float _FREE_CAM_FAR = 10000.f;
 
         bool _isAmbientLightEnabled, _isDomeLightEnabled, _isGridEnabled;
-        pxr::UsdPrim _activeCam;
+        pxr::SdfPath _activeCam;
 
         pxr::GfVec3d _eye, _at, _up;
         pxr::GfMatrix4d _proj;
@@ -184,9 +184,9 @@ class Viewport : public View {
         /**
          * @brief Set the given camera as the active one
          *
-         * @param cam the camera to set as active
+         * @param primPath the path to the camera to set as active
          */
-        void _SetActiveCam(pxr::UsdPrim cam);
+        void _SetActiveCam(pxr::SdfPath primPath);
 
         /**
          * @brief Update the viewport from the active camera
@@ -216,9 +216,9 @@ class Viewport : public View {
         /**
          * @brief Focus the active camera and the viewport on the given prim
          *
-         * @param prim the prim to focus on
+         * @param primPath the prim to focus on
          */
-        void _FocusOnPrim(pxr::UsdPrim prim);
+        void _FocusOnPrim(pxr::SdfPath primPath);
 
         /**
          * @brief Override of the View::_KeyPressEvent

@@ -11,20 +11,18 @@ const string Outliner::GetViewType()
 
 void Outliner::_Draw()
 {
-    pxr::UsdStageRefPtr stage = GetModel()->GetStage();
-
-    for (auto prim : stage->GetPseudoRoot().GetChildren()) {
-        _DrawPrimHierarchy(prim);
+    for (auto prim : GetModel()->GetAllPrims()) {
+        _DrawPrimHierarchy(prim.GetPath());
     }
 }
 
 // returns the node's rectangle
-ImRect Outliner::_DrawPrimHierarchy(pxr::UsdPrim prim)
+ImRect Outliner::_DrawPrimHierarchy(pxr::SdfPath primPath)
 {
-    bool recurse = _DrawHierarchyNode(prim);
+    bool recurse = _DrawHierarchyNode(primPath);
 
     if (ImGui::IsItemClicked() && !ImGui::IsItemToggledOpen()) {
-        GetModel()->SetSelection({prim});
+        GetModel()->SetSelection({primPath});
     }
 
     const ImRect curItemRect =
@@ -33,8 +31,9 @@ ImRect Outliner::_DrawPrimHierarchy(pxr::UsdPrim prim)
     if (recurse) {
         // draw all children and store their rect position
         vector<ImRect> rects;
+        pxr::UsdPrim prim = GetModel()->GetPrim(primPath);
         for (auto child : prim.GetChildren()) {
-            ImRect childRect = _DrawPrimHierarchy(child);
+            ImRect childRect = _DrawPrimHierarchy(child.GetPrimPath());
             rects.push_back(childRect);
         }
 
@@ -49,11 +48,12 @@ ImRect Outliner::_DrawPrimHierarchy(pxr::UsdPrim prim)
     return curItemRect;
 }
 
-ImGuiTreeNodeFlags Outliner::_ComputeDisplayFlags(pxr::UsdPrim prim)
+ImGuiTreeNodeFlags Outliner::_ComputeDisplayFlags(pxr::SdfPath primPath)
 {
     ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_None;
 
     // set the flag if leaf or not
+    pxr::UsdPrim prim = GetModel()->GetPrim(primPath);
     pxr::UsdPrimSiblingRange children = prim.GetChildren();
     if (GetSize(children) == 0) {
         flags |= ImGuiTreeNodeFlags_Leaf;
@@ -62,20 +62,20 @@ ImGuiTreeNodeFlags Outliner::_ComputeDisplayFlags(pxr::UsdPrim prim)
     else flags = ImGuiTreeNodeFlags_OpenOnArrow;
 
     // if selected prim, set highlight flag
-    bool isSelected = _IsInModelSelection(prim);
+    bool isSelected = _IsInModelSelection(primPath);
     if (isSelected) flags |= ImGuiTreeNodeFlags_Selected;
 
     return flags;
 }
 
-bool Outliner::_DrawHierarchyNode(pxr::UsdPrim prim)
+bool Outliner::_DrawHierarchyNode(pxr::SdfPath primPath)
 {
     bool recurse = false;
-    const char* primName = prim.GetName().GetText();
-    ImGuiTreeNodeFlags flags = _ComputeDisplayFlags(prim);
+    const char* primName = primPath.GetName().c_str();
+    ImGuiTreeNodeFlags flags = _ComputeDisplayFlags(primPath);
 
     // print node in blue if parent of selection
-    if (_IsParentOfModelSelection(prim)) {
+    if (_IsParentOfModelSelection(primPath)) {
         ImU32 color = ImGui::GetColorU32(ImGuiCol_HeaderActive, 1.f);
         ImGui::PushStyleColor(ImGuiCol_Text, color);
         recurse = ImGui::TreeNodeEx(primName, flags);
@@ -87,24 +87,29 @@ bool Outliner::_DrawHierarchyNode(pxr::UsdPrim prim)
     return recurse;
 }
 
-bool Outliner::_IsParentOfModelSelection(pxr::UsdPrim prim)
+bool Outliner::IsParentOf(pxr::SdfPath primPath, pxr::SdfPath childPrimPath)
+{
+    return primPath.GetCommonPrefix(childPrimPath) == primPath;
+}
+
+bool Outliner::_IsParentOfModelSelection(pxr::SdfPath primPath)
 {
     // check if prim is parent of selection
     for (auto&& p : GetModel()->GetSelection())
-        if (IsParentOf(prim, p)) return true;
+        if (IsParentOf(primPath, p)) return true;
 
     return false;
 }
 
-bool Outliner::_IsInModelSelection(pxr::UsdPrim prim)
+bool Outliner::_IsInModelSelection(pxr::SdfPath primPath)
 {
-    vector<pxr::UsdPrim> sel = GetModel()->GetSelection();
+    pxr::SdfPathVector sel = GetModel()->GetSelection();
     // check if prim in model selection
-    return find(sel.begin(), sel.end(), prim) != sel.end();
+    return find(sel.begin(), sel.end(), primPath) != sel.end();
 }
 
 void Outliner::_DrawChildrendHierarchyDecoration(ImRect parentRect,
-                                                vector<ImRect> childrenRects)
+                                                 vector<ImRect> childrenRects)
 {
     ImDrawList* drawList = ImGui::GetWindowDrawList();
     const ImColor lineColor = ImGui::GetColorU32(ImGuiCol_Text, 0.25f);

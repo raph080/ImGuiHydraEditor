@@ -55,28 +55,38 @@ pxr::UsdStageRefPtr Model::GetStage()
     return _stage;
 }
 
-vector<pxr::UsdPrim> Model::GetCameras()
+pxr::UsdPrim Model::GetPrim(pxr::SdfPath path)
+{
+    return _stage->GetPrimAtPath(path);
+}
+
+pxr::UsdPrimRange Model::GetAllPrims()
+{
+    return _stage->Traverse();
+}
+
+pxr::SdfPathVector Model::GetCameras()
 {
     pxr::UsdPrimSubtreeRange prims =
         _stage->GetPseudoRoot().GetAllDescendants();
 
-    vector<pxr::UsdPrim> cams;
+    pxr::SdfPathVector camPaths;
     for (auto prim : prims) {
         if (prim.GetTypeName().GetString() == pxr::UsdGeomTokens->Camera) {
-            cams.push_back(prim);
+            camPaths.push_back(prim.GetPrimPath());
         }
     }
-    return cams;
+    return camPaths;
 }
 
-vector<pxr::UsdPrim> Model::GetSelection()
+pxr::SdfPathVector Model::GetSelection()
 {
-    return vector<pxr::UsdPrim>(_selection);
+    return _selection;
 }
 
-void Model::SetSelection(vector<pxr::UsdPrim> prims)
+void Model::SetSelection(pxr::SdfPathVector primPaths)
 {
-    _selection = vector<pxr::UsdPrim>(prims);
+    _selection = primPaths;
 }
 
 pxr::SdfLayerRefPtr Model::GetSessionLayer()

@@ -41,7 +41,7 @@ class Editor : public View {
         const string GetViewType() override;
 
     private:
-        pxr::UsdPrim _prevSelection;
+        pxr::SdfPath _prevSelection;
 
         /**
          * @brief Override of the View::Draw
@@ -50,13 +50,12 @@ class Editor : public View {
         void _Draw() override;
 
         /**
-         * @brief Get the UsdPrim to display the attributes in the editor.
-         * The UsdPrim corresponds to the selected one or the previous selected
-         * if the selection is empty
+         * @brief Get the SdfPath of the prim to display the attributes in the
+         * editor.
          *
-         * @return The current prim to display the attributes from
+         * @return The current prim path to display the attributes from
          */
-        pxr::UsdPrim _GetPrimToDisplay();
+        pxr::SdfPath _GetPrimToDisplay();
 
         /**
          * @brief Append the transform attributes of the given prim to the

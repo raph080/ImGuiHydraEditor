@@ -17,9 +17,11 @@ const string Editor::GetViewType()
 
 void Editor::_Draw()
 {
-    pxr::UsdPrim prim = _GetPrimToDisplay();
+    pxr::SdfPath primPath = _GetPrimToDisplay();
 
-    if (prim.IsValid()) {
+    if (!primPath.IsEmpty()) {
+        pxr::UsdPrim prim = GetModel()->GetPrim(primPath);
+
         if (ImGui::CollapsingHeader("Transform attributes"))
             _AppendTransformAttrs(prim);
 
@@ -33,11 +35,12 @@ void Editor::_Draw()
     }
 }
 
-pxr::UsdPrim Editor::_GetPrimToDisplay()
+pxr::SdfPath Editor::_GetPrimToDisplay()
 {
-    vector<pxr::UsdPrim> prims = GetModel()->GetSelection();
+    pxr::SdfPathVector primPaths = GetModel()->GetSelection();
 
-    if (prims.size() > 0 && prims[0].IsValid()) _prevSelection = prims[0];
+    if (primPaths.size() > 0 && !primPaths[0].IsEmpty())
+        _prevSelection = primPaths[0];
 
     return _prevSelection;
 }

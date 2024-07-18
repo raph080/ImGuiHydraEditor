@@ -6,7 +6,6 @@
 #include <pxr/imaging/hd/rendererPluginRegistry.h>
 #include <pxr/imaging/hdx/pickTask.h>
 #include <pxr/imaging/hgi/tokens.h>
-#include <pxr/usd/usd/stage.h>
 #include <pxr/usdImaging/usdImaging/sceneIndices.h>
 
 Engine::Engine(pxr::UsdStageRefPtr stage, pxr::TfToken plugin)
@@ -283,7 +282,7 @@ void Engine::Render()
     _drawTarget->Unbind();
 }
 
-pxr::UsdPrim Engine::FindIntersection(pxr::GfVec2f screenPos)
+pxr::SdfPath Engine::FindIntersection(pxr::GfVec2f screenPos)
 {
     // create a narrowed frustum on the given position
     float normalizedXPos = screenPos[0] / _width;
@@ -317,12 +316,12 @@ pxr::UsdPrim Engine::FindIntersection(pxr::GfVec2f screenPos)
     _engine.Execute(_renderIndex, &tasks);
 
     // get the hitting point
-    if (allHits.size() != 1) return pxr::UsdPrim();
+    if (allHits.size() != 1) return pxr::SdfPath();
 
     const pxr::SdfPath path = allHits[0].objectId.ReplacePrefix(
         _taskControllerId, pxr::SdfPath::AbsoluteRootPath());
 
-    return _stage->GetPrimAtPath(path);
+    return path;
 }
 
 void* Engine::GetRenderBufferData()

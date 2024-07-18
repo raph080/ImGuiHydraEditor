@@ -10,6 +10,7 @@
 #pragma once
 
 #include <pxr/usd/usd/prim.h>
+#include <pxr/usd/usd/primRange.h>
 #include <pxr/usd/usd/stage.h>
 
 #include <vector>
@@ -65,25 +66,41 @@ class Model {
         pxr::UsdStageRefPtr GetStage();
 
         /**
-         * @brief Get a vector of all camera prims from the model
+         * @brief Get the Usd Prim from the model at a specific path
          *
-         * @return vector<pxr::UsdPrim> a vector of camera prims
+         * @param path pxr::SdfPath the path to the prim to get
+         *
+         * @return pxr::UsdPrim the prim at the given path
          */
-        vector<pxr::UsdPrim> GetCameras();
+        pxr::UsdPrim GetPrim(pxr::SdfPath path);
+
+        /**
+         * @brief Get the Usd Prim from the model
+         *
+         * @return pxr::UsdPrimRange a prim
+         */
+        pxr::UsdPrimRange GetAllPrims();
+
+        /**
+         * @brief Get a vector of all camera path from the model
+         *
+         * @return pxr::SdfPathVector a vector of camera paths
+         */
+        pxr::SdfPathVector GetCameras();
 
         /**
          * @brief Get the current prim selection of the model
          *
-         * @return vector<pxr::UsdPrim> a vector of the selected prims
+         * @return pxr::SdfPathVector a vector of the selected prim paths
          */
-        vector<pxr::UsdPrim> GetSelection();
+        pxr::SdfPathVector GetSelection();
 
         /**
          * @brief Set the current prim selection of the model
          *
-         * @param prims the vector containing the prim selection
+         * @param primPaths the vector containing the prim paths selection
          */
-        void SetSelection(vector<pxr::UsdPrim> prims);
+        void SetSelection(pxr::SdfPathVector primPaths);
 
         /**
          * @brief Get a reference to the session layer of the model
@@ -94,6 +111,6 @@ class Model {
 
     private:
         pxr::UsdStageRefPtr _stage;
-        vector<pxr::UsdPrim> _selection;
+        pxr::SdfPathVector _selection;
         pxr::SdfLayerRefPtr _rootLayer, _sessionLayer;
 };

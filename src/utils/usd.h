@@ -34,26 +34,6 @@ pxr::GfMatrix4d GetTransformMatrix(pxr::UsdGeomXformable geom);
 void SetTransformMatrix(pxr::UsdGeomXformable geom, pxr::GfMatrix4d transform);
 
 /**
- * @brief Check if a given prim is parent of another prim
- *
- * @param prim the UsdPrim to check if it is a parent from 'childPrim'
- * @param childPrim the UsdPrim that acts as the child prim
- * @return true if 'prim' is parent of 'childPrim'
- * @return false otherwise
- */
-bool IsParentOf(pxr::UsdPrim prim, pxr::UsdPrim childPrim);
-
-/**
- * @brief Get the first instanceable parent prim (from the root of the
- * UsdStage) of a given prim
- *
- * @param prim the UsdPrim to find the first instanceable parent from.
- * @return pxr::UsdPrim the first instanceable parent prim (from the root of
- * the stage) of 'prim'
- */
-pxr::UsdPrim GetInstanceableParent(pxr::UsdPrim prim);
-
-/**
  * @brief Check if two GfMatrix4f are nearly equal, based on a precision delta
  *
  * @param mat1 the first GfMatrix4f matrix to check with

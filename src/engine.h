@@ -113,9 +113,10 @@ class Engine {
          *
          * @param screenPos the position of the screen
          *
-         * @return the USD Prim visible at the given screen position
+         * @return the Sdf Path to the Prim visible at the given screen
+         * position
          */
-        pxr::UsdPrim FindIntersection(pxr::GfVec2f screenPos);
+        pxr::SdfPath FindIntersection(pxr::GfVec2f screenPos);
 
         /**
          * @brief Get the data from the render buffer

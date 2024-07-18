@@ -136,14 +136,14 @@ void Viewport::_DrawMenuBar()
         }
 
         if (ImGui::BeginMenu("cameras")) {
-            bool enabled = (!_activeCam.IsValid());
+            bool enabled = (_activeCam.IsEmpty());
             if (ImGui::MenuItem("free camera", NULL, &enabled)) {
                 _SetFreeCamAsActive();
             }
-            for (pxr::UsdPrim cam : GetModel()->GetCameras()) {
-                bool enabled = (cam == _activeCam);
-                if (ImGui::MenuItem(cam.GetName().GetText(), NULL, enabled)) {
-                    _SetActiveCam(cam);
+            for (pxr::SdfPath path : GetModel()->GetCameras()) {
+                bool enabled = (path == _activeCam);
+                if (ImGui::MenuItem(path.GetName().c_str(), NULL, enabled)) {
+                    _SetActiveCam(path);
                 }
             }
             ImGui::EndMenu();
@@ -212,10 +212,11 @@ void Viewport::_UpdateHydraRender()
 
 void Viewport::_UpdateTransformGuizmo()
 {
-    vector<pxr::UsdPrim> prims = GetModel()->GetSelection();
-    if (prims.size() == 0 || !prims[0].IsValid()) return;
+    pxr::SdfPathVector primPath = GetModel()->GetSelection();
+    if (primPath.size() == 0 || primPath[0].IsEmpty()) return;
 
-    pxr::UsdGeomGprim geom(prims[0]);
+    pxr::UsdPrim prim = GetModel()->GetPrim(primPath[0]);
+    pxr::UsdGeomGprim geom(prim);
 
     pxr::GfMatrix4d transform = GetTransformMatrix(geom);
     pxr::GfMatrix4f transformF(transform);
@@ -327,20 +328,21 @@ void Viewport::_ZoomActiveCam(float scrollWheel)
 
 void Viewport::_SetFreeCamAsActive()
 {
-    _activeCam = pxr::UsdPrim();
+    _activeCam = pxr::SdfPath();
 }
 
-void Viewport::_SetActiveCam(pxr::UsdPrim cam)
+void Viewport::_SetActiveCam(pxr::SdfPath primPath)
 {
-    _activeCam = cam;
+    _activeCam = primPath;
     _UpdateViewportFromActiveCam();
 }
 
 void Viewport::_UpdateViewportFromActiveCam()
 {
-    if (!_activeCam.IsValid()) return;
+    if (_activeCam.IsEmpty()) return;
 
-    pxr::UsdGeomCamera geomCam(_activeCam);
+    pxr::UsdPrim primCam = GetModel()->GetPrim(_activeCam);
+    pxr::UsdGeomCamera geomCam(primCam);
     pxr::GfCamera gfCam = geomCam.GetCamera(pxr::UsdTimeCode::Default());
     pxr::GfFrustum frustum = gfCam.GetFrustum();
     _eye = frustum.GetPosition();
@@ -354,9 +356,10 @@ pxr::GfMatrix4d Viewport::_getCurViewMatrix()
 
 void Viewport::_UpdateActiveCamFromViewport()
 {
-    if (!_activeCam.IsValid()) return;
+    if (_activeCam.IsEmpty()) return;
 
-    pxr::UsdGeomCamera geomCam(_activeCam);
+    pxr::UsdPrim primCam = GetModel()->GetPrim(_activeCam);
+    pxr::UsdGeomCamera geomCam(primCam);
     pxr::GfCamera gfCam = geomCam.GetCamera(pxr::UsdTimeCode::Default());
 
     pxr::GfFrustum prevFrustum = gfCam.GetFrustum();
@@ -377,8 +380,9 @@ void Viewport::_UpdateProjection()
     float nearPlane = _FREE_CAM_NEAR;
     float farPlane = _FREE_CAM_FAR;
 
-    if (_activeCam.IsValid()) {
-        pxr::UsdGeomCamera geomCam(_activeCam);
+    if (!_activeCam.IsEmpty()) {
+        pxr::UsdPrim primCam = GetModel()->GetPrim(_activeCam);
+        pxr::UsdGeomCamera geomCam(primCam);
         pxr::GfCamera gfCam = geomCam.GetCamera(pxr::UsdTimeCode::Default());
         fov = gfCam.GetFieldOfView(pxr::GfCamera::FOVVertical);
         nearPlane = gfCam.GetClippingRange().GetMin();
@@ -391,9 +395,9 @@ void Viewport::_UpdateProjection()
     _proj = frustum.ComputeProjectionMatrix();
 }
 
-void Viewport::_FocusOnPrim(pxr::UsdPrim prim)
+void Viewport::_FocusOnPrim(pxr::SdfPath primPath)
 {
-    if (!prim.IsValid()) return;
+    if (primPath.IsEmpty()) return;
 
     pxr::TfTokenVector purposes;
     purposes.push_back(pxr::UsdGeomTokens->default_);
@@ -401,6 +405,7 @@ void Viewport::_FocusOnPrim(pxr::UsdPrim prim)
     bool useExtentHints = true;
     pxr::UsdGeomBBoxCache bboxCache(pxr::UsdTimeCode::Default(), purposes,
                                     useExtentHints);
+    pxr::UsdPrim prim = GetModel()->GetPrim(primPath);
     pxr::GfBBox3d bbox = bboxCache.ComputeWorldBound(prim);
 
     _at = bbox.ComputeCentroid();
@@ -413,8 +418,8 @@ void Viewport::_FocusOnPrim(pxr::UsdPrim prim)
 void Viewport::_KeyPressEvent(ImGuiKey key)
 {
     if (key == ImGuiKey_F) {
-        vector<pxr::UsdPrim> prims = GetModel()->GetSelection();
-        if (prims.size() > 0) _FocusOnPrim(prims[0]);
+        pxr::SdfPathVector primPaths = GetModel()->GetSelection();
+        if (primPaths.size() > 0) _FocusOnPrim(primPaths[0]);
     }
     else if (key == ImGuiKey_W) {
         _curOperation = ImGuizmo::TRANSLATE;
@@ -460,15 +465,10 @@ void Viewport::_MouseReleaseEvent(ImGuiMouseButton_ button, ImVec2 mousePos)
         ImVec2 delta = ImGui::GetMouseDragDelta(ImGuiMouseButton_Left);
         if (fabs(delta.x) + fabs(delta.y) < 0.001f) {
             pxr::GfVec2f gfMousePos(mousePos[0], mousePos[1]);
-            pxr::UsdPrim prim = _engine->FindIntersection(gfMousePos);
+            pxr::SdfPath primPath = _engine->FindIntersection(gfMousePos);
 
-            // TODO: tmp fix: if parent is instanceable,
-            // switch the selection to the instanceable parent
-            // since instanceable is not handle currently
-            pxr::UsdPrim instParent = GetInstanceableParent(prim);
-            if (instParent.IsValid()) prim = instParent;
-
-            GetModel()->SetSelection({prim});
+            if (primPath.IsEmpty()) GetModel()->SetSelection({});
+            else GetModel()->SetSelection({primPath});
         }
     }
 }

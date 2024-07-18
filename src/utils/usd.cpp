@@ -19,31 +19,6 @@ void SetTransformMatrix(pxr::UsdGeomXformable geom, pxr::GfMatrix4d transform)
     geom.AddTransformOp().Set(localOffset);
 };
 
-bool IsParentOf(pxr::UsdPrim prim, pxr::UsdPrim childPrim)
-{
-    if (!prim.IsValid() || !childPrim.IsValid()) return false;
-
-    pxr::UsdPrim curParent = childPrim.GetParent();
-    while (curParent.IsValid()) {
-        if (curParent == prim) return true;
-        curParent = curParent.GetParent();
-    }
-    return false;
-}
-
-pxr::UsdPrim GetInstanceableParent(pxr::UsdPrim prim)
-{
-    if (!prim.IsValid()) return pxr::UsdPrim();
-
-    pxr::UsdPrim curParent = prim.GetParent();
-    pxr::UsdPrim lastInstanceablePrim = pxr::UsdPrim();
-    while (curParent.IsValid()) {
-        if (curParent.IsInstanceable()) lastInstanceablePrim = curParent;
-        curParent = curParent.GetParent();
-    }
-    return lastInstanceablePrim;
-}
-
 bool AreNearlyEquals(pxr::GfMatrix4f mat1, pxr::GfMatrix4f mat2,
                      float precision)
 {
