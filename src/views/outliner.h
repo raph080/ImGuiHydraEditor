@@ -14,7 +14,6 @@
 #include <imgui_internal.h>
 #include <pxr/usd/usd/prim.h>
 
-#include "utils/usd.h"
 #include "view.h"
 
 using namespace std;

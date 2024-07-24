@@ -22,7 +22,6 @@
 #include "models/model.h"
 #include "sceneindices/gridsceneindex.h"
 #include "sceneindices/xformfiltersceneindex.h"
-#include "utils/usd.h"
 #include "view.h"
 
 using namespace std;
