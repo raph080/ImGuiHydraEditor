@@ -11,6 +11,7 @@
 
 #include <pxr/usd/usd/prim.h>
 
+#include "sceneindices/colorfiltersceneindex.h"
 #include "utils/usd.h"
 #include "view.h"
 
@@ -42,6 +43,7 @@ class Editor : public View {
 
     private:
         pxr::SdfPath _prevSelection;
+        pxr::ColorFilterSceneIndexRefPtr _colorFilterSceneIndex;
 
         /**
          * @brief Override of the View::Draw
@@ -58,26 +60,10 @@ class Editor : public View {
         pxr::SdfPath _GetPrimToDisplay();
 
         /**
-         * @brief Append the transform attributes of the given prim to the
-         * editor view
+         * @brief Append the display color attributes of the given prim path to
+         * the editor view
          *
-         * @param prim the UsdPrim to get the transform attributes from
+         * @param primPath the SdfPath to get the display color attributes from
          */
-        void _AppendTransformAttrs(pxr::UsdPrim prim);
-
-        /**
-         * @brief Append the camera attributes of the given prim to the
-         * editor view
-         *
-         * @param prim the UsdPrim to get the camera attributes from
-         */
-        void _AppendCamAttrs(pxr::UsdPrim prim);
-
-        /**
-         * @brief Append the display color attributes of the given prim to the
-         * editor view
-         *
-         * @param prim the UsdPrim to get the display color attributes from
-         */
-        void _AppendDisplayColorAttr(pxr::UsdPrim prim);
+        void _AppendDisplayColorAttr(pxr::SdfPath primPath);
 };

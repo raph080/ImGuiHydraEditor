@@ -161,16 +161,26 @@ void UsdSessionLayer::_CreatePrim(pxr::TfToken primType)
         auto cam = pxr::UsdGeomCamera::Define(_stage, pxr::SdfPath(primPath));
         cam.CreateFocalLengthAttr(pxr::VtValue(18.46f));
     }
-    if (primType == pxr::HdPrimTypeTokens->capsule)
-        pxr::UsdGeomCapsule::Define(_stage, pxr::SdfPath(primPath));
-    if (primType == pxr::HdPrimTypeTokens->cone)
-        pxr::UsdGeomCone::Define(_stage, pxr::SdfPath(primPath));
-    if (primType == pxr::HdPrimTypeTokens->cube)
-        pxr::UsdGeomCube::Define(_stage, pxr::SdfPath(primPath));
-    if (primType == pxr::HdPrimTypeTokens->cylinder)
-        pxr::UsdGeomCylinder::Define(_stage, pxr::SdfPath(primPath));
-    if (primType == pxr::HdPrimTypeTokens->sphere)
-        pxr::UsdGeomSphere::Define(_stage, pxr::SdfPath(primPath));
+    else {
+        pxr::UsdGeomGprim prim;
+        if (primType == pxr::HdPrimTypeTokens->capsule)
+            prim = pxr::UsdGeomCapsule::Define(_stage, pxr::SdfPath(primPath));
+        if (primType == pxr::HdPrimTypeTokens->cone)
+            prim = pxr::UsdGeomCone::Define(_stage, pxr::SdfPath(primPath));
+        if (primType == pxr::HdPrimTypeTokens->cube)
+            prim = pxr::UsdGeomCube::Define(_stage, pxr::SdfPath(primPath));
+        if (primType == pxr::HdPrimTypeTokens->cylinder)
+            prim =
+                pxr::UsdGeomCylinder::Define(_stage, pxr::SdfPath(primPath));
+        if (primType == pxr::HdPrimTypeTokens->sphere)
+            prim = pxr::UsdGeomSphere::Define(_stage, pxr::SdfPath(primPath));
+
+        pxr::VtVec3fArray extent({{-1, -1, -1}, {1, 1, 1}});
+        prim.CreateExtentAttr(pxr::VtValue(extent));
+
+        pxr::VtVec3fArray color({{.5f, .5f, .5f}});
+        prim.CreateDisplayColorAttr(pxr::VtValue(color));
+    }
 
     _stageSceneIndex->ApplyPendingUpdates();
 }

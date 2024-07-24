@@ -6,8 +6,8 @@
 #include <pxr/base/plug/plugin.h>
 #include <pxr/imaging/cameraUtil/framing.h>
 #include <pxr/imaging/hd/cameraSchema.h>
+#include <pxr/imaging/hd/extentSchema.h>
 #include <pxr/usd/usd/stage.h>
-#include <pxr/usd/usdGeom/bboxCache.h>
 
 #include <iostream>
 
@@ -441,18 +441,27 @@ void Viewport::_FocusOnPrim(pxr::SdfPath primPath)
 {
     if (primPath.IsEmpty()) return;
 
-    pxr::TfTokenVector purposes;
-    purposes.push_back(pxr::UsdGeomTokens->default_);
+    pxr::HdSceneIndexPrim prim = _sceneIndex->GetPrim(primPath);
 
-    bool useExtentHints = true;
-    pxr::UsdGeomBBoxCache bboxCache(pxr::UsdTimeCode::Default(), purposes,
-                                    useExtentHints);
-    pxr::UsdPrim prim = GetModel()->GetUsdPrim(primPath);
-    pxr::GfBBox3d bbox = bboxCache.ComputeWorldBound(prim);
+    pxr::HdExtentSchema extentSchema =
+        pxr::HdExtentSchema::GetFromParent(prim.dataSource);
+    if (!extentSchema.IsDefined()) {
+        std::cout << "Prim at " << primPath
+                  << " has no extent; skipping focus." << std::endl;
+        return;
+    }
 
-    _at = bbox.ComputeCentroid();
+    pxr::HdSampledDataSource::Time time(0);
+    pxr::GfVec3d extentMin =
+        extentSchema.GetMin()->GetValue(time).Get<pxr::GfVec3d>();
+    pxr::GfVec3d extentMax =
+        extentSchema.GetMax()->GetValue(time).Get<pxr::GfVec3d>();
+
+    pxr::GfRange3d extentRange(extentMin, extentMax);
+
+    _at = extentRange.GetMidpoint();
     _eye = _at + (_eye - _at).GetNormalized() *
-                     bbox.GetBox().GetSize().GetLength() * 2;
+                     extentRange.GetSize().GetLength() * 2;
 
     _UpdateActiveCamFromViewport();
 }
