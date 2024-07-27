@@ -14,6 +14,8 @@
 #include <pxr/usd/usdGeom/camera.h>
 #include <pxr/usd/usdGeom/gprim.h>
 
+#include <sstream>
+
 Editor::Editor(Model* model, const string label) : View(model, label)
 {
     auto editableSceneIndex = GetModel()->GetEditableSceneIndex();
@@ -34,6 +36,7 @@ void Editor::_Draw()
     if (primPath.IsEmpty()) return;
 
     _AppendDisplayColorAttr(primPath);
+    _AppendAllPrimAttrs(primPath);
 }
 
 pxr::SdfPath Editor::_GetPrimToDisplay()
@@ -56,10 +59,57 @@ void Editor::_AppendDisplayColorAttr(pxr::SdfPath primPath)
     pxr::GfVec3f prevColor = pxr::GfVec3f(color);
 
     float* data = color.data();
-    if (ImGui::CollapsingHeader("Extra attributes"))
+    if (ImGui::CollapsingHeader("Display Color"))
         ImGui::SliderFloat3("", data, 0, 1);
 
     // add opinion only if values change
     if (color != prevColor)
         _colorFilterSceneIndex->SetDisplayColor(primPath, color);
+}
+
+void Editor::_AppendDataSourceAttrs(
+    pxr::HdContainerDataSourceHandle containerDataSource)
+{
+    for (auto&& token : containerDataSource->GetNames()) {
+        auto dataSource = containerDataSource->Get(token);
+        const char* tokenText = token.GetText();
+
+        auto containerDataSource =
+            pxr::HdContainerDataSource::Cast(dataSource);
+        if (containerDataSource) {
+            bool clicked =
+                ImGui::TreeNodeEx(tokenText, ImGuiTreeNodeFlags_OpenOnArrow);
+
+            if (clicked) {
+                _AppendDataSourceAttrs(containerDataSource);
+                ImGui::TreePop();
+            }
+        }
+
+        auto sampledDataSource = pxr::HdSampledDataSource::Cast(dataSource);
+        if (sampledDataSource) {
+            ImGui::Columns(2);
+            pxr::VtValue value = sampledDataSource->GetValue(0);
+            ImGui::Text("%s", tokenText);
+            ImGui::NextColumn();
+            ImGui::BeginChild(tokenText, ImVec2(0, 14), false);
+            std::stringstream ss;
+            ss << value;
+            ImGui::Text("%s", ss.str().c_str());
+            ImGui::EndChild();
+            ImGui::Columns();
+        }
+    }
+}
+
+void Editor::_AppendAllPrimAttrs(pxr::SdfPath primPath)
+{
+    pxr::HdSceneIndexPrim prim = _sceneIndex->GetPrim(primPath);
+    pxr::TfTokenVector tokens = prim.dataSource->GetNames();
+
+    if (tokens.size() < 1) return;
+
+    if (ImGui::CollapsingHeader("Prim attributes")) {
+        _AppendDataSourceAttrs(prim.dataSource);
+    }
 }
