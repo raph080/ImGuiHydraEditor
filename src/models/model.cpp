@@ -14,11 +14,6 @@ Model::Model()
     SetEditableSceneIndex(_editableSceneIndex);
 }
 
-pxr::GfVec3d Model::GetUpAxis()
-{
-    return pxr::GfVec3d(0, 1, 0);
-}
-
 pxr::UsdStageRefPtr Model::GetStage()
 {
     return _stage;

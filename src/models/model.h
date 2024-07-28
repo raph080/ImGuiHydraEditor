@@ -36,13 +36,6 @@ class Model {
         Model();
 
         /**
-         * @brief Get the Up Axis of the model
-         *
-         * @return the up vector
-         */
-        pxr::GfVec3d GetUpAxis();
-
-        /**
          * @brief Get a reference to the Usd Stage from the model
          *
          * @return pxr::UsdStageRefPtr a reference to the Usd Stage
