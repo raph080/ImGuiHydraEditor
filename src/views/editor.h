@@ -11,8 +11,10 @@
 
 #include <pxr/usd/usd/prim.h>
 
-#include "utils/usd.h"
+#include "sceneindices/colorfiltersceneindex.h"
 #include "view.h"
+
+PXR_NAMESPACE_OPEN_SCOPE
 
 using namespace std;
 
@@ -41,44 +43,47 @@ class Editor : public View {
         const string GetViewType() override;
 
     private:
-        pxr::UsdPrim _prevSelection;
+        pxr::SdfPath _prevSelection;
+        pxr::ColorFilterSceneIndexRefPtr _colorFilterSceneIndex;
 
         /**
          * @brief Override of the View::Draw
          *
          */
-        void Draw() override;
+        void _Draw() override;
 
         /**
-         * @brief Get the UsdPrim to display the attributes in the editor.
-         * The UsdPrim corresponds to the selected one or the previous selected
-         * if the selection is empty
+         * @brief Get the SdfPath of the prim to display the attributes in the
+         * editor.
          *
-         * @return The current prim to display the attributes from
+         * @return The current prim path to display the attributes from
          */
-        pxr::UsdPrim GetPrimToDisplay();
+        pxr::SdfPath _GetPrimToDisplay();
 
         /**
-         * @brief Append the transform attributes of the given prim to the
-         * editor view
+         * @brief Append the display color attributes of the given prim path to
+         * the editor view
          *
-         * @param prim the UsdPrim to get the transform attributes from
+         * @param primPath the SdfPath to get the display color attributes from
          */
-        void AppendTransformAttrs(pxr::UsdPrim prim);
+        void _AppendDisplayColorAttr(pxr::SdfPath primPath);
 
         /**
-         * @brief Append the camera attributes of the given prim to the
-         * editor view
+         * @brief Append the data source content to the editor view
          *
-         * @param prim the UsdPrim to get the camera attributes from
+         * @param containerDataSource the container data source to display
          */
-        void AppendCamAttrs(pxr::UsdPrim prim);
+        void _AppendDataSourceAttrs(
+            pxr::HdContainerDataSourceHandle containerDataSource);
 
         /**
-         * @brief Append the display color attributes of the given prim to the
-         * editor view
+         * @brief Append the display color attributes of the given prim
+         * path to the editor view
          *
-         * @param prim the UsdPrim to get the display color attributes from
+         * @param primPath the SdfPath to get the display color attributes
+         * from
          */
-        void AppendDisplayColorAttr(pxr::UsdPrim prim);
+        void _AppendAllPrimAttrs(pxr::SdfPath primPath);
 };
+
+PXR_NAMESPACE_CLOSE_SCOPE

@@ -1,14 +1,20 @@
 #include "view.h"
 
-View::View(Model* model, const string label)
-    : model(model),
-      label(label){
+PXR_NAMESPACE_OPEN_SCOPE
 
-      };
+View::View(Model* model, const string label)
+    : _model(model),
+      _label(label),
+      _wasFocused(false),
+      _wasHovered(false),
+      _wasDisplayed(true)
+{
+    _sceneIndex = GetModel()->GetFinalSceneIndex();
+};
 
 Model* View::GetModel()
 {
-    return model;
+    return _model;
 }
 
 const string View::GetViewType()
@@ -18,7 +24,7 @@ const string View::GetViewType()
 
 const string View::GetViewLabel()
 {
-    return label;
+    return _label;
 }
 void View::Update()
 {
@@ -26,59 +32,59 @@ void View::Update()
 
     ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
     ImGui::PushStyleVar(ImGuiStyleVar_ItemInnerSpacing, ImVec2(0, 0));
-    ImGui::Begin(label.c_str(), &wasDisplayed, GetGizmoWindowFlags());
+    ImGui::Begin(_label.c_str(), &_wasDisplayed, _GetGizmoWindowFlags());
 
     // update focus state
     if (ImGui::IsWindowFocused(ImGuiFocusedFlags_ChildWindows |
                                ImGuiFocusedFlags_RootWindow)) {
-        if (!wasFocused) {
-            FocusInEvent();
-            wasFocused = true;
+        if (!_wasFocused) {
+            _FocusInEvent();
+            _wasFocused = true;
         }
     }
-    else if (wasFocused) {
-        FocusOutEvent();
-        wasFocused = false;
+    else if (_wasFocused) {
+        _FocusOutEvent();
+        _wasFocused = false;
     }
 
-    if (wasFocused) {
+    if (_wasFocused) {
         int key = ImGuiKey_NamedKey_BEGIN;
         while (key < ImGuiKey_NamedKey_END) {
             if (ImGui::IsKeyPressed((ImGuiKey)key))
-                KeyPressEvent((ImGuiKey)key);
+                _KeyPressEvent((ImGuiKey)key);
             key++;
         }
     }
 
-    Draw();
+    _Draw();
 
     // update inner rect size
-    innerRect = ImGui::GetCurrentWindow()->InnerRect;
+    _innerRect = ImGui::GetCurrentWindow()->InnerRect;
 
-    if (ImGui::IsMouseHoveringRect(innerRect.Min, innerRect.Max)) {
-        if (!wasHovered) {
-            HoverInEvent();
-            wasHovered = true;
+    if (ImGui::IsMouseHoveringRect(_innerRect.Min, _innerRect.Max)) {
+        if (!_wasHovered) {
+            _HoverInEvent();
+            _wasHovered = true;
         }
     }
-    else if (wasHovered) {
-        HoverOutEvent();
-        wasHovered = false;
+    else if (_wasHovered) {
+        _HoverOutEvent();
+        _wasHovered = false;
     }
 
-    if (wasHovered) {
+    if (_wasHovered) {
         // update mouse pos
         ImVec2 appMousePos = ImGui::GetMousePos();
-        ImVec2 viewMousePos = appMousePos - innerRect.Min;
+        ImVec2 viewMousePos = appMousePos - _innerRect.Min;
 
-        MouseMoveEvent(_prevMousePos, viewMousePos);
+        _MouseMoveEvent(_prevMousePos, viewMousePos);
         _prevMousePos = viewMousePos;
 
         for (int i = 0; i < 5; i++) {
             if (io.MouseClicked[i])
-                MousePressEvent((ImGuiMouseButton_)i, viewMousePos);
+                _MousePressEvent((ImGuiMouseButton_)i, viewMousePos);
             if (io.MouseReleased[i])
-                MouseReleaseEvent((ImGuiMouseButton_)i, viewMousePos);
+                _MouseReleaseEvent((ImGuiMouseButton_)i, viewMousePos);
         }
     }
 
@@ -88,35 +94,35 @@ void View::Update()
 
 bool View::IsDisplayed()
 {
-    return wasDisplayed;
+    return _wasDisplayed;
 }
-
-void View::ModelChangedEvent(){};
 
 ImRect View::GetInnerRect()
 {
-    return innerRect;
+    return _innerRect;
 }
 
-void View::Draw(){};
+void View::_Draw() {};
 
-void View::FocusInEvent(){};
+void View::_FocusInEvent() {};
 
-void View::FocusOutEvent(){};
+void View::_FocusOutEvent() {};
 
-void View::HoverInEvent(){};
+void View::_HoverInEvent() {};
 
-void View::HoverOutEvent(){};
+void View::_HoverOutEvent() {};
 
-void View::KeyPressEvent(ImGuiKey key){};
+void View::_KeyPressEvent(ImGuiKey key) {};
 
-void View::MousePressEvent(ImGuiMouseButton_ button, ImVec2 pos){};
+void View::_MousePressEvent(ImGuiMouseButton_ button, ImVec2 pos) {};
 
-void View::MouseReleaseEvent(ImGuiMouseButton_ button, ImVec2 pos){};
+void View::_MouseReleaseEvent(ImGuiMouseButton_ button, ImVec2 pos) {};
 
-void View::MouseMoveEvent(ImVec2 prevPos, ImVec2 curPos){};
+void View::_MouseMoveEvent(ImVec2 prevPos, ImVec2 curPos) {};
 
-ImGuiWindowFlags View::GetGizmoWindowFlags()
+ImGuiWindowFlags View::_GetGizmoWindowFlags()
 {
     return ImGuiWindowFlags_None;
 };
+
+PXR_NAMESPACE_CLOSE_SCOPE

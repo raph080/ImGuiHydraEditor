@@ -13,8 +13,11 @@
 #define IMGUI_DEFINE_MATH_OPERATORS
 #include <imgui.h>
 #include <imgui_internal.h>
+#include <pxr/imaging/hd/sceneIndex.h>
 
 #include "models/model.h"
+
+PXR_NAMESPACE_OPEN_SCOPE
 
 using namespace std;
 
@@ -72,13 +75,8 @@ class View {
          */
         bool IsDisplayed();
 
-        /**
-         * @brief Called when the model changes
-         *
-         */
-        virtual void ModelChangedEvent();
-
     protected:
+        pxr::HdSceneIndexBaseRefPtr _sceneIndex;
         /**
          * @brief Get the inner rectangle object of the current ImGui view
          *
@@ -87,50 +85,50 @@ class View {
         ImRect GetInnerRect();
 
     private:
-        Model* model;
-        string label;
-        bool wasFocused = false;
-        bool wasHovered = false;
-        bool wasDisplayed = true;
-        ImRect innerRect;
+        Model* _model;
+        string _label;
+        bool _wasFocused;
+        bool _wasHovered;
+        bool _wasDisplayed;
+        ImRect _innerRect;
         ImVec2 _prevMousePos;
 
         /**
          * @brief Called during the update of the view. Allow for custom draw
          *
          */
-        virtual void Draw();
+        virtual void _Draw();
 
         /**
          * @brief Called when the view switch from unfocus to focus
          *
          */
-        virtual void FocusInEvent();
+        virtual void _FocusInEvent();
 
         /**
          * @brief Called when the view swich from focus to unfocus
          *
          */
-        virtual void FocusOutEvent();
+        virtual void _FocusOutEvent();
 
         /**
          * @brief Called when the mouse enter the view
          *
          */
-        virtual void HoverInEvent();
+        virtual void _HoverInEvent();
 
         /**
          * @brief Called when the mouse exit the view
          *
          */
-        virtual void HoverOutEvent();
+        virtual void _HoverOutEvent();
 
         /**
          * @brief Called when a key is press
          *
          * @param key the key that is pressed
          */
-        virtual void KeyPressEvent(ImGuiKey key);
+        virtual void _KeyPressEvent(ImGuiKey key);
 
         /**
          * @brief Called when the mouse is pressed
@@ -138,7 +136,7 @@ class View {
          * @param button the button that is pressed (left, middle, right, ...)
          * @param pos the position where the button is pressed
          */
-        virtual void MousePressEvent(ImGuiMouseButton_ button, ImVec2 pos);
+        virtual void _MousePressEvent(ImGuiMouseButton_ button, ImVec2 pos);
 
         /**
          * @brief Called when the mouse is released
@@ -147,7 +145,7 @@ class View {
          * right, ...)
          * @param pos the position where the button is released
          */
-        virtual void MouseReleaseEvent(ImGuiMouseButton_ button, ImVec2 pos);
+        virtual void _MouseReleaseEvent(ImGuiMouseButton_ button, ImVec2 pos);
 
         /**
          * @brief Called when the mouse move
@@ -155,7 +153,7 @@ class View {
          * @param prevPos the previus position of the mouse
          * @param curPos the current position of the mouse
          */
-        virtual void MouseMoveEvent(ImVec2 prevPos, ImVec2 curPos);
+        virtual void _MouseMoveEvent(ImVec2 prevPos, ImVec2 curPos);
 
         /**
          * @brief Get the ImGUi Window Flags that will be set to the current
@@ -163,5 +161,7 @@ class View {
          *
          * @return The ImGui Window flags
          */
-        virtual ImGuiWindowFlags GetGizmoWindowFlags();
+        virtual ImGuiWindowFlags _GetGizmoWindowFlags();
 };
+
+PXR_NAMESPACE_CLOSE_SCOPE

@@ -14,8 +14,9 @@
 #include <imgui_internal.h>
 #include <pxr/usd/usd/prim.h>
 
-#include "utils/usd.h"
 #include "view.h"
+
+PXR_NAMESPACE_OPEN_SCOPE
 
 using namespace std;
 
@@ -47,64 +48,77 @@ class Outliner : public View {
          * @brief Override of the View::Draw
          *
          */
-        void Draw() override;
+        void _Draw() override;
 
         /**
          * @brief Draw the hierarchy of all the descendant UsdPrims of the
          * given UsdPrim in the outliner
          *
-         * @param prim the UsdPrim for which all the descendant hierarchy will
-         * be drawn in the outliner
+         * @param primPath the SdfPath of the prim for which all the descendant
+         * hierarchy will be drawn in the outliner
          * @return the ImRect rectangle of the tree node corresponding to the
-         * given 'prim'
+         * given 'primPath'
          */
-        ImRect DrawPrimHierarchy(pxr::UsdPrim prim);
+        ImRect _DrawPrimHierarchy(pxr::SdfPath primPath);
 
         /**
          * @brief Compute the display flags of the given UsdPrim
          *
-         * @param prim the UsdPrim to compute the dislay flags from
+         * @param primPath the SdfPath of the prim to compute the dislay flags
+         * from
          * @return an ImGuiTreeNodeFlags object.
          * Default is ImGuiTreeNodeFlags_None.
-         * If 'prim' has no children, flag contains ImGuiTreeNodeFlags_Leaf
-         * If 'prim' has children, flags contains
+         * If 'primPath' has no children, flag contains ImGuiTreeNodeFlags_Leaf
+         * If 'primPath' has children, flags contains
          * ImGuiTreeNodeFlags_OpenOnArrow
-         * if 'prim' is part of selection, flags
+         * if 'primPath' is part of selection, flags
          * contains ImGuiTreeNodeFlags_Selected
          *
          */
-        ImGuiTreeNodeFlags ComputeDisplayFlags(pxr::UsdPrim prim);
+        ImGuiTreeNodeFlags _ComputeDisplayFlags(pxr::SdfPath primPath);
 
         /**
          * @brief Draw the hierarchy tree node of the given UsdPrim. The color
          * and the behavior of the node will bet set accordingly.
          *
-         * @param prim the UsdPrim that will be drawn next on the outliner
-         * @return true if children 'prim' msut be drawn too
+         * @param primPath the SdfPath of the prim that will be drawn next on
+         * the outliner
+         * @return true if children 'primPath' must be drawn too
          * @return false otherwise
          */
-        bool DrawHierarchyNode(pxr::UsdPrim prim);
+        bool _DrawHierarchyNode(pxr::SdfPath primPath);
+
+        /**
+         * @brief Check if a given prim path is parent of another prim path
+         *
+         * @param primPath SdfPath to check if it is parent of
+         * 'childPrimPath'
+         * @param childPrimPath the SdfPath that acts as the child prim path
+         * @return true if 'primPath' is parent of 'childPrimPath'
+         * @return false otherwise
+         */
+        bool IsParentOf(pxr::SdfPath primPath, pxr::SdfPath childPrimPath);
 
         /**
          * @brief Check if the given UsdPrim is parent of a UsdPrim within the
          * current Model Selection.
          *
-         * @param prim parent UsdPrim to check with
-         * @return true if 'prim' is parent of a UsdPrim within the current
+         * @param primPath SdfPath to check with
+         * @return true if 'primPath' is parent of a prim within the current
          * Model selection
          * @return false otherwise
          */
-        bool IsParentOfModelSelection(pxr::UsdPrim prim);
+        bool _IsParentOfModelSelection(pxr::SdfPath primPath);
 
         /**
          * @brief Check if the given UsdPrim is part of the current Model
          * selection
          *
-         * @param prim UsdPrim to check with
-         * @return true if 'prim' is part of the current Model selection
+         * @param prim SdfPath to check with
+         * @return true if 'primPath' is part of the current Model selection
          * @return false otherwise
          */
-        bool IsInModelSelection(pxr::UsdPrim prim);
+        bool _IsInModelSelection(pxr::SdfPath primPath);
 
         /**
          * @brief Draw the children hierarchy decoration of the outliner view
@@ -115,6 +129,8 @@ class Outliner : public View {
          * @param childrenRects a vector of ImRect rectangles of the direct
          * children node of 'parentRect'
          */
-        void DrawChildrendHierarchyDecoration(ImRect parentRect,
-                                              vector<ImRect> childrenRects);
+        void _DrawChildrendHierarchyDecoration(ImRect parentRect,
+                                               vector<ImRect> childrenRects);
 };
+
+PXR_NAMESPACE_CLOSE_SCOPE

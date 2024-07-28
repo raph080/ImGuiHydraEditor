@@ -5,112 +5,115 @@
 #include <imgui.h>
 #include <pxr/base/gf/matrix4d.h>
 #include <pxr/base/gf/matrix4f.h>
+#include <pxr/base/vt/value.h>
+#include <pxr/imaging/hd/overlayContainerDataSource.h>
+#include <pxr/imaging/hd/primvarSchema.h>
+#include <pxr/imaging/hd/primvarsSchema.h>
+#include <pxr/imaging/hd/retainedDataSource.h>
+#include <pxr/imaging/hd/tokens.h>
 #include <pxr/usd/usdGeom/camera.h>
 #include <pxr/usd/usdGeom/gprim.h>
 
-Editor::Editor(Model* model, const string label) : View(model, label) {}
+#include <sstream>
+
+PXR_NAMESPACE_OPEN_SCOPE
+
+Editor::Editor(Model* model, const string label) : View(model, label)
+{
+    auto editableSceneIndex = GetModel()->GetEditableSceneIndex();
+    _colorFilterSceneIndex =
+        ColorFilterSceneIndex::New(editableSceneIndex);
+    GetModel()->SetEditableSceneIndex(_colorFilterSceneIndex);
+}
 
 const string Editor::GetViewType()
 {
     return VIEW_TYPE;
 };
 
-void Editor::Draw()
+void Editor::_Draw()
 {
-    pxr::UsdPrim prim = GetPrimToDisplay();
+    SdfPath primPath = _GetPrimToDisplay();
 
-    if (prim.IsValid()) {
-        if (ImGui::CollapsingHeader("Transform attributes"))
-            AppendTransformAttrs(prim);
+    if (primPath.IsEmpty()) return;
 
-        if (prim.GetTypeName() == pxr::UsdGeomTokens->Camera)
-            if (ImGui::CollapsingHeader("Camera attributes"))
-                AppendCamAttrs(prim);
-
-        if (prim.HasAttribute(pxr::UsdGeomTokens->primvarsDisplayColor))
-            if (ImGui::CollapsingHeader("Extra attributes"))
-                AppendDisplayColorAttr(prim);
-    }
+    _AppendDisplayColorAttr(primPath);
+    _AppendAllPrimAttrs(primPath);
 }
 
-pxr::UsdPrim Editor::GetPrimToDisplay()
+SdfPath Editor::_GetPrimToDisplay()
 {
-    vector<pxr::UsdPrim> prims = GetModel()->GetSelection();
+    SdfPathVector primPaths = GetModel()->GetSelection();
 
-    if (prims.size() > 0 && prims[0].IsValid()) _prevSelection = prims[0];
+    if (primPaths.size() > 0 && !primPaths[0].IsEmpty())
+        _prevSelection = primPaths[0];
 
     return _prevSelection;
 }
 
-void Editor::AppendTransformAttrs(pxr::UsdPrim prim)
+void Editor::_AppendDisplayColorAttr(SdfPath primPath)
 {
-    pxr::UsdGeomGprim gprim(prim);
+    GfVec3f color = _colorFilterSceneIndex->GetDisplayColor(primPath);
 
-    pxr::GfMatrix4d transform = GetTransformMatrix(gprim);
-    pxr::GfMatrix4f transformF(transform);
+    if (color == GfVec3f(-1.f)) return;
 
-    float matrixTranslation[3], matrixRotation[3], matrixScale[3];
-    ImGuizmo::DecomposeMatrixToComponents(transformF.data(), matrixTranslation,
-                                          matrixRotation, matrixScale);
+    // save the values before change
+    GfVec3f prevColor = GfVec3f(color);
 
-    ImGui::InputFloat3("Translation", matrixTranslation);
-    ImGui::InputFloat3("Rotation", matrixRotation);
-    ImGui::InputFloat3("Scale", matrixScale);
+    float* data = color.data();
+    if (ImGui::CollapsingHeader("Display Color"))
+        ImGui::SliderFloat3("", data, 0, 1);
 
-    ImGuizmo::RecomposeMatrixFromComponents(matrixTranslation, matrixRotation,
-                                            matrixScale, transformF.data());
-
-    if (!AreNearlyEquals(transformF, pxr::GfMatrix4f(transform)))
-        SetTransformMatrix(gprim, pxr::GfMatrix4d(transformF));
+    // add opinion only if values change
+    if (color != prevColor)
+        _colorFilterSceneIndex->SetDisplayColor(primPath, color);
 }
 
-void Editor::AppendCamAttrs(pxr::UsdPrim prim)
+void Editor::_AppendDataSourceAttrs(
+    HdContainerDataSourceHandle containerDataSource)
 {
-    pxr::UsdGeomCamera cam(prim);
+    for (auto&& token : containerDataSource->GetNames()) {
+        auto dataSource = containerDataSource->Get(token);
+        const char* tokenText = token.GetText();
 
-    vector<pxr::TfToken> attTokens = {
-        pxr::UsdGeomTokens->clippingRange,
-        pxr::UsdGeomTokens->focalLength,
-        pxr::UsdGeomTokens->horizontalAperture,
-        pxr::UsdGeomTokens->horizontalApertureOffset,
-        pxr::UsdGeomTokens->verticalAperture,
-        pxr::UsdGeomTokens->verticalApertureOffset};
+        auto containerDataSource =
+            HdContainerDataSource::Cast(dataSource);
+        if (containerDataSource) {
+            bool clicked =
+                ImGui::TreeNodeEx(tokenText, ImGuiTreeNodeFlags_OpenOnArrow);
 
-    for (pxr::UsdAttribute attr : prim.GetAttributes()) {
-        if (attr.GetTypeName() == pxr::SdfValueTypeNames->Float) {
-            float value;
-            attr.Get(&value);
-            float oldValue(value);
-            ImGui::InputFloat(attr.GetName().GetText(), &value);
-            if (value != oldValue) attr.Set(value);
+            if (clicked) {
+                _AppendDataSourceAttrs(containerDataSource);
+                ImGui::TreePop();
+            }
         }
-        else if (attr.GetTypeName() == pxr::SdfValueTypeNames->Float2) {
-            pxr::GfVec2f value;
-            attr.Get(&value);
-            pxr::GfVec2f oldValue(value);
-            ImGui::InputFloat2(attr.GetName().GetText(), value.data());
-            if (value != oldValue) attr.Set(value);
+
+        auto sampledDataSource = HdSampledDataSource::Cast(dataSource);
+        if (sampledDataSource) {
+            ImGui::Columns(2);
+            VtValue value = sampledDataSource->GetValue(0);
+            ImGui::Text("%s", tokenText);
+            ImGui::NextColumn();
+            ImGui::BeginChild(tokenText, ImVec2(0, 14), false);
+            std::stringstream ss;
+            ss << value;
+            ImGui::Text("%s", ss.str().c_str());
+            ImGui::EndChild();
+            ImGui::Columns();
         }
     }
 }
 
-void Editor::AppendDisplayColorAttr(pxr::UsdPrim prim)
+void Editor::_AppendAllPrimAttrs(SdfPath primPath)
 {
-    // get the display color attr from pxr::UsdGeomGprim
-    pxr::UsdGeomGprim gprim(prim);
-    pxr::UsdAttribute attr = gprim.GetDisplayColorAttr();
+    HdSceneIndexPrim prim = _sceneIndex->GetPrim(primPath);
+    TfTokenVector tokens = prim.dataSource->GetNames();
 
-    pxr::VtVec3fArray values;
-    bool success = attr.Get(&values, pxr::UsdTimeCode::Default());
-    // if impossible to read, set a default value of [0.5, 0.5, 0.5]
-    if (!success) values = pxr::VtVec3fArray(1, pxr::GfVec3f(0.5f));
+    if (tokens.size() < 1) return;
 
-    // save the values before change
-    pxr::VtVec3fArray prevValues = pxr::VtVec3fArray(values);
-
-    float* data = values.data()[0].data();
-    ImGui::SliderFloat3("Display Color", data, 0, 1);
-
-    // add opinion only if values change
-    if (values != prevValues) attr.Set(values, pxr::UsdTimeCode::Default());
+    if (ImGui::CollapsingHeader("Prim attributes")) {
+        _AppendDataSourceAttrs(prim.dataSource);
+    }
 }
+
+PXR_NAMESPACE_CLOSE_SCOPE

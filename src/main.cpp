@@ -148,10 +148,8 @@ int main(int argc, char** argv)
 
     glEnable(GL_DEPTH_TEST);
 
-    Model model;
-    if (argc > 1) model.LoadUsdStage(argv[1]);
-
-    MainWindow mainWindow(&model);
+    pxr::Model model;
+    pxr::MainWindow mainWindow(&model);
 
     while (!glfwWindowShouldClose(window)) {
         glfwPollEvents();

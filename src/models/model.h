@@ -9,10 +9,18 @@
  */
 #pragma once
 
+#include <pxr/base/gf/vec3d.h>
+#include <pxr/imaging/hd/mergingSceneIndex.h>
+#include <pxr/imaging/hd/sceneIndex.h>
 #include <pxr/usd/usd/prim.h>
+#include <pxr/usd/usd/primRange.h>
 #include <pxr/usd/usd/stage.h>
+#include <pxr/usdImaging/usdImaging/sceneIndices.h>
+#include <pxr/usdImaging/usdImaging/stageSceneIndex.h>
 
 #include <vector>
+
+PXR_NAMESPACE_OPEN_SCOPE
 
 using namespace std;
 
@@ -30,70 +38,98 @@ class Model {
         Model();
 
         /**
-         * @brief Construct a new Model object and load the given Usd file as
-         * root layer
-         *
-         * @param usdFilePath a string containing a Usd file path
-         */
-        Model(const string usdFilePath);
-
-        /**
-         * @brief Load a Usd Stage based on the given Usd file path
-         *
-         * @param usdFilePath a string containing a Usd file path
-         */
-        void LoadUsdStage(const string usdFilePath);
-
-        /**
-         * @brief Set the model to an empty stage
-         *
-         */
-        void SetEmptyStage();
-
-        /**
-         * @brief Get the Up Axis of the model
-         *
-         * @return the up vector
-         */
-        pxr::GfVec3d GetUpAxis();
-
-        /**
          * @brief Get a reference to the Usd Stage from the model
          *
-         * @return pxr::UsdStageRefPtr a reference to the Usd Stage
+         * @return UsdStageRefPtr a reference to the Usd Stage
          */
-        pxr::UsdStageRefPtr GetStage();
+        UsdStageRefPtr GetStage();
 
         /**
-         * @brief Get a vector of all camera prims from the model
+         * @brief Set a reference of a Usd Stage to the model
          *
-         * @return vector<pxr::UsdPrim> a vector of camera prims
+         * @param stage UsdStageRefPtr a reference to the Usd Stage
          */
-        vector<pxr::UsdPrim> GetCameras();
+        void SetStage(UsdStageRefPtr stage);
+
+        /**
+         * @brief Add a Scene Index Base to the model
+         *
+         * @param sceneIndex HdSceneIndexBaseRefPtr Scene Index to add
+         */
+        void AddSceneIndexBase(HdSceneIndexBaseRefPtr sceneIndex);
+
+        /**
+         * @brief Get the Editable Scene Index from the model
+         *
+         * @return HdSceneIndexBaseRefPtr the editable Scene Index
+         */
+        HdSceneIndexBaseRefPtr GetEditableSceneIndex();
+
+        /**
+         * @brief Set the Editable Scene Index to the model
+         *
+         * @param sceneIndex the Editable Scene Index to set to the model
+         */
+        void SetEditableSceneIndex(HdSceneIndexBaseRefPtr sceneIndex);
+
+        /**
+         * @brief Get a reference to the Scene Index from the model
+         *
+         * @return HdSceneIndexBaseRefPtr a reference to the Scene Index
+         */
+        HdSceneIndexBaseRefPtr GetFinalSceneIndex();
+
+        /**
+         * @brief Get the Hydra Prim from the model at a specific path
+         *
+         * @param primPath SdfPath the path to the prim to get
+         *
+         * @return HdSceneIndexPrim the Hydra Prim at the given path
+         */
+        HdSceneIndexPrim GetPrim(SdfPath primPath);
+
+        /**
+         * @brief Get the Usd Prim from the model at a specific path
+         *
+         * @param primPath SdfPath the path to the prim to get
+         *
+         * @return UsdPrim the Usd Prim at the given path
+         */
+        UsdPrim GetUsdPrim(SdfPath primPath);
+
+        /**
+         * @brief Get the Usd Prim from the model
+         *
+         * @return UsdPrimRange a prim
+         */
+        UsdPrimRange GetAllPrims();
+
+        /**
+         * @brief Get a vector of all camera path from the model
+         *
+         * @return SdfPathVector a vector of camera paths
+         */
+        SdfPathVector GetCameras();
 
         /**
          * @brief Get the current prim selection of the model
          *
-         * @return vector<pxr::UsdPrim> a vector of the selected prims
+         * @return SdfPathVector a vector of the selected prim paths
          */
-        vector<pxr::UsdPrim> GetSelection();
+        SdfPathVector GetSelection();
 
         /**
          * @brief Set the current prim selection of the model
          *
-         * @param prims the vector containing the prim selection
+         * @param primPaths the vector containing the prim paths selection
          */
-        void SetSelection(vector<pxr::UsdPrim> prims);
-
-        /**
-         * @brief Get a reference to the session layer of the model
-         *
-         * @return pxr::SdfLayerRefPtr a reference to the session layer
-         */
-        pxr::SdfLayerRefPtr GetSessionLayer();
+        void SetSelection(SdfPathVector primPaths);
 
     private:
-        pxr::UsdStageRefPtr _stage;
-        vector<pxr::UsdPrim> _selection;
-        pxr::SdfLayerRefPtr _rootLayer, _sessionLayer;
+        UsdStageRefPtr _stage;
+        SdfPathVector _selection;
+        HdSceneIndexBaseRefPtr _editableSceneIndex;
+        HdMergingSceneIndexRefPtr _sceneIndexBases, _finalSceneIndex;
 };
+
+PXR_NAMESPACE_CLOSE_SCOPE

@@ -14,6 +14,8 @@
 #include "models/model.h"
 #include "views/view.h"
 
+PXR_NAMESPACE_OPEN_SCOPE
+
 using namespace std;
 
 /**
@@ -52,59 +54,8 @@ class MainWindow {
         void AddView(const string viewType);
 
     private:
-        vector<View*> views;
-        Model* model;
-
-        /**
-         * @brief Converts the given prim path by an indexed prim path if the
-         * given prim path is already used in the Model. Indexing consist of
-         * adding a number at the end of the path.
-         *
-         * @param primPath the given prim path to index if already exists in
-         * Model
-         * @return string the next index prim path
-         */
-        string GetNextAvailableIndexedPath(string primPath);
-
-        /**
-         * @brief Create a Camera in the Model
-         *
-         */
-        void CreateCamera();
-
-        /**
-         * @brief Create a Capsule in the Model
-         *
-         */
-        void CreateCapsule();
-
-        /**
-         * @brief Create a Cone in the Model
-         *
-         */
-        void CreateCone();
-
-        /**
-         * @brief Create a Cube in the Model
-         *
-         */
-        void CreateCube();
-
-        /**
-         * @brief Create a Cylinder in the Model
-         *
-         */
-        void CreateCylinder();
-
-        /**
-         * @brief Create a Plane in the Model
-         *
-         */
-        void CreatePlane();
-
-        /**
-         * @brief Create a Sphere in the Model
-         *
-         */
-        void CreateSphere();
+        vector<View*> _views;
+        Model* _model;
 };
+
+PXR_NAMESPACE_CLOSE_SCOPE
