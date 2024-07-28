@@ -1,108 +1,86 @@
 # ImGui Hydra Editor
 
-ImGui Hydra Editor is a USD editor written in c++ with the ImGui and OpenUSD frameworks.
+ImGui Hydra Editor is a Hydra editor written in c++ with the ImGui and OpenUSD frameworks.
 
 ![UI preview of ImGui Hydra Editor](resources/preview.png)
 
-This project acts as a playground for USD, and most particularly Hydra. Therefore, the structure of the application remains simple and not over-engineered.
+This project acts as a playground for USD, and most particularly Hydra 2.0. Therefore, the structure of the application remains simple and contains out of the box examples.
 
-## Supported platforms
+## Building
 
-ImGui Hydra Editor was primarily developed on MacOS (Ventura 13.6) but was also built and tested on Linux (Centos 7).
+To build ImGui Hydra Editor, see [BUILDING.md](BUILDING.md) instructions.
 
-## Dependencies
+## Overview
 
-Required:
-* gcc compiler
-* [cmake v3.27](https://cmake.org/) or newer
-* [OpenUSD v23.08](https://github.com/PixarAnimationStudios/OpenUSD) or newer
+ImGui Hydra Editor is a tool that process data using the Hydra 2.0 Framework. Every view from the tool has access to read, insert and author the current state
+of Hydra data.
 
-Embedded:
-* [glew](https://github.com/Perlmint/glew-cmake)
-* [glfw v3.3.8](https://github.com/glfw/glfw)
-* [imgui v1.89.9](https://github.com/ocornut/imgui)
-* [ImGuizmo v1.83](https://github.com/CedricGuillemet/ImGuizmo)
-* [ImGuiFileDialog v0.6.5](https://github.com/aiekick/ImGuiFileDialog)
-* [ImGuiColorTextEdit](https://github.com/BalazsJako/ImGuiColorTextEdit)
+![Views that interact with Hydra data](resources/views_hydra_data.png)
 
-## Documentation
+### Usd Session Layer
 
-For more information about the code, please check the header files.
+From the Usd Session Layer view, the user can type a stage from scratch, add some predefined USD Prim (camera, cube, sphere, ...) or load a USD file and author it. The Usd Session Layer then converts the USD Prims to Hydra Prims and inserts them to Hydra data.
 
-## Getting Started
+### Outliner
 
-### Install dependencies
+The Outliner view browses all Hydra prims from Hydra data and displays them in a tree view.
 
-Make sure gcc and cmake are installed
+### Viewport
 
-```bash
-gcc --version
-cmake --version
-```
-If some version and info are printed after running the previous commands, gcc and cmake are installed. If you get `command not found` error, please be sure to install them first.
+The viewport view authors the transforms (translate, rotate, scale) of Hydra Prims. It also creates and inserts a grid to Hydra data.
 
-### Download OpenUSD
+### Editor
 
-The easy way to get a pre-built version of USD is to download the one from the [Nvidia website](https://developer.nvidia.com/usd).
+The Editor view allows the user to author the display color of the selected Hydra Prim. The view also displays all the Hydra attributes from the selection.
 
-To build USD manually, go to the [OpenUSD release page](https://github.com/PixarAnimationStudios/OpenUSD/releases), download the last release available and build it (build info in the OpenUSD [README.md](https://github.com/PixarAnimationStudios/OpenUSD/blob/release/README.md)).
+### Engine
 
-Don't forget to add the --embree flag to the build command if you wish to have access to the Embree renderer from ImGui Hydra Editor.
-![embree enabled in ImGui Hydra Editor](resources/storm_embree.png)
-
-```bash
-python3 USD/build_scripts/build_usd.py --embree /path/to/install
-```
+The Engine consumes Hydra data with all modifications from the views and generates an image from it.
 
 
-### Clone ImGuiHydraEditor
+## Scenes Indices
 
-Clone the git project using the following command:
+ImGui Hydra Editor implements main concepts of Hydra 2.0 framework out of the box, such as:
+* inserting data using [HdSceneIndexBase](https://openusd.org/release/api/class_hd_scene_index_base.html) and UsdImagingStageSceneIndex.
+* authoring data via [HdSingleInputFilteringSceneIndexBase](https://openusd.org/release/api/class_hd_single_input_filtering_scene_index_base.html)
+* merging multiple data source using [HdMergingSceneIndex](https://openusd.org/release/api/class_hd_merging_scene_index.html)
 
-```bash
-git clone --recurse-submodules https://github.com/raph080/ImGuiHydraEditor.git
-```
 
-The recursive flag will automatically include the following projects: glew, glfw, imgui, ImGuiColorTextEdit, ImGuiFileDialog, ImGuizmo
+The views in ImGui Hydra Editor make use of those various types of scene index in order to create the final data to feed to Hydra (Hydra data).
 
-### Build ImGuiHydraEditor
+![Scene indices Schema](resources/scene_indices_schema.png)
 
-Within the cloned ImGuiHydraEditor, create a build folder and run cmake from this newly created folder by specifying the root path to OpenUSD build:
+### HdSceneIndexBase
 
-```bash
-mkdir build
-cd build
-cmake -Dpxr_DIR=/path/to/OpenUSD/build/folder -DCMAKE_INSTALL_PREFIX=/path/to/install/folder ..
-make
-make install
-```
+HdSceneIndexBase is used to insert data to Hydra data.
 
-### Run ImGuiHydraEditor
-   
-if everything went well, 3 new folders are created in your `/path/to/install/folder`: `bin`, `include` and `lib`.
+Examples are:
+* UsdImagingStageSceneIndex: used by Usd Session Layer to convert USD data to Hydra data.
+* GridSceneIndex: used by Viewport to create and insert a grid to Hydra data.
 
-You can then run the ImGuiHydraEditor application as follow:
+### HdSingleInputFilteringSceneIndexBase
 
-Linux:
-```bash
-export LD_LIBRARY_PATH=/path/to/OpenUSD/build/folder/lib:/path/to/OpenUSD/build/folder/lib64:$LD_LIBRARY_PATH
-./ImGuiHydraEditor
-```
+HdSingleInputFilteringSceneIndexBase is used to filter Hydra data in order to author the Hydra Prim states.
 
-MacOS:
-```bash
-export DYLD_LIBRARY_PATH=/path/to/OpenUSD/build/folder/lib:$DYLD_LIBRARY_PATH
-./ImGuiHydraEditor
-```
+Examples are:
+* XformFilterSceneIndex: used by Viewport to author the xform of Hydra Prims.
+* ColorFilterSceneIndex: used by Editor to author the display color of Hydra Prims.
 
-You can optionally load a USD file directly using the following command:
-```bash
-./ImGuiHydraEditor /input/file.usd
-```
+### HdMergingSceneIndex
+
+HdMergingSceneIndex is used to merge multiple scene indices together.
+
+Examples are:
+* SceneIndexBases: merge multiple inputs (USD prim & grid) to a single output.
+* FinalSceneIndex: always contains the scene index with the latest changes.
+
+## Rendering
+
+In order for the render engine to be more flexible, the render is performed using HdRenderIndex, HdEngine and HdxTaskController. See the code for more information.
 
 ## Viewport navigation
 
-There is two way to navigate within the viewport: using the guizmo cube or the mouse and keyboard.
+There is two ways to navigate within the viewport: using the guizmo cube or the mouse and keyboard.
 
 ![Viewport navigation](resources/viewport_navigation.gif)
 
@@ -114,7 +92,7 @@ Note: guizmo cube navigation is not working properly with z up axis (see [Limita
 
 ### Mouse and Keyboard
 
-Here are the shortcut to navigate using the mouse and the keyboard:
+Here are the shortcuts to navigate using the mouse and the keyboard:
 * LMB + Alt: Rotate
 * LMB + Shift: Pan
 * RMB + Alt or Scroll wheel: Zoom
@@ -136,7 +114,7 @@ Once the custom render delegates are build, don't forget to set the `PXR_PLUGINP
 ## And more
 
 Explore the menu bars of the application and viewports, you may find useful fonctionalities such as:
-* Create new objects in the scenes (Camera, Cube, ...)
+* Create new USD objects in the scenes (Camera, Cube, ...)
 * Create new views in the main window
 * Switch the active camera to the viewport
 * Show/Hide the grid
@@ -159,11 +137,3 @@ There is currently some limitations
 * No Undo
 * Grid is on a separate layer at the back
 * Does not keep multiple instances of same view when relaunched
-
-## Next steps
-
-Here are the next steps that are planned in order to improve the tool and discover more about Hydra:
-* Switch from UsdImagingGLEngine to HdEngine or HdxTaskController
-  * Allows multiple scene delegates
-  * Add the grid dynamically to the RenderIndex
-  * Abstract the Model to Hydra Objects (not USD object anymore)
