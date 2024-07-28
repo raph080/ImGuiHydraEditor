@@ -2,6 +2,8 @@
 
 #include <pxr/usd/usd/stage.h>
 
+PXR_NAMESPACE_OPEN_SCOPE
+
 Outliner::Outliner(Model* model, const string label) : View(model, label) {}
 
 const string Outliner::GetViewType()
@@ -11,13 +13,13 @@ const string Outliner::GetViewType()
 
 void Outliner::_Draw()
 {
-    pxr::SdfPath root = pxr::SdfPath::AbsoluteRootPath();
-    pxr::SdfPathVector paths = _sceneIndex->GetChildPrimPaths(root);
+    SdfPath root = SdfPath::AbsoluteRootPath();
+    SdfPathVector paths = _sceneIndex->GetChildPrimPaths(root);
     for (auto primPath : paths) _DrawPrimHierarchy(primPath);
 }
 
 // returns the node's rectangle
-ImRect Outliner::_DrawPrimHierarchy(pxr::SdfPath primPath)
+ImRect Outliner::_DrawPrimHierarchy(SdfPath primPath)
 {
     bool recurse = _DrawHierarchyNode(primPath);
 
@@ -31,7 +33,7 @@ ImRect Outliner::_DrawPrimHierarchy(pxr::SdfPath primPath)
     if (recurse) {
         // draw all children and store their rect position
         vector<ImRect> rects;
-        pxr::SdfPathVector primPaths =
+        SdfPathVector primPaths =
             _sceneIndex->GetChildPrimPaths(primPath);
 
         for (auto child : primPaths) {
@@ -50,12 +52,12 @@ ImRect Outliner::_DrawPrimHierarchy(pxr::SdfPath primPath)
     return curItemRect;
 }
 
-ImGuiTreeNodeFlags Outliner::_ComputeDisplayFlags(pxr::SdfPath primPath)
+ImGuiTreeNodeFlags Outliner::_ComputeDisplayFlags(SdfPath primPath)
 {
     ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_None;
 
     // set the flag if leaf or not
-    pxr::SdfPathVector primPaths = _sceneIndex->GetChildPrimPaths(primPath);
+    SdfPathVector primPaths = _sceneIndex->GetChildPrimPaths(primPath);
 
     if (primPaths.size() == 0) {
         flags |= ImGuiTreeNodeFlags_Leaf;
@@ -70,7 +72,7 @@ ImGuiTreeNodeFlags Outliner::_ComputeDisplayFlags(pxr::SdfPath primPath)
     return flags;
 }
 
-bool Outliner::_DrawHierarchyNode(pxr::SdfPath primPath)
+bool Outliner::_DrawHierarchyNode(SdfPath primPath)
 {
     bool recurse = false;
     const char* primName = primPath.GetName().c_str();
@@ -89,12 +91,12 @@ bool Outliner::_DrawHierarchyNode(pxr::SdfPath primPath)
     return recurse;
 }
 
-bool Outliner::IsParentOf(pxr::SdfPath primPath, pxr::SdfPath childPrimPath)
+bool Outliner::IsParentOf(SdfPath primPath, SdfPath childPrimPath)
 {
     return primPath.GetCommonPrefix(childPrimPath) == primPath;
 }
 
-bool Outliner::_IsParentOfModelSelection(pxr::SdfPath primPath)
+bool Outliner::_IsParentOfModelSelection(SdfPath primPath)
 {
     // check if primPath is parent of selection
     for (auto&& p : GetModel()->GetSelection())
@@ -103,9 +105,9 @@ bool Outliner::_IsParentOfModelSelection(pxr::SdfPath primPath)
     return false;
 }
 
-bool Outliner::_IsInModelSelection(pxr::SdfPath primPath)
+bool Outliner::_IsInModelSelection(SdfPath primPath)
 {
-    pxr::SdfPathVector sel = GetModel()->GetSelection();
+    SdfPathVector sel = GetModel()->GetSelection();
     // check if primPath in model selection
     return find(sel.begin(), sel.end(), primPath) != sel.end();
 }
@@ -138,3 +140,5 @@ void Outliner::_DrawChildrendHierarchyDecoration(ImRect parentRect,
     ImVec2 lineEnd = ImVec2(horizStartPos, parentRect.Max.y + 2.0f);
     drawList->AddLine(lineStart, lineEnd, lineColor);
 }
+
+PXR_NAMESPACE_CLOSE_SCOPE

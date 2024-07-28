@@ -16,6 +16,8 @@
 
 #include "view.h"
 
+PXR_NAMESPACE_OPEN_SCOPE
+
 using namespace std;
 
 /**
@@ -130,3 +132,5 @@ class Outliner : public View {
         void _DrawChildrendHierarchyDecoration(ImRect parentRect,
                                                vector<ImRect> childrenRects);
 };
+
+PXR_NAMESPACE_CLOSE_SCOPE

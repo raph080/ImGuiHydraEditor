@@ -6,83 +6,86 @@
 #include <pxr/usd/usdGeom/metrics.h>
 #include <pxr/usd/usdGeom/tokens.h>
 
+PXR_NAMESPACE_OPEN_SCOPE
+
 Model::Model()
 {
-    _sceneIndexBases = pxr::HdMergingSceneIndex::New();
-    _finalSceneIndex = pxr::HdMergingSceneIndex::New();
+    _sceneIndexBases = HdMergingSceneIndex::New();
+    _finalSceneIndex = HdMergingSceneIndex::New();
     _editableSceneIndex = _sceneIndexBases;
     SetEditableSceneIndex(_editableSceneIndex);
 }
 
-pxr::UsdStageRefPtr Model::GetStage()
+UsdStageRefPtr Model::GetStage()
 {
     return _stage;
 }
 
-void Model::SetStage(pxr::UsdStageRefPtr stage)
+void Model::SetStage(UsdStageRefPtr stage)
 {
     _stage = stage;
 }
 
-void Model::AddSceneIndexBase(pxr::HdSceneIndexBaseRefPtr sceneIndex)
+void Model::AddSceneIndexBase(HdSceneIndexBaseRefPtr sceneIndex)
 {
-    _sceneIndexBases->AddInputScene(sceneIndex,
-                                    pxr::SdfPath::AbsoluteRootPath());
+    _sceneIndexBases->AddInputScene(sceneIndex, SdfPath::AbsoluteRootPath());
 }
 
-pxr::HdSceneIndexBaseRefPtr Model::GetEditableSceneIndex()
+HdSceneIndexBaseRefPtr Model::GetEditableSceneIndex()
 {
     return _editableSceneIndex;
 }
 
-void Model::SetEditableSceneIndex(pxr::HdSceneIndexBaseRefPtr sceneIndex)
+void Model::SetEditableSceneIndex(HdSceneIndexBaseRefPtr sceneIndex)
 {
     _finalSceneIndex->RemoveInputScene(_editableSceneIndex);
     _editableSceneIndex = sceneIndex;
     _finalSceneIndex->AddInputScene(_editableSceneIndex,
-                                    pxr::SdfPath::AbsoluteRootPath());
+                                    SdfPath::AbsoluteRootPath());
 }
 
-pxr::HdSceneIndexBaseRefPtr Model::GetFinalSceneIndex()
+HdSceneIndexBaseRefPtr Model::GetFinalSceneIndex()
 {
     return _finalSceneIndex;
 }
 
-pxr::HdSceneIndexPrim Model::GetPrim(pxr::SdfPath primPath)
+HdSceneIndexPrim Model::GetPrim(SdfPath primPath)
 {
     return _finalSceneIndex->GetPrim(primPath);
 }
 
-pxr::UsdPrim Model::GetUsdPrim(pxr::SdfPath path)
+UsdPrim Model::GetUsdPrim(SdfPath path)
 {
     return _stage->GetPrimAtPath(path);
 }
 
-pxr::UsdPrimRange Model::GetAllPrims()
+UsdPrimRange Model::GetAllPrims()
 {
     return _stage->Traverse();
 }
 
-pxr::SdfPathVector Model::GetCameras()
+SdfPathVector Model::GetCameras()
 {
-    pxr::SdfPath root = pxr::SdfPath::AbsoluteRootPath();
-    pxr::HdSceneIndexPrimView primView(_finalSceneIndex, root);
-    pxr::SdfPathVector camPaths;
+    SdfPath root = SdfPath::AbsoluteRootPath();
+    HdSceneIndexPrimView primView(_finalSceneIndex, root);
+    SdfPathVector camPaths;
     for (auto primPath : primView) {
-        pxr::HdSceneIndexPrim prim = _finalSceneIndex->GetPrim(primPath);
-        if (prim.primType == pxr::HdPrimTypeTokens->camera) {
+        HdSceneIndexPrim prim = _finalSceneIndex->GetPrim(primPath);
+        if (prim.primType == HdPrimTypeTokens->camera) {
             camPaths.push_back(primPath);
         }
     }
     return camPaths;
 }
 
-pxr::SdfPathVector Model::GetSelection()
+SdfPathVector Model::GetSelection()
 {
     return _selection;
 }
 
-void Model::SetSelection(pxr::SdfPathVector primPaths)
+void Model::SetSelection(SdfPathVector primPaths)
 {
     _selection = primPaths;
 }
+
+PXR_NAMESPACE_CLOSE_SCOPE

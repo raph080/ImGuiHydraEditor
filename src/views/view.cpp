@@ -1,5 +1,7 @@
 #include "view.h"
 
+PXR_NAMESPACE_OPEN_SCOPE
+
 View::View(Model* model, const string label)
     : _model(model),
       _label(label),
@@ -122,3 +124,5 @@ ImGuiWindowFlags View::_GetGizmoWindowFlags()
 {
     return ImGuiWindowFlags_None;
 };
+
+PXR_NAMESPACE_CLOSE_SCOPE

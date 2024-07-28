@@ -148,9 +148,8 @@ int main(int argc, char** argv)
 
     glEnable(GL_DEPTH_TEST);
 
-    Model model;
-    
-    MainWindow mainWindow(&model);
+    pxr::Model model;
+    pxr::MainWindow mainWindow(&model);
 
     while (!glfwWindowShouldClose(window)) {
         glfwPollEvents();

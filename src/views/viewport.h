@@ -24,6 +24,8 @@
 #include "sceneindices/xformfiltersceneindex.h"
 #include "view.h"
 
+PXR_NAMESPACE_OPEN_SCOPE
+
 using namespace std;
 
 /**
@@ -256,3 +258,5 @@ class Viewport : public View {
          */
         void _HoverOutEvent() override;
 };
+
+PXR_NAMESPACE_CLOSE_SCOPE

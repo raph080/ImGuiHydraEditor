@@ -20,6 +20,8 @@
 
 #include <vector>
 
+PXR_NAMESPACE_OPEN_SCOPE
+
 using namespace std;
 
 /**
@@ -38,94 +40,96 @@ class Model {
         /**
          * @brief Get a reference to the Usd Stage from the model
          *
-         * @return pxr::UsdStageRefPtr a reference to the Usd Stage
+         * @return UsdStageRefPtr a reference to the Usd Stage
          */
-        pxr::UsdStageRefPtr GetStage();
+        UsdStageRefPtr GetStage();
 
         /**
          * @brief Set a reference of a Usd Stage to the model
          *
-         * @param stage pxr::UsdStageRefPtr a reference to the Usd Stage
+         * @param stage UsdStageRefPtr a reference to the Usd Stage
          */
-        void SetStage(pxr::UsdStageRefPtr stage);
+        void SetStage(UsdStageRefPtr stage);
 
         /**
          * @brief Add a Scene Index Base to the model
          *
-         * @param sceneIndex pxr::HdSceneIndexBaseRefPtr Scene Index to add
+         * @param sceneIndex HdSceneIndexBaseRefPtr Scene Index to add
          */
-        void AddSceneIndexBase(pxr::HdSceneIndexBaseRefPtr sceneIndex);
+        void AddSceneIndexBase(HdSceneIndexBaseRefPtr sceneIndex);
 
         /**
          * @brief Get the Editable Scene Index from the model
          *
-         * @return pxr::HdSceneIndexBaseRefPtr the editable Scene Index
+         * @return HdSceneIndexBaseRefPtr the editable Scene Index
          */
-        pxr::HdSceneIndexBaseRefPtr GetEditableSceneIndex();
+        HdSceneIndexBaseRefPtr GetEditableSceneIndex();
 
         /**
          * @brief Set the Editable Scene Index to the model
          *
          * @param sceneIndex the Editable Scene Index to set to the model
          */
-        void SetEditableSceneIndex(pxr::HdSceneIndexBaseRefPtr sceneIndex);
+        void SetEditableSceneIndex(HdSceneIndexBaseRefPtr sceneIndex);
 
         /**
          * @brief Get a reference to the Scene Index from the model
          *
-         * @return pxr::HdSceneIndexBaseRefPtr a reference to the Scene Index
+         * @return HdSceneIndexBaseRefPtr a reference to the Scene Index
          */
-        pxr::HdSceneIndexBaseRefPtr GetFinalSceneIndex();
+        HdSceneIndexBaseRefPtr GetFinalSceneIndex();
 
         /**
          * @brief Get the Hydra Prim from the model at a specific path
          *
-         * @param primPath pxr::SdfPath the path to the prim to get
+         * @param primPath SdfPath the path to the prim to get
          *
-         * @return pxr::HdSceneIndexPrim the Hydra Prim at the given path
+         * @return HdSceneIndexPrim the Hydra Prim at the given path
          */
-        pxr::HdSceneIndexPrim GetPrim(pxr::SdfPath primPath);
+        HdSceneIndexPrim GetPrim(SdfPath primPath);
 
         /**
          * @brief Get the Usd Prim from the model at a specific path
          *
-         * @param primPath pxr::SdfPath the path to the prim to get
+         * @param primPath SdfPath the path to the prim to get
          *
-         * @return pxr::UsdPrim the Usd Prim at the given path
+         * @return UsdPrim the Usd Prim at the given path
          */
-        pxr::UsdPrim GetUsdPrim(pxr::SdfPath primPath);
+        UsdPrim GetUsdPrim(SdfPath primPath);
 
         /**
          * @brief Get the Usd Prim from the model
          *
-         * @return pxr::UsdPrimRange a prim
+         * @return UsdPrimRange a prim
          */
-        pxr::UsdPrimRange GetAllPrims();
+        UsdPrimRange GetAllPrims();
 
         /**
          * @brief Get a vector of all camera path from the model
          *
-         * @return pxr::SdfPathVector a vector of camera paths
+         * @return SdfPathVector a vector of camera paths
          */
-        pxr::SdfPathVector GetCameras();
+        SdfPathVector GetCameras();
 
         /**
          * @brief Get the current prim selection of the model
          *
-         * @return pxr::SdfPathVector a vector of the selected prim paths
+         * @return SdfPathVector a vector of the selected prim paths
          */
-        pxr::SdfPathVector GetSelection();
+        SdfPathVector GetSelection();
 
         /**
          * @brief Set the current prim selection of the model
          *
          * @param primPaths the vector containing the prim paths selection
          */
-        void SetSelection(pxr::SdfPathVector primPaths);
+        void SetSelection(SdfPathVector primPaths);
 
     private:
-        pxr::UsdStageRefPtr _stage;
-        pxr::SdfPathVector _selection;
-        pxr::HdSceneIndexBaseRefPtr _editableSceneIndex;
-        pxr::HdMergingSceneIndexRefPtr _sceneIndexBases, _finalSceneIndex;
+        UsdStageRefPtr _stage;
+        SdfPathVector _selection;
+        HdSceneIndexBaseRefPtr _editableSceneIndex;
+        HdMergingSceneIndexRefPtr _sceneIndexBases, _finalSceneIndex;
 };
+
+PXR_NAMESPACE_CLOSE_SCOPE

@@ -15,6 +15,8 @@
 
 #include "view.h"
 
+PXR_NAMESPACE_OPEN_SCOPE
+
 using namespace std;
 
 /**
@@ -142,3 +144,5 @@ class UsdSessionLayer : public View {
          */
         void _FocusOutEvent() override;
 };
+
+PXR_NAMESPACE_CLOSE_SCOPE

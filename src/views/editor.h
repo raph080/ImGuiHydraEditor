@@ -14,6 +14,8 @@
 #include "sceneindices/colorfiltersceneindex.h"
 #include "view.h"
 
+PXR_NAMESPACE_OPEN_SCOPE
+
 using namespace std;
 
 /**
@@ -83,3 +85,5 @@ class Editor : public View {
          */
         void _AppendAllPrimAttrs(pxr::SdfPath primPath);
 };
+
+PXR_NAMESPACE_CLOSE_SCOPE

@@ -8,6 +8,8 @@
 #include "views/view.h"
 #include "views/viewport.h"
 
+PXR_NAMESPACE_OPEN_SCOPE
+
 MainWindow::MainWindow(Model* model) : _model(model)
 {
     ResetDefaultViews();
@@ -86,3 +88,5 @@ void MainWindow::AddView(const string viewType)
         _views.push_back(new Viewport(_model, viewLabel));
     }
 }
+
+PXR_NAMESPACE_CLOSE_SCOPE

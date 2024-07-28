@@ -1,6 +1,7 @@
 #include "usdsessionlayer.h"
 
 #include <ImGuiFileDialog.h>
+#include <pxr/imaging/hd/tokens.h>
 #include <pxr/usd/usdGeom/camera.h>
 #include <pxr/usd/usdGeom/capsule.h>
 #include <pxr/usd/usdGeom/cone.h>
@@ -14,7 +15,7 @@
 #include <fstream>
 #include <iostream>
 
-#include "pxr/imaging/hd/tokens.h"
+PXR_NAMESPACE_OPEN_SCOPE
 
 UsdSessionLayer::UsdSessionLayer(Model* model, const string label)
     : View(model, label), _isEditing(false)
@@ -25,9 +26,9 @@ UsdSessionLayer::UsdSessionLayer(Model* model, const string label)
     _editor.SetLanguageDefinition(_GetUsdLanguageDefinition());
     _editor.SetShowWhitespaces(false);
 
-    pxr::UsdImagingCreateSceneIndicesInfo info;
+    UsdImagingCreateSceneIndicesInfo info;
     info.displayUnloadedPrimsWithBounds = false;
-    const pxr::UsdImagingSceneIndices sceneIndices =
+    const UsdImagingSceneIndices sceneIndices =
         UsdImagingCreateSceneIndices(info);
 
     _stageSceneIndex = sceneIndices.stageSceneIndex;
@@ -67,18 +68,18 @@ void UsdSessionLayer::_Draw()
         if (ImGui::BeginMenu("Objects")) {
             if (ImGui::BeginMenu("Create")) {
                 if (ImGui::MenuItem("Camera"))
-                    _CreatePrim(pxr::HdPrimTypeTokens->camera);
+                    _CreatePrim(HdPrimTypeTokens->camera);
                 ImGui::Separator();
                 if (ImGui::MenuItem("Capsule"))
-                    _CreatePrim(pxr::HdPrimTypeTokens->capsule);
+                    _CreatePrim(HdPrimTypeTokens->capsule);
                 if (ImGui::MenuItem("Cone"))
-                    _CreatePrim(pxr::HdPrimTypeTokens->cone);
+                    _CreatePrim(HdPrimTypeTokens->cone);
                 if (ImGui::MenuItem("Cube"))
-                    _CreatePrim(pxr::HdPrimTypeTokens->cube);
+                    _CreatePrim(HdPrimTypeTokens->cube);
                 if (ImGui::MenuItem("Cylinder"))
-                    _CreatePrim(pxr::HdPrimTypeTokens->cylinder);
+                    _CreatePrim(HdPrimTypeTokens->cylinder);
                 if (ImGui::MenuItem("Sphere"))
-                    _CreatePrim(pxr::HdPrimTypeTokens->sphere);
+                    _CreatePrim(HdPrimTypeTokens->sphere);
                 ImGui::EndMenu();
             }
             ImGui::EndMenu();
@@ -108,15 +109,15 @@ void UsdSessionLayer::_Draw()
 
 void UsdSessionLayer::_SetEmptyStage()
 {
-    _stage = pxr::UsdStage::CreateInMemory();
-    UsdGeomSetStageUpAxis(_stage, pxr::UsdGeomTokens->y);
+    _stage = UsdStage::CreateInMemory();
+    UsdGeomSetStageUpAxis(_stage, UsdGeomTokens->y);
 
     _rootLayer = _stage->GetRootLayer();
     _sessionLayer = _stage->GetSessionLayer();
 
     _stage->SetEditTarget(_sessionLayer);
     _stageSceneIndex->SetStage(_stage);
-    _stageSceneIndex->SetTime(pxr::UsdTimeCode::Default());
+    _stageSceneIndex->SetTime(UsdTimeCode::Default());
 
     GetModel()->SetStage(_stage);
 }
@@ -129,57 +130,57 @@ void UsdSessionLayer::_LoadUsdStage(const string usdFilePath)
         return;
     }
 
-    _rootLayer = pxr::SdfLayer::FindOrOpen(usdFilePath);
-    _sessionLayer = pxr::SdfLayer::CreateAnonymous();
-    _stage = pxr::UsdStage::Open(_rootLayer, _sessionLayer);
+    _rootLayer = SdfLayer::FindOrOpen(usdFilePath);
+    _sessionLayer = SdfLayer::CreateAnonymous();
+    _stage = UsdStage::Open(_rootLayer, _sessionLayer);
     _stage->SetEditTarget(_sessionLayer);
     _stageSceneIndex->SetStage(_stage);
-    _stageSceneIndex->SetTime(pxr::UsdTimeCode::Default());
+    _stageSceneIndex->SetTime(UsdTimeCode::Default());
 
     GetModel()->SetStage(_stage);
 }
 
 string UsdSessionLayer::_GetNextAvailableIndexedPath(string primPath)
 {
-    pxr::UsdPrim prim;
+    UsdPrim prim;
     int i = -1;
     string newPath;
     do {
         i++;
         if (i == 0) newPath = primPath;
         else newPath = primPath + to_string(i);
-        prim = _stage->GetPrimAtPath(pxr::SdfPath(newPath));
+        prim = _stage->GetPrimAtPath(SdfPath(newPath));
     } while (prim.IsValid());
     return newPath;
 }
 
-void UsdSessionLayer::_CreatePrim(pxr::TfToken primType)
+void UsdSessionLayer::_CreatePrim(TfToken primType)
 {
     string primPath = _GetNextAvailableIndexedPath("/" + primType.GetString());
 
-    if (primType == pxr::HdPrimTypeTokens->camera) {
-        auto cam = pxr::UsdGeomCamera::Define(_stage, pxr::SdfPath(primPath));
-        cam.CreateFocalLengthAttr(pxr::VtValue(18.46f));
+    if (primType == HdPrimTypeTokens->camera) {
+        auto cam = UsdGeomCamera::Define(_stage, SdfPath(primPath));
+        cam.CreateFocalLengthAttr(VtValue(18.46f));
     }
     else {
-        pxr::UsdGeomGprim prim;
-        if (primType == pxr::HdPrimTypeTokens->capsule)
-            prim = pxr::UsdGeomCapsule::Define(_stage, pxr::SdfPath(primPath));
-        if (primType == pxr::HdPrimTypeTokens->cone)
-            prim = pxr::UsdGeomCone::Define(_stage, pxr::SdfPath(primPath));
-        if (primType == pxr::HdPrimTypeTokens->cube)
-            prim = pxr::UsdGeomCube::Define(_stage, pxr::SdfPath(primPath));
-        if (primType == pxr::HdPrimTypeTokens->cylinder)
+        UsdGeomGprim prim;
+        if (primType == HdPrimTypeTokens->capsule)
+            prim = UsdGeomCapsule::Define(_stage, SdfPath(primPath));
+        if (primType == HdPrimTypeTokens->cone)
+            prim = UsdGeomCone::Define(_stage, SdfPath(primPath));
+        if (primType == HdPrimTypeTokens->cube)
+            prim = UsdGeomCube::Define(_stage, SdfPath(primPath));
+        if (primType == HdPrimTypeTokens->cylinder)
             prim =
-                pxr::UsdGeomCylinder::Define(_stage, pxr::SdfPath(primPath));
-        if (primType == pxr::HdPrimTypeTokens->sphere)
-            prim = pxr::UsdGeomSphere::Define(_stage, pxr::SdfPath(primPath));
+                UsdGeomCylinder::Define(_stage, SdfPath(primPath));
+        if (primType == HdPrimTypeTokens->sphere)
+            prim = UsdGeomSphere::Define(_stage, SdfPath(primPath));
 
-        pxr::VtVec3fArray extent({{-1, -1, -1}, {1, 1, 1}});
-        prim.CreateExtentAttr(pxr::VtValue(extent));
+        VtVec3fArray extent({{-1, -1, -1}, {1, 1, 1}});
+        prim.CreateExtentAttr(VtValue(extent));
 
-        pxr::VtVec3fArray color({{.5f, .5f, .5f}});
-        prim.CreateDisplayColorAttr(pxr::VtValue(color));
+        VtVec3fArray color({{.5f, .5f, .5f}});
+        prim.CreateDisplayColorAttr(VtValue(color));
     }
 
     _stageSceneIndex->ApplyPendingUpdates();
@@ -338,3 +339,5 @@ void UsdSessionLayer::_FocusOutEvent()
     _SaveSessionTextToModel();
     _stageSceneIndex->ApplyPendingUpdates();
 };
+
+PXR_NAMESPACE_CLOSE_SCOPE

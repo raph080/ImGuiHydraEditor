@@ -20,8 +20,9 @@
 #include <pxr/imaging/hgiInterop/hgiInterop.h>
 #include <pxr/usd/usd/prim.h>
 
-using HgiUniquePtr = std::unique_ptr<class pxr::Hgi>;
+PXR_NAMESPACE_OPEN_SCOPE
 
+using HgiUniquePtr = std::unique_ptr<class Hgi>;
 using namespace std;
 
 /**
@@ -37,7 +38,7 @@ class Engine {
          * @param sceneIndex the Scene Index to render
          * @param plugin the renderer plugin that specify the render
          */
-        Engine(pxr::HdSceneIndexBaseRefPtr sceneIndex, pxr::TfToken plugin);
+        Engine(HdSceneIndexBaseRefPtr sceneIndex, TfToken plugin);
 
         /**
          * @brief Destroy the Engine object
@@ -50,28 +51,28 @@ class Engine {
          *
          * @return the available renderer plugins
          */
-        static pxr::TfTokenVector GetRendererPlugins();
+        static TfTokenVector GetRendererPlugins();
 
         /**
          * @brief Get the default renderer plugin (usually Storm)
          *
          * @return the default renderer plugin
          */
-        static pxr::TfToken GetDefaultRendererPlugin();
+        static TfToken GetDefaultRendererPlugin();
 
         /**
          * @brief Get the name of a renderer plugin
          *
          * @return the name of a renderer plugin
          */
-        string GetRendererPluginName(pxr::TfToken plugin);
+        string GetRendererPluginName(TfToken plugin);
 
         /**
          * @brief Get the current renderer plugin
          *
          * @return the current renderer plugin
          */
-        pxr::TfToken GetCurrentRendererPlugin();
+        TfToken GetCurrentRendererPlugin();
 
         /**
          * @brief Set the matrices of the current camera
@@ -79,14 +80,14 @@ class Engine {
          * @param view the view matrix
          * @param proj the projection matrix
          */
-        void SetCameraMatrices(pxr::GfMatrix4d view, pxr::GfMatrix4d proj);
+        void SetCameraMatrices(GfMatrix4d view, GfMatrix4d proj);
 
         /**
          * @brief Set the current selection
          *
          * @param paths a vector of SDF Paths
          */
-        void SetSelection(pxr::SdfPathVector paths);
+        void SetSelection(SdfPathVector paths);
 
         /**
          * @brief Set the render size
@@ -114,7 +115,7 @@ class Engine {
          * @return the Sdf Path to the Prim visible at the given screen
          * position
          */
-        pxr::SdfPath FindIntersection(pxr::GfVec2f screenPos);
+        SdfPath FindIntersection(GfVec2f screenPos);
 
         /**
          * @brief Get the data from the render buffer
@@ -124,26 +125,26 @@ class Engine {
         void *GetRenderBufferData();
 
     private:
-        pxr::UsdStageRefPtr _stage;
-        pxr::GlfDrawTargetRefPtr _drawTarget;
-        pxr::GfMatrix4d _camView, _camProj;
+        UsdStageRefPtr _stage;
+        GlfDrawTargetRefPtr _drawTarget;
+        GfMatrix4d _camView, _camProj;
         int _width, _height;
 
         HgiUniquePtr _hgi;
-        pxr::HdDriver _hgiDriver;
+        HdDriver _hgiDriver;
 
-        pxr::HdEngine _engine;
-        pxr::HdPluginRenderDelegateUniqueHandle _renderDelegate;
-        pxr::HdRenderIndex *_renderIndex;
-        pxr::HdxTaskController *_taskController;
-        pxr::HdRprimCollection _collection;
-        pxr::HdSceneIndexBaseRefPtr _sceneIndex;
-        pxr::SdfPath _taskControllerId;
+        HdEngine _engine;
+        HdPluginRenderDelegateUniqueHandle _renderDelegate;
+        HdRenderIndex *_renderIndex;
+        HdxTaskController *_taskController;
+        HdRprimCollection _collection;
+        HdSceneIndexBaseRefPtr _sceneIndex;
+        SdfPath _taskControllerId;
 
-        pxr::HgiInterop _interop;
-        pxr::HdxSelectionTrackerSharedPtr _selTracker;
+        HgiInterop _interop;
+        HdxSelectionTrackerSharedPtr _selTracker;
 
-        pxr::TfToken _curRendererPlugin;
+        TfToken _curRendererPlugin;
 
         /**
          * @brief Get the render delegate from the given renderer plugin
@@ -152,8 +153,8 @@ class Engine {
          *
          * @return the renderer delegate fro, the given renderer plugin
          */
-        static pxr::HdPluginRenderDelegateUniqueHandle
-        GetRenderDelegateFromPlugin(pxr::TfToken plugin);
+        static HdPluginRenderDelegateUniqueHandle GetRenderDelegateFromPlugin(
+            TfToken plugin);
 
         /**
          * @brief Initialize the renderer
@@ -175,5 +176,7 @@ class Engine {
          *
          * @return the current frustum
          */
-        pxr::GfFrustum GetFrustum();
+        GfFrustum GetFrustum();
 };
+
+PXR_NAMESPACE_CLOSE_SCOPE

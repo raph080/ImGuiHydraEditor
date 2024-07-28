@@ -16,11 +16,13 @@
 
 #include <sstream>
 
+PXR_NAMESPACE_OPEN_SCOPE
+
 Editor::Editor(Model* model, const string label) : View(model, label)
 {
     auto editableSceneIndex = GetModel()->GetEditableSceneIndex();
     _colorFilterSceneIndex =
-        pxr::ColorFilterSceneIndex::New(editableSceneIndex);
+        ColorFilterSceneIndex::New(editableSceneIndex);
     GetModel()->SetEditableSceneIndex(_colorFilterSceneIndex);
 }
 
@@ -31,7 +33,7 @@ const string Editor::GetViewType()
 
 void Editor::_Draw()
 {
-    pxr::SdfPath primPath = _GetPrimToDisplay();
+    SdfPath primPath = _GetPrimToDisplay();
 
     if (primPath.IsEmpty()) return;
 
@@ -39,9 +41,9 @@ void Editor::_Draw()
     _AppendAllPrimAttrs(primPath);
 }
 
-pxr::SdfPath Editor::_GetPrimToDisplay()
+SdfPath Editor::_GetPrimToDisplay()
 {
-    pxr::SdfPathVector primPaths = GetModel()->GetSelection();
+    SdfPathVector primPaths = GetModel()->GetSelection();
 
     if (primPaths.size() > 0 && !primPaths[0].IsEmpty())
         _prevSelection = primPaths[0];
@@ -49,14 +51,14 @@ pxr::SdfPath Editor::_GetPrimToDisplay()
     return _prevSelection;
 }
 
-void Editor::_AppendDisplayColorAttr(pxr::SdfPath primPath)
+void Editor::_AppendDisplayColorAttr(SdfPath primPath)
 {
-    pxr::GfVec3f color = _colorFilterSceneIndex->GetDisplayColor(primPath);
+    GfVec3f color = _colorFilterSceneIndex->GetDisplayColor(primPath);
 
-    if (color == pxr::GfVec3f(-1.f)) return;
+    if (color == GfVec3f(-1.f)) return;
 
     // save the values before change
-    pxr::GfVec3f prevColor = pxr::GfVec3f(color);
+    GfVec3f prevColor = GfVec3f(color);
 
     float* data = color.data();
     if (ImGui::CollapsingHeader("Display Color"))
@@ -68,14 +70,14 @@ void Editor::_AppendDisplayColorAttr(pxr::SdfPath primPath)
 }
 
 void Editor::_AppendDataSourceAttrs(
-    pxr::HdContainerDataSourceHandle containerDataSource)
+    HdContainerDataSourceHandle containerDataSource)
 {
     for (auto&& token : containerDataSource->GetNames()) {
         auto dataSource = containerDataSource->Get(token);
         const char* tokenText = token.GetText();
 
         auto containerDataSource =
-            pxr::HdContainerDataSource::Cast(dataSource);
+            HdContainerDataSource::Cast(dataSource);
         if (containerDataSource) {
             bool clicked =
                 ImGui::TreeNodeEx(tokenText, ImGuiTreeNodeFlags_OpenOnArrow);
@@ -86,10 +88,10 @@ void Editor::_AppendDataSourceAttrs(
             }
         }
 
-        auto sampledDataSource = pxr::HdSampledDataSource::Cast(dataSource);
+        auto sampledDataSource = HdSampledDataSource::Cast(dataSource);
         if (sampledDataSource) {
             ImGui::Columns(2);
-            pxr::VtValue value = sampledDataSource->GetValue(0);
+            VtValue value = sampledDataSource->GetValue(0);
             ImGui::Text("%s", tokenText);
             ImGui::NextColumn();
             ImGui::BeginChild(tokenText, ImVec2(0, 14), false);
@@ -102,10 +104,10 @@ void Editor::_AppendDataSourceAttrs(
     }
 }
 
-void Editor::_AppendAllPrimAttrs(pxr::SdfPath primPath)
+void Editor::_AppendAllPrimAttrs(SdfPath primPath)
 {
-    pxr::HdSceneIndexPrim prim = _sceneIndex->GetPrim(primPath);
-    pxr::TfTokenVector tokens = prim.dataSource->GetNames();
+    HdSceneIndexPrim prim = _sceneIndex->GetPrim(primPath);
+    TfTokenVector tokens = prim.dataSource->GetNames();
 
     if (tokens.size() < 1) return;
 
@@ -113,3 +115,5 @@ void Editor::_AppendAllPrimAttrs(pxr::SdfPath primPath)
         _AppendDataSourceAttrs(prim.dataSource);
     }
 }
+
+PXR_NAMESPACE_CLOSE_SCOPE

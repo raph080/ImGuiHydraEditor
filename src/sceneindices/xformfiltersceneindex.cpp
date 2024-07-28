@@ -6,86 +6,85 @@
 #include <pxr/imaging/hd/tokens.h>
 #include <pxr/imaging/hd/xformSchema.h>
 
-pxr::XformFilterSceneIndex::XformFilterSceneIndex(
+PXR_NAMESPACE_OPEN_SCOPE
+
+XformFilterSceneIndex::XformFilterSceneIndex(
     const HdSceneIndexBaseRefPtr &inputSceneIndex)
     : HdSingleInputFilteringSceneIndexBase(inputSceneIndex)
 {
 }
 
-pxr::GfMatrix4d pxr::XformFilterSceneIndex::GetXform(
-    const pxr::SdfPath &primPath) const
+GfMatrix4d XformFilterSceneIndex::GetXform(const SdfPath &primPath) const
 {
-    const pxr::VtValue *value =
-        _xformDict.GetValueAtPath(primPath.GetAsString());
-    if (value && !value->IsEmpty()) return value->Get<pxr::GfMatrix4d>();
+    const VtValue *value = _xformDict.GetValueAtPath(primPath.GetAsString());
+    if (value && !value->IsEmpty()) return value->Get<GfMatrix4d>();
 
-    pxr::HdSceneIndexPrim prim = _GetInputSceneIndex()->GetPrim(primPath);
+    HdSceneIndexPrim prim = _GetInputSceneIndex()->GetPrim(primPath);
 
-    pxr::HdXformSchema xformSchema =
-        pxr::HdXformSchema::GetFromParent(prim.dataSource);
-    if (!xformSchema.IsDefined()) return pxr::GfMatrix4d(1);
+    HdXformSchema xformSchema = HdXformSchema::GetFromParent(prim.dataSource);
+    if (!xformSchema.IsDefined()) return GfMatrix4d(1);
 
-    pxr::HdSampledDataSource::Time time(0);
-    pxr::GfMatrix4d xform =
-        xformSchema.GetMatrix()->GetValue(time).Get<pxr::GfMatrix4d>();
+    HdSampledDataSource::Time time(0);
+    GfMatrix4d xform =
+        xformSchema.GetMatrix()->GetValue(time).Get<GfMatrix4d>();
 
     return xform;
 }
 
-void pxr::XformFilterSceneIndex::SetXform(const pxr::SdfPath &primPath,
-                                          pxr::GfMatrix4d xform)
+void XformFilterSceneIndex::SetXform(const SdfPath &primPath, GfMatrix4d xform)
 {
-    _xformDict.SetValueAtPath(primPath.GetAsString(), pxr::VtValue(xform));
+    _xformDict.SetValueAtPath(primPath.GetAsString(), VtValue(xform));
 
-    pxr::HdSceneIndexObserver::DirtiedPrimEntries entries;
-    entries.push_back({primPath, pxr::HdXformSchema::GetDefaultLocator()});
+    HdSceneIndexObserver::DirtiedPrimEntries entries;
+    entries.push_back({primPath, HdXformSchema::GetDefaultLocator()});
 
     _SendPrimsDirtied(entries);
 }
 
-pxr::HdSceneIndexPrim pxr::XformFilterSceneIndex::GetPrim(
-    const pxr::SdfPath &primPath) const
+HdSceneIndexPrim XformFilterSceneIndex::GetPrim(const SdfPath &primPath) const
 {
     HdSceneIndexPrim prim = _GetInputSceneIndex()->GetPrim(primPath);
 
-    pxr::GfMatrix4d matrix = GetXform(primPath);
+    GfMatrix4d matrix = GetXform(primPath);
 
-    prim.dataSource = pxr::HdOverlayContainerDataSource::New(
-        pxr::HdRetainedContainerDataSource::New(
-            pxr::HdXformSchemaTokens->xform,
-            pxr::HdXformSchema::Builder()
-                .SetMatrix(pxr::HdRetainedTypedSampledDataSource<
-                           pxr::GfMatrix4d>::New(matrix))
+    prim.dataSource = HdOverlayContainerDataSource::New(
+        HdRetainedContainerDataSource::New(
+            HdXformSchemaTokens->xform,
+            HdXformSchema::Builder()
+                .SetMatrix(
+                    HdRetainedTypedSampledDataSource<GfMatrix4d>::New(matrix))
                 .SetResetXformStack(
-                    pxr::HdRetainedTypedSampledDataSource<bool>::New(false))
+                    HdRetainedTypedSampledDataSource<bool>::New(false))
                 .Build()),
         prim.dataSource);
 
     return prim;
 }
 
-pxr::SdfPathVector pxr::XformFilterSceneIndex::GetChildPrimPaths(
-    const pxr::SdfPath &primPath) const
+SdfPathVector XformFilterSceneIndex::GetChildPrimPaths(
+    const SdfPath &primPath) const
 {
     return _GetInputSceneIndex()->GetChildPrimPaths(primPath);
 }
 
-void pxr::XformFilterSceneIndex::_PrimsAdded(
-    const pxr::HdSceneIndexBase &sender,
-    const pxr::HdSceneIndexObserver::AddedPrimEntries &entries)
+void XformFilterSceneIndex::_PrimsAdded(
+    const HdSceneIndexBase &sender,
+    const HdSceneIndexObserver::AddedPrimEntries &entries)
 {
     _SendPrimsAdded(entries);
 }
 
-void pxr::XformFilterSceneIndex::_PrimsRemoved(
-    const pxr::HdSceneIndexBase &sender,
-    const pxr::HdSceneIndexObserver::RemovedPrimEntries &entries)
+void XformFilterSceneIndex::_PrimsRemoved(
+    const HdSceneIndexBase &sender,
+    const HdSceneIndexObserver::RemovedPrimEntries &entries)
 {
     _SendPrimsRemoved(entries);
 }
-void pxr::XformFilterSceneIndex::_PrimsDirtied(
-    const pxr::HdSceneIndexBase &sender,
-    const pxr::HdSceneIndexObserver::DirtiedPrimEntries &entries)
+void XformFilterSceneIndex::_PrimsDirtied(
+    const HdSceneIndexBase &sender,
+    const HdSceneIndexObserver::DirtiedPrimEntries &entries)
 {
     _SendPrimsDirtied(entries);
 }
+
+PXR_NAMESPACE_CLOSE_SCOPE

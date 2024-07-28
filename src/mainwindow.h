@@ -14,6 +14,8 @@
 #include "models/model.h"
 #include "views/view.h"
 
+PXR_NAMESPACE_OPEN_SCOPE
+
 using namespace std;
 
 /**
@@ -55,3 +57,5 @@ class MainWindow {
         vector<View*> _views;
         Model* _model;
 };
+
+PXR_NAMESPACE_CLOSE_SCOPE

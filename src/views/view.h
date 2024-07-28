@@ -17,6 +17,8 @@
 
 #include "models/model.h"
 
+PXR_NAMESPACE_OPEN_SCOPE
+
 using namespace std;
 
 /**
@@ -161,3 +163,5 @@ class View {
          */
         virtual ImGuiWindowFlags _GetGizmoWindowFlags();
 };
+
+PXR_NAMESPACE_CLOSE_SCOPE
