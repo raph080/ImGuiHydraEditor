@@ -12,7 +12,7 @@ To build ImGui Hydra Editor, see [BUILDING.md](BUILDING.md) instructions.
 
 ## Overview
 
-ImGui Hydra Editor is a tool that process data using the Hydra 2.0 Framework. Every view from the tool has access to read, insert and author the current state
+ImGui Hydra Editor is a tool that processes data using the Hydra 2.0 Framework. Every view from the tool has access to read, insert and author the current state
 of Hydra data.
 
 ![Views that interact with Hydra data](resources/views_hydra_data.png)
