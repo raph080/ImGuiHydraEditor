@@ -442,8 +442,8 @@ void Viewport::_FocusOnPrim(SdfPath primPath)
     HdExtentSchema extentSchema =
         HdExtentSchema::GetFromParent(prim.dataSource);
     if (!extentSchema.IsDefined()) {
-        std::cout << "Prim at " << primPath
-                  << " has no extent; skipping focus." << std::endl;
+        TF_WARN("Prim at %s has no extent; skipping focus.",
+                primPath.GetAsString().c_str());
         return;
     }
 

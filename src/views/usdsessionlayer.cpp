@@ -13,7 +13,6 @@
 #include <pxr/usdImaging/usdImaging/sceneIndices.h>
 
 #include <fstream>
-#include <iostream>
 
 PXR_NAMESPACE_OPEN_SCOPE
 
@@ -125,7 +124,8 @@ void UsdSessionLayer::_SetEmptyStage()
 void UsdSessionLayer::_LoadUsdStage(const string usdFilePath)
 {
     if (!ifstream(usdFilePath)) {
-        cout << "Error: the file does not exist. Empty stage loaded." << endl;
+        TF_RUNTIME_ERROR(
+            "Error: the file does not exist. Empty stage loaded.");
         _SetEmptyStage();
         return;
     }
@@ -171,8 +171,7 @@ void UsdSessionLayer::_CreatePrim(TfToken primType)
         if (primType == HdPrimTypeTokens->cube)
             prim = UsdGeomCube::Define(_stage, SdfPath(primPath));
         if (primType == HdPrimTypeTokens->cylinder)
-            prim =
-                UsdGeomCylinder::Define(_stage, SdfPath(primPath));
+            prim = UsdGeomCylinder::Define(_stage, SdfPath(primPath));
         if (primType == HdPrimTypeTokens->sphere)
             prim = UsdGeomSphere::Define(_stage, SdfPath(primPath));
 
