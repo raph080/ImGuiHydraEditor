@@ -21,6 +21,14 @@ file(GLOB_RECURSE SRC_H
   "src/*.h"
 )
 
+# Configure RPATH so libraries are found after make install
+if(APPLE)
+    set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
+elseif(UNIX)
+    set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib64")
+endif()
+
+
 add_executable(${PROJECT_NAME} ${SRC_CPP} ${SRC_H})
 
 target_include_directories(${PROJECT_NAME}
@@ -30,7 +38,7 @@ target_include_directories(${PROJECT_NAME}
 
 target_link_libraries(${PROJECT_NAME}
     PRIVATE
-        usdImagingGL
+        ${PXR_LIBRARIES}
         libglew_static
         glfw
         imgui
@@ -38,6 +46,8 @@ target_link_libraries(${PROJECT_NAME}
         imguicolortextedit
         imguifiledialog
 )
+
+include_directories(${PROJECT_NAME} ${PXR_INCLUDE_DIRS})
 
 if(WIN32)
     target_compile_definitions(${PROJECT_NAME}
@@ -47,7 +57,28 @@ if(WIN32)
     )
 endif()
 
+
+# --------------- install section ---------------
+
 install(
     TARGETS ${PROJECT_NAME}
 )
 
+IF(EXISTS ${PXR_CMAKE_DIR}/lib)
+    INSTALL(
+        DIRECTORY ${PXR_CMAKE_DIR}/lib
+        DESTINATION ${CMAKE_INSTALL_PREFIX}
+    )
+endif()
+
+IF(EXISTS ${PXR_CMAKE_DIR}/lib64)
+    INSTALL(
+        DIRECTORY ${PXR_CMAKE_DIR}/lib64
+        DESTINATION ${CMAKE_INSTALL_PREFIX}
+    )
+endif()
+
+INSTALL(
+    DIRECTORY ${PXR_CMAKE_DIR}/plugin
+    DESTINATION ${CMAKE_INSTALL_PREFIX}
+)
