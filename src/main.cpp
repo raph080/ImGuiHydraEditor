@@ -149,7 +149,13 @@ int main(int argc, char** argv)
     glEnable(GL_DEPTH_TEST);
 
     pxr::Model model;
-    pxr::MainWindow mainWindow(&model);
+    std::vector<std::string> params;
+    for (int i =0; i < argc; i++)
+    {
+        params.emplace_back(argv[i]);
+    }
+
+    pxr::MainWindow mainWindow(&model, params);
 
     while (!glfwWindowShouldClose(window)) {
         glfwPollEvents();
