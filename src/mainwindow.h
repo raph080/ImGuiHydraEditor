@@ -29,8 +29,9 @@ class MainWindow {
          * @brief Construct a new Main Window object
          *
          * @param model the Model of the new Main Window
+         * @param application arguments
          */
-        MainWindow(Model* model);
+        MainWindow(Model* model, const std::vector<std::string>& args);
 
         /**
          * @brief Update the draw call of the main window
@@ -53,7 +54,15 @@ class MainWindow {
          */
         void AddView(const string viewType);
 
+        /**
+        * @brief Gets views of given type
+        *
+        * @param viewType the type of the retrieved view
+        */
+        vector<View*> GetViewsOfType(const string viewType);
+
     private:
+
         vector<View*> _views;
         Model* _model;
 };

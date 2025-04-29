@@ -48,6 +48,13 @@ class UsdSessionLayer : public View {
          */
         ImGuiWindowFlags _GetGizmoWindowFlags() override;
 
+        /**
+        * @brief Load a Usd Stage based on the given Usd file path
+        *
+        * @param usdFilePath a string containing a Usd file path
+        */
+        void LoadUsdStage(const string usdFilePath);
+
     private:
         TextEditor _editor;
         bool _isEditing;
@@ -63,12 +70,7 @@ class UsdSessionLayer : public View {
          */
         void _Draw() override;
 
-        /**
-         * @brief Load a Usd Stage based on the given Usd file path
-         *
-         * @param usdFilePath a string containing a Usd file path
-         */
-        void _LoadUsdStage(const string usdFilePath);
+
 
         /**
          * @brief Set the model to an empty stage

@@ -7,12 +7,23 @@
 #include "views/usdsessionlayer.h"
 #include "views/view.h"
 #include "views/viewport.h"
-
+#include <assert.h>
+#include <iostream>
 PXR_NAMESPACE_OPEN_SCOPE
 
-MainWindow::MainWindow(Model* model) : _model(model)
+MainWindow::MainWindow(Model* model, const std::vector<std::string>& params) : _model(model)
 {
     ResetDefaultViews();
+    if (params.size()>1)
+    {
+        const auto & usdFileName = params[1];
+        auto views = GetViewsOfType(UsdSessionLayer::VIEW_TYPE);
+        assert(!views.empty());
+        UsdSessionLayer* sessionLayerPtr = dynamic_cast<UsdSessionLayer*>(views.front());
+        assert(sessionLayerPtr);
+        std::cout << "Loading "<< usdFileName << std::endl;
+        sessionLayerPtr->LoadUsdStage(usdFileName);
+    }
 };
 
 void MainWindow::Update()
@@ -87,6 +98,18 @@ void MainWindow::AddView(const string viewType)
     else if (viewType == Viewport::VIEW_TYPE) {
         _views.push_back(new Viewport(_model, viewLabel));
     }
+}
+
+vector<View*> MainWindow::GetViewsOfType(const string viewType)
+{
+    vector<View*> viewptrs;
+    for (auto &view:_views){
+        if (view->GetViewType() == viewType)
+        {
+            viewptrs.emplace_back(view);
+        }
+    }
+    return viewptrs;
 }
 
 PXR_NAMESPACE_CLOSE_SCOPE

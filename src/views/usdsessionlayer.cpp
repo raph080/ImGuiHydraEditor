@@ -34,6 +34,7 @@ UsdSessionLayer::UsdSessionLayer(Model* model, const string label)
     GetModel()->AddSceneIndexBase(sceneIndices.finalSceneIndex);
 
     _SetEmptyStage();
+
 }
 
 const string UsdSessionLayer::GetViewType()
@@ -92,7 +93,7 @@ void UsdSessionLayer::_Draw()
     if (ImGuiFileDialog::Instance()->Display("LoadFile")) {
         if (ImGuiFileDialog::Instance()->IsOk()) {
             string filePath = ImGuiFileDialog::Instance()->GetFilePathName();
-            _LoadUsdStage(filePath);
+            LoadUsdStage(filePath);
         }
         ImGuiFileDialog::Instance()->Close();
     }
@@ -121,7 +122,7 @@ void UsdSessionLayer::_SetEmptyStage()
     GetModel()->SetStage(_stage);
 }
 
-void UsdSessionLayer::_LoadUsdStage(const string usdFilePath)
+void UsdSessionLayer::LoadUsdStage(const string usdFilePath)
 {
     if (!ifstream(usdFilePath)) {
         TF_RUNTIME_ERROR(
