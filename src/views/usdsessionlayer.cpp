@@ -108,6 +108,7 @@ void UsdSessionLayer::_Draw()
 
 void UsdSessionLayer::_SetEmptyStage()
 {
+    _ClearStage();
     _stage = UsdStage::CreateInMemory();
     UsdGeomSetStageUpAxis(_stage, UsdGeomTokens->y);
 
@@ -119,6 +120,17 @@ void UsdSessionLayer::_SetEmptyStage()
     _stageSceneIndex->SetTime(UsdTimeCode::Default());
 }
 
+void UsdSessionLayer::_ClearStage()
+{
+    if(!_stage) {
+        return;
+    }
+
+    for (auto prim : _stage->GetPseudoRoot().GetChildren()) {
+        _stage->RemovePrim(prim.GetPath());
+    }
+}
+
 void UsdSessionLayer::_LoadUsdStage(const string usdFilePath)
 {
     if (!ifstream(usdFilePath)) {
@@ -128,6 +140,7 @@ void UsdSessionLayer::_LoadUsdStage(const string usdFilePath)
         return;
     }
 
+    _ClearStage();
     _rootLayer = SdfLayer::FindOrOpen(usdFilePath);
     _sessionLayer = SdfLayer::CreateAnonymous();
     _stage = UsdStage::Open(_rootLayer, _sessionLayer);

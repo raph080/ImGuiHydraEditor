@@ -77,6 +77,12 @@ class UsdSessionLayer : public View {
         void _SetEmptyStage();
 
         /**
+         * @brief Clear the loaded stage
+         *
+         */
+        void _ClearStage();
+
+        /**
          * @brief Check if USD session layer was updated since the last load
          * (different)
          *
