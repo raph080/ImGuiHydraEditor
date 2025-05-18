@@ -38,20 +38,6 @@ class Model {
         Model();
 
         /**
-         * @brief Get a reference to the Usd Stage from the model
-         *
-         * @return UsdStageRefPtr a reference to the Usd Stage
-         */
-        UsdStageRefPtr GetStage();
-
-        /**
-         * @brief Set a reference of a Usd Stage to the model
-         *
-         * @param stage UsdStageRefPtr a reference to the Usd Stage
-         */
-        void SetStage(UsdStageRefPtr stage);
-
-        /**
          * @brief Add a Scene Index Base to the model
          *
          * @param sceneIndex HdSceneIndexBaseRefPtr Scene Index to add
@@ -89,22 +75,6 @@ class Model {
         HdSceneIndexPrim GetPrim(SdfPath primPath);
 
         /**
-         * @brief Get the Usd Prim from the model at a specific path
-         *
-         * @param primPath SdfPath the path to the prim to get
-         *
-         * @return UsdPrim the Usd Prim at the given path
-         */
-        UsdPrim GetUsdPrim(SdfPath primPath);
-
-        /**
-         * @brief Get the Usd Prim from the model
-         *
-         * @return UsdPrimRange a prim
-         */
-        UsdPrimRange GetAllPrims();
-
-        /**
          * @brief Get a vector of all camera path from the model
          *
          * @return SdfPathVector a vector of camera paths
@@ -126,7 +96,6 @@ class Model {
         void SetSelection(SdfPathVector primPaths);
 
     private:
-        UsdStageRefPtr _stage;
         SdfPathVector _selection;
         HdSceneIndexBaseRefPtr _editableSceneIndex;
         HdMergingSceneIndexRefPtr _sceneIndexBases, _finalSceneIndex;
