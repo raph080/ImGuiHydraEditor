@@ -174,14 +174,6 @@ void Viewport::_ConfigureImGuizmo()
 void Viewport::_UpdateGrid()
 {
     _gridSceneIndex->Populate(_isGridEnabled);
-
-    if (!_isGridEnabled) return;
-
-    GfMatrix4f viewF(_getCurViewMatrix());
-    GfMatrix4f projF(_proj);
-    GfMatrix4f identity(1);
-
-    ImGuizmo::DrawGrid(viewF.data(), projF.data(), identity.data(), 10);
 }
 
 void Viewport::_UpdateHydraRender()
