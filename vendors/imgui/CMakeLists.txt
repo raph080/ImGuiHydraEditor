@@ -6,8 +6,6 @@ set(SRC_CPP
     "imgui/imgui_draw.cpp"
     "imgui/imgui_widgets.cpp"
     "imgui/imgui_tables.cpp"
-    "imgui/backends/imgui_impl_opengl3.cpp"
-    "imgui/backends/imgui_impl_glfw.cpp"
     "imgui/misc/cpp/imgui_stdlib.cpp"
 )
 
@@ -18,9 +16,28 @@ set(H_CPP
 
 set(PUBLIC_HEADERS 
     "imgui/imgui.h"
-    "imgui/backends/imgui_impl_opengl3.h"
-    "imgui/backends/imgui_impl_glfw.h"
 )
+
+# Add the backend for the graphics according to the OS
+if(APPLE AND NOT FORCE_OPENGL)
+    list(APPEND SRC_CPP
+        "imgui/backends/imgui_impl_metal.mm"
+        "imgui/backends/imgui_impl_osx.mm"
+    )
+    list(APPEND PUBLIC_HEADERS
+        "imgui/backends/imgui_impl_metal.h"
+        "imgui/backends/imgui_impl_osx.h"
+    )
+else()
+    list(APPEND SRC_CPP
+        "imgui/backends/imgui_impl_opengl3.cpp"
+        "imgui/backends/imgui_impl_glfw.cpp"
+    )
+    list(APPEND PUBLIC_HEADERS
+        "imgui/backends/imgui_impl_opengl3.h"
+        "imgui/backends/imgui_impl_glfw.h"
+    )
+endif()
 
 add_library(${PROJECT_NAME} ${SRC_CPP} ${H_CPP} ${PUBLIC_HEADER})
 

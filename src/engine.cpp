@@ -1,12 +1,21 @@
 #include "engine.h"
 
+#include "backends/backend.h"
+
+#include <iostream>
+
 #include <pxr/base/gf/camera.h>
 #include <pxr/base/gf/frustum.h>
 #include <pxr/imaging/cameraUtil/conformWindow.h>
 #include <pxr/imaging/hd/rendererPlugin.h>
 #include <pxr/imaging/hd/rendererPluginRegistry.h>
+#include <pxr/imaging/hd/renderBuffer.h>
+#include <pxr/imaging/hd/types.h>
 #include <pxr/imaging/hdx/pickTask.h>
+#include <pxr/imaging/hdx/hgiConversions.h>
 #include <pxr/imaging/hgi/tokens.h>
+#include <pxr/imaging/hgi/blitCmdsOps.h>
+#include "pxr/imaging/hdSt/hioConversions.h"
 
 PXR_NAMESPACE_OPEN_SCOPE
 
@@ -29,8 +38,6 @@ Engine::Engine(HdSceneIndexBaseRefPtr sceneIndex, TfToken plugin)
 
 Engine::~Engine()
 {
-    _drawTarget = GlfDrawTargetRefPtr();
-
     // Destroy objects in opposite order of construction.
     delete _taskController;
 
@@ -45,14 +52,6 @@ Engine::~Engine()
 
 void Engine::Initialize()
 {
-    // init draw target
-    _drawTarget = GlfDrawTarget::New(GfVec2i(_width, _height));
-    _drawTarget->Bind();
-    _drawTarget->AddAttachment(HdAovTokens->color, GL_RGBA, GL_FLOAT, GL_RGBA);
-    _drawTarget->AddAttachment(HdAovTokens->depth, GL_DEPTH_COMPONENT,
-                               GL_FLOAT, GL_DEPTH_COMPONENT);
-    _drawTarget->Unbind();
-
     // init render delegate
     _renderDelegate = GetRenderDelegateFromPlugin(_curRendererPlugin);
 
@@ -193,10 +192,6 @@ void Engine::SetRenderSize(int width, int height)
     CameraUtilFraming framing(displayWindow, dataWindow);
 
     _taskController->SetFraming(framing);
-
-    _drawTarget->Bind();
-    _drawTarget->SetSize(GfVec2i(width, height));
-    _drawTarget->Unbind();
 }
 
 void Engine::Present()
@@ -209,12 +204,6 @@ void Engine::Present()
             aovTexture = aov.Get<HgiTextureHandle>();
         }
     }
-
-    uint32_t framebuffer = 0;
-    _interop.TransferToApp(_hgi.get(), aovTexture,
-                           /*srcDepth*/ HgiTextureHandle(), HgiTokens->OpenGL,
-                           VtValue(framebuffer),
-                           GfVec4i(0, 0, _width, _height));
 }
 
 void Engine::PrepareDefaultLighting()
@@ -250,16 +239,11 @@ void Engine::Prepare()
 
 void Engine::Render()
 {
-    _drawTarget->Bind();
-    glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
+    _taskController->SetEnablePresentation(false);
     HdTaskSharedPtrVector tasks = _taskController->GetRenderingTasks();
     _engine.Execute(_renderIndex, &tasks);
 
     Present();
-
-    _drawTarget->Unbind();
 }
 
 SdfPath Engine::FindIntersection(GfVec2f screenPos)
@@ -306,10 +290,63 @@ SdfPath Engine::FindIntersection(GfVec2f screenPos)
 
 void* Engine::GetRenderBufferData()
 {
-    GLint id =
-        _drawTarget->GetAttachment(HdAovTokens->color)->GetGlTextureName();
-    return (void*)(uintptr_t)id;
-}
+    HdRenderBuffer* buffer = _taskController->GetRenderOutput(HdAovTokens->color);
+    if (!buffer) return nullptr;
+
+    const GfVec3i dim( buffer->GetWidth(), buffer->GetHeight(), buffer->GetDepth());
+
+    void* pixelData = buffer->Map();
+
+    HdFormat hdFormat = buffer->GetFormat();
+
+    std::vector<float> float4Data;
+    if (hdFormat == HdFormatFloat32Vec3) {
+        TF_RUNTIME_ERROR("FormatFloat32Vec3 not a supported texture format for Vulkan.");
+        return nullptr;
+    }
+
+    const HgiFormat bufFormat = HdxHgiConversions::GetHgiFormat(hdFormat);
+    const size_t pixelByteSize = HdDataSizeOfFormat(hdFormat);
+    const size_t dataByteSize = dim[0] * dim[1] * dim[2] * pixelByteSize;
+
+    static HgiTextureHandle texture;
+
+    // Update the existing texture if specs are compatible. This is more
+    // efficient than re-creating, because the underlying framebuffer that
+    // had the old texture attached would also need to be re-created.
+    if (texture && texture->GetDescriptor().dimensions == dim &&
+            texture->GetDescriptor().format == bufFormat) {
+        HgiTextureCpuToGpuOp copyOp;
+        copyOp.bufferByteSize = dataByteSize;
+        copyOp.cpuSourceBuffer = pixelData;
+        copyOp.gpuDestinationTexture = texture;
+        HgiBlitCmdsUniquePtr blitCmds = _hgi->CreateBlitCmds();
+        blitCmds->PushDebugGroup("Upload CPU texels");
+        blitCmds->CopyTextureCpuToGpu(copyOp);
+        blitCmds->PopDebugGroup();
+        _hgi->SubmitCmds(blitCmds.get());
+    } else {
+        // Destroy old texture
+        if(texture) {
+            _hgi->DestroyTexture(&texture);
+        }
+        // Create a new texture
+        HgiTextureDesc texDesc;
+        texDesc.debugName = "AovInput Texture";
+        texDesc.dimensions = dim;
+        texDesc.format = bufFormat;
+        texDesc.initialData = pixelData;
+        texDesc.layerCount = 1;
+        texDesc.mipLevels = 1;
+        texDesc.pixelsByteSize = dataByteSize;
+        texDesc.sampleCount = HgiSampleCount1;
+        texDesc.usage = HgiTextureUsageBitsShaderRead;
+
+        texture = _hgi->CreateTexture(texDesc);
+    }
+
+    return GetPointerToHgiTextureBackend(texture, _width, _height);
+ }
 
 GfFrustum Engine::GetFrustum()
 {

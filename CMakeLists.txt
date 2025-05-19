@@ -12,22 +12,66 @@ find_package(OpenGL REQUIRED)
 
 add_subdirectory(vendors)
 
-file(GLOB_RECURSE SRC_CPP
+file(GLOB SRC_CPP
   RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}
   "src/*.cpp"
+  "src/layouts/*.cpp"
+  "src/models/*.cpp"
+  "src/sceneindices/*.cpp"
+  "src/style/*.cpp"
+  "src/views/*.cpp"
 )
-file(GLOB_RECURSE SRC_H
+
+file(GLOB SRC_H
   RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}
   "src/*.h"
+  "src/layouts/*.h"
+  "src/models/*.h"
+  "src/sceneindices/*.h"
+  "src/style/*.h"
+  "src/views/*.h"
+  "src/backends/*.h"
 )
+
+set(LIBRARIES
+    ${PXR_LIBRARIES}
+    imgui
+    imguizmo
+    imguicolortextedit
+    imguifiledialog
+)
+
+# Add the backend for the graphics according to the OS
+if(APPLE AND NOT FORCE_OPENGL)
+    list(APPEND SRC_CPP "src/backends/metal.mm")
+    list(APPEND LIBRARIES
+            "-framework Cocoa"
+            "-framework Metal"
+            "-framework QuartzCore"
+            "-framework GameController"
+            "-framework AppKit"
+            "-framework MetalKit"
+    )
+else()
+    list(APPEND SRC_CPP "src/backends/opengl.cpp")
+    list(APPEND LIBRARIES
+        libglew_static
+        glfw
+    )
+endif()
 
 # Configure RPATH so libraries are found after make install
 if(APPLE)
     set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
 elseif(UNIX)
     set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib64")
+elseif(WIN32)
+    target_compile_definitions(${PROJECT_NAME}
+        PRIVATE
+            NOMINMAX
+            _USE_MATH_DEFINES
+    )
 endif()
-
 
 add_executable(${PROJECT_NAME} ${SRC_CPP} ${SRC_H})
 
@@ -38,25 +82,10 @@ target_include_directories(${PROJECT_NAME}
 
 target_link_libraries(${PROJECT_NAME}
     PRIVATE
-        ${PXR_LIBRARIES}
-        libglew_static
-        glfw
-        imgui
-        imguizmo
-        imguicolortextedit
-        imguifiledialog
+        ${LIBRARIES}
 )
 
 include_directories(${PROJECT_NAME} ${PXR_INCLUDE_DIRS})
-
-if(WIN32)
-    target_compile_definitions(${PROJECT_NAME}
-        PRIVATE
-            NOMINMAX
-            _USE_MATH_DEFINES
-    )
-endif()
-
 
 # --------------- install section ---------------
 

@@ -195,7 +195,6 @@ void Viewport::_UpdateHydraRender()
     // do the render
     _engine->Render();
 
-    // create an imgui image with the drawtarget color data
     void* id = _engine->GetRenderBufferData();
     ImGui::Image(id, ImVec2(width, height), ImVec2(0, 1), ImVec2(1, 0));
 }
