@@ -12,12 +12,14 @@ Required:
 * [OpenUSD v24.08](https://github.com/PixarAnimationStudios/OpenUSD) or newer
 
 Embedded:
-* [glew](https://github.com/Perlmint/glew-cmake)
-* [glfw v3.4](https://github.com/glfw/glfw)
 * [imgui v1.90.9](https://github.com/ocornut/imgui)
 * [ImGuizmo v1.83](https://github.com/CedricGuillemet/ImGuizmo)
 * [ImGuiFileDialog v0.6.7](https://github.com/aiekick/ImGuiFileDialog)
 * [ImGuiColorTextEdit](https://github.com/BalazsJako/ImGuiColorTextEdit)
+
+Optional (if OpenGL enabled):
+* [glew](https://github.com/Perlmint/glew-cmake)
+* [glfw v3.4](https://github.com/glfw/glfw)
 
 ## Getting Started
 
@@ -61,9 +63,14 @@ Within the cloned ImGuiHydraEditor, create a build folder and run cmake from thi
 ```bash
 mkdir build
 cd build
-cmake -Dpxr_DIR=/path/to/OpenUSD/build/folder -DCMAKE_INSTALL_PREFIX=/path/to/install/folder ..
+cmake -Dpxr_DIR=/path/to/OpenUSD/build/folder -DOpenSubdiv_DIR=/path/to/OpenUSD/build/folder/lib/cmake/OpenSubdiv -DCMAKE_INSTALL_PREFIX=/path/to/install/folder ..
 make
 make install
+```
+
+You can also use the following flag to force the use of OpenGL (e.g. on Mac instead of Metal):
+```bash
+-DFORCE_OPENGL=ON
 ```
 
 ### Run ImGuiHydraEditor
@@ -72,19 +79,6 @@ if everything went well, 3 new folders are created in your `/path/to/install/fol
 
 You can then run the ImGuiHydraEditor application as follow:
 
-Linux:
 ```bash
-export LD_LIBRARY_PATH=/path/to/OpenUSD/build/folder/lib:/path/to/OpenUSD/build/folder/lib64:$LD_LIBRARY_PATH
-./ImGuiHydraEditor
-```
-
-MacOS:
-```bash
-export DYLD_LIBRARY_PATH=/path/to/OpenUSD/build/folder/lib:$DYLD_LIBRARY_PATH
-./ImGuiHydraEditor
-```
-
-You can optionally load a USD file directly using the following command:
-```bash
-./ImGuiHydraEditor /input/file.usd
+/path/to/install/folder/bin/ImGuiHydraEditor
 ```
