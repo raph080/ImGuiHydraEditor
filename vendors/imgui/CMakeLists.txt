@@ -18,6 +18,8 @@ set(PUBLIC_HEADERS
     "imgui/imgui.h"
 )
 
+set(TARGET_LIBS)
+
 # Add the backend for the graphics according to the OS
 if(APPLE AND NOT FORCE_OPENGL)
     list(APPEND SRC_CPP
@@ -37,6 +39,7 @@ else()
         "imgui/backends/imgui_impl_opengl3.h"
         "imgui/backends/imgui_impl_glfw.h"
     )
+    list(APPEND TARGET_LIBS glfw)
 endif()
 
 add_library(${PROJECT_NAME} ${SRC_CPP} ${H_CPP} ${PUBLIC_HEADER})
@@ -54,7 +57,7 @@ target_include_directories(${PROJECT_NAME}
 )
 target_link_libraries(${PROJECT_NAME}
     PUBLIC
-        glfw
+        ${TARGET_LIBS}
 )
 set_target_properties(${PROJECT_NAME}
     PROPERTIES
