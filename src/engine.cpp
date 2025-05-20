@@ -12,10 +12,8 @@
 #include <pxr/imaging/hd/renderBuffer.h>
 #include <pxr/imaging/hd/types.h>
 #include <pxr/imaging/hdx/pickTask.h>
-#include <pxr/imaging/hdx/hgiConversions.h>
 #include <pxr/imaging/hgi/tokens.h>
-#include <pxr/imaging/hgi/blitCmdsOps.h>
-#include "pxr/imaging/hdSt/hioConversions.h"
+#include "pxr/imaging/hdSt/renderBuffer.h"
 
 PXR_NAMESPACE_OPEN_SCOPE
 
@@ -194,18 +192,6 @@ void Engine::SetRenderSize(int width, int height)
     _taskController->SetFraming(framing);
 }
 
-void Engine::Present()
-{
-    VtValue aov;
-    HgiTextureHandle aovTexture;
-
-    if (_engine.GetTaskContextData(HdAovTokens->color, &aov)) {
-        if (aov.IsHolding<HgiTextureHandle>()) {
-            aovTexture = aov.Get<HgiTextureHandle>();
-        }
-    }
-}
-
 void Engine::PrepareDefaultLighting()
 {
     // set a spot light to the camera position
@@ -242,8 +228,6 @@ void Engine::Render()
     _taskController->SetEnablePresentation(false);
     HdTaskSharedPtrVector tasks = _taskController->GetRenderingTasks();
     _engine.Execute(_renderIndex, &tasks);
-
-    Present();
 }
 
 SdfPath Engine::FindIntersection(GfVec2f screenPos)
@@ -291,61 +275,7 @@ SdfPath Engine::FindIntersection(GfVec2f screenPos)
 void* Engine::GetRenderBufferData()
 {
     HdRenderBuffer* buffer = _taskController->GetRenderOutput(HdAovTokens->color);
-    if (!buffer) return nullptr;
-
-    const GfVec3i dim( buffer->GetWidth(), buffer->GetHeight(), buffer->GetDepth());
-
-    void* pixelData = buffer->Map();
-
-    HdFormat hdFormat = buffer->GetFormat();
-
-    std::vector<float> float4Data;
-    if (hdFormat == HdFormatFloat32Vec3) {
-        TF_RUNTIME_ERROR("FormatFloat32Vec3 not a supported texture format for Vulkan.");
-        return nullptr;
-    }
-
-    const HgiFormat bufFormat = HdxHgiConversions::GetHgiFormat(hdFormat);
-    const size_t pixelByteSize = HdDataSizeOfFormat(hdFormat);
-    const size_t dataByteSize = dim[0] * dim[1] * dim[2] * pixelByteSize;
-
-    static HgiTextureHandle texture;
-
-    // Update the existing texture if specs are compatible. This is more
-    // efficient than re-creating, because the underlying framebuffer that
-    // had the old texture attached would also need to be re-created.
-    if (texture && texture->GetDescriptor().dimensions == dim &&
-            texture->GetDescriptor().format == bufFormat) {
-        HgiTextureCpuToGpuOp copyOp;
-        copyOp.bufferByteSize = dataByteSize;
-        copyOp.cpuSourceBuffer = pixelData;
-        copyOp.gpuDestinationTexture = texture;
-        HgiBlitCmdsUniquePtr blitCmds = _hgi->CreateBlitCmds();
-        blitCmds->PushDebugGroup("Upload CPU texels");
-        blitCmds->CopyTextureCpuToGpu(copyOp);
-        blitCmds->PopDebugGroup();
-        _hgi->SubmitCmds(blitCmds.get());
-    } else {
-        // Destroy old texture
-        if(texture) {
-            _hgi->DestroyTexture(&texture);
-        }
-        // Create a new texture
-        HgiTextureDesc texDesc;
-        texDesc.debugName = "AovInput Texture";
-        texDesc.dimensions = dim;
-        texDesc.format = bufFormat;
-        texDesc.initialData = pixelData;
-        texDesc.layerCount = 1;
-        texDesc.mipLevels = 1;
-        texDesc.pixelsByteSize = dataByteSize;
-        texDesc.sampleCount = HgiSampleCount1;
-        texDesc.usage = HgiTextureUsageBitsShaderRead;
-
-        texture = _hgi->CreateTexture(texDesc);
-    }
-
-    return GetPointerToHgiTextureBackend(texture, _width, _height);
+    return GetPointerToTextureBackend(buffer, _hgi.get());
  }
 
 GfFrustum Engine::GetFrustum()

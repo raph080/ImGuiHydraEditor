@@ -8,41 +8,50 @@
 #include "mainwindow.h"
 #include "models/model.h"
 #include "style/imgui_spectrum.h"
-
+#include "backends/backend.h"
 
 #include <iostream>
-#include "backends/backend.h"
+
+static pxr::Model model;
+static pxr::MainWindow* mainWindow;
+
+/**
+ * @brief The function called every frame by the backend.
+ */
+void run()
+{
+    ImGui::NewFrame();
+    mainWindow->Update();
+    ImGui::Render();
+}
 
 int main(int argc, const char** argv)
 {
-    InitBackend();
+    const char* TITLE = "ImGui Hydra Editor";
+    int WIDTH = 1280;
+    int HEIGHT = 720;
 
-    ImGuiIO& io = ImGui::GetIO();
-    (void)io;
-    io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
-    io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;
+    IMGUI_CHECKVERSION();
+    ImGui::CreateContext();
+    ImGuiIO& io = ImGui::GetIO(); (void)io;
+    io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
+    io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
     io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
 
-    ImGui::Spectrum::StyleColorsSpectrum();
-
-    LoadDefaultOrCustomLayout();
-
-    pxr::Model model;
-    pxr::MainWindow mainWindow(&model);
-
-    while (!ShouldCloseApp()) {
-        PollEvents();
-        if (!BeginFrame()) continue;
-
-        ImGui::NewFrame();
-
-        mainWindow.Update();
-
-        ImGui::Render();
-
-        EndFrame();
+    if (InitBackend(TITLE, WIDTH, HEIGHT) != 0)
+    {
+        std::cerr << "Error while initializing backend; exiting." << std::endl;
+        return -1;
     }
 
+    mainWindow = new pxr::MainWindow(&model);
+
+    ImGui::Spectrum::StyleColorsSpectrum();
+    LoadDefaultOrCustomLayout();
+
+    RunBackend(run);
+
     ShutdownBackend();
+
     return 0;
 }

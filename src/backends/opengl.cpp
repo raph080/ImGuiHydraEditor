@@ -16,18 +16,11 @@
 
 static GLFWwindow* window = nullptr;
 
-/**
- * @brief Initialize Glfw
- *
- * @return a pointer to the current GL context
- */
-GLFWwindow* InitGlfw(const char* title)
-{
-    // Initialize GLFW
-    if (!glfwInit()) return NULL;
 
-    int width = 1280;
-    int height = 720;
+int InitBackend(const char* title, int width, int height)
+{
+    // Initialize glfw
+    if (!glfwInit()) return -1;
 
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
@@ -37,132 +30,114 @@ GLFWwindow* InitGlfw(const char* title)
 
 
     // Create a GLFW window
-    GLFWwindow* window = glfwCreateWindow(width, height, title, NULL, NULL);
+    window = glfwCreateWindow(width, height, title, NULL, NULL);
     if (!window) {
         glfwTerminate();
-        return NULL;
+        return -1;
     }
     glfwMakeContextCurrent(window);
 
-    return window;
-}
-
-/**
- * @brief initialize Glew
- *
- * @return true if Glew was successfully initialized
- * @return false otherwise
- */
-bool InitGlew()
-{
     // Initialize GLEW
     glewExperimental = GL_TRUE;
     if (glewInit() != GLEW_OK) {
         std::cout << "Failed to initialize GLEW" << std::endl;
-        return false;
+        return -1;
     }
-    return true;
-}
 
-/**
- * @brief initialize ImGui
- *
- * @param window the current GL context
- * @return true if ImGui was successfully initialized
- * @return false otherwise
- */
-bool InitImGui(GLFWwindow* window)
-{
-    // Initialize ImGui
-    IMGUI_CHECKVERSION();
-    ImGui::CreateContext();
-    ImGuiIO& io = ImGui::GetIO();
-    (void)io;
-    io.ConfigFlags |=
-        ImGuiConfigFlags_NavEnableKeyboard;  // Enable Keyboard Controls
-    io.ConfigFlags |=
-        ImGuiConfigFlags_NavEnableGamepad;  // Enable Gamepad Controls
-    io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;  // Enable Docking
-
+    // init imgui
     const char* glsl_version = "#version 150";
 
     ImGui_ImplOpenGL3_Init(glsl_version);
     ImGui_ImplGlfw_InitForOpenGL(window, true);
 
-    return true;
-}
-
-/**
- * @brief Terminate Glfw
- *
- * @param window the current GL context
- */
-void TerminateGlfw(GLFWwindow* window)
-{
-    glfwDestroyWindow(window);
-    glfwTerminate();
-}
-
-/**
- * @brief Terminate ImGui
- *
- */
-void TerminateImGui()
-{
-    ImGui_ImplOpenGL3_Shutdown();
-    ImGui_ImplGlfw_Shutdown();
-    ImGui::DestroyContext(NULL);
-}
-
-void InitBackend()
-{
-    const char* TITLE = "ImGui Hydra Editor";
-
-    window = InitGlfw(TITLE);
-    if (!window || !InitGlew() || !InitImGui(window)){
-        std::cout << "Failed to initialize the window" << std::endl;
-        return;
-    }
-
     glEnable(GL_DEPTH_TEST);
+
+    return 0;
 }
 
 void ShutdownBackend()
 {
-    TerminateImGui();
-    TerminateGlfw(window);
+    // terminate imgui
+    ImGui_ImplOpenGL3_Shutdown();
+    ImGui_ImplGlfw_Shutdown();
+    ImGui::DestroyContext(NULL);
+
+    // terminale glfw
+    glfwDestroyWindow(window);
+    glfwTerminate();
 }
 
-bool ShouldCloseApp()
+void RunBackend(void (*callback)())
 {
-    return glfwWindowShouldClose(window);
+    while (!glfwWindowShouldClose(window)) {
+        glfwPollEvents();
+
+        ImGui_ImplOpenGL3_NewFrame();
+        ImGui_ImplGlfw_NewFrame();
+
+        callback();
+
+        glClearColor(0.45f, 0.55f, 0.60f, 1.00f);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+        glfwSwapBuffers(window);
+    }
 }
 
-void PollEvents()
+void *GetPointerToTextureBackend(pxr::HdRenderBuffer* buffer, pxr::Hgi* hgi)
 {
-    glfwPollEvents();
-}
+    // Note: there is more straightforward to get texture pointer.
+    // This method ensure OpenGL texture is created even if
+    // default hgi != hgiGL (e.g. on Mac).
 
-bool BeginFrame()
-{
-    ImGui_ImplOpenGL3_NewFrame();
-    ImGui_ImplGlfw_NewFrame();
+    float* pixelData = (float*)buffer->Map();
+    int width = buffer->GetWidth();
+    int height = buffer->GetHeight();
+    pxr::HdFormat hdFormat = buffer->GetFormat();
 
-    return true;
-}
+    GLenum internalFormat, format, type;
 
-void EndFrame()
-{
-    glClearColor(0.45f, 0.55f, 0.60f, 1.00f);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    switch (hdFormat) {
+        case pxr::HdFormatUNorm8Vec4:
+            internalFormat = GL_RGBA8;
+            format = GL_RGBA;
+            type = GL_UNSIGNED_BYTE;
+            break;
+        case pxr::HdFormatFloat32Vec4:
+            internalFormat = GL_RGBA32F;
+            format = GL_RGBA;
+            type = GL_FLOAT;
+            break;
+        case pxr::HdFormatFloat16Vec4:
+            internalFormat = GL_RGBA16F;
+            format = GL_RGBA;
+            type = GL_HALF_FLOAT;
+            break;
+        case pxr::HdFormatUNorm8:
+            internalFormat = GL_R8;
+            format = GL_RED;
+            type = GL_UNSIGNED_BYTE;
+            break;
+        default:
+            std::cerr << "Unhandled HdFormat in OpenGL backend." << std::endl;
+            buffer->Unmap();
+            return nullptr;
+    }
 
-    ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-    glfwSwapBuffers(window);
-}
+    GLuint textureId;
+    glGenTextures(1, &textureId);
+    glBindTexture(GL_TEXTURE_2D, textureId);
 
-void *GetPointerToHgiTextureBackend(pxr::HgiTextureHandle texHandle, float width, float height)
-{
-    pxr::HgiGLTexture* srcTexture = static_cast<pxr::HgiGLTexture*>(texHandle.Get());
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-    return (void*) srcTexture->GetTextureId();
+    glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, width, height, 0, format, type, pixelData);
+    glGenerateMipmap(GL_TEXTURE_2D);
+
+    glBindTexture(GL_TEXTURE_2D, 0);
+
+    buffer->Unmap();
+
+    return (void*)(uintptr_t)textureId;
 }

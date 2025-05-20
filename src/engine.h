@@ -9,9 +9,6 @@
  */
 #pragma once
 
-// #include <GL/glew.h>
-// #include <GLFW/glfw3.h>
-
 #include <pxr/base/tf/token.h>
 #include <pxr/imaging/hd/engine.h>
 #include <pxr/imaging/hd/pluginRenderDelegateUniqueHandle.h>

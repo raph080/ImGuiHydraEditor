@@ -309,7 +309,7 @@ void Viewport::_ZoomActiveCam(ImVec2 mouseDeltaPos)
 void Viewport::_ZoomActiveCam(float scrollWheel)
 {
     GfVec3d camFront = (_at - _eye).GetNormalized();
-    _eye += camFront * scrollWheel / 10.f;
+    _eye += camFront * scrollWheel;
 
     _UpdateActiveCamFromViewport();
 }
