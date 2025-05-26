@@ -1,4 +1,6 @@
-build
-install
+build/
+install/
+build_venv/
+imgui.ini
 .vscode
 .DS_Store
