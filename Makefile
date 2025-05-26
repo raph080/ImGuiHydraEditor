@@ -1,3 +1,6 @@
+.PHONY: build 
+
+
 rhel_install_dep:
 	sudo dnf install -y libXt-devel
 
@@ -69,12 +72,23 @@ build_app:
 	
 build:
 	$(MAKE) create_venv
-	$(MAKE) build_usd
+	@if [ ! -d "./vendors/OpenUSD/install/" ]; then \
+		$(MAKE) build_usd; \
+	fi
+	@if [ ! -d "./vendors/OpenSubdiv/install/" ]; then \
+		$(MAKE) build_open_subdiv; \
+	fi
+
+	$(MAKE) build_app
+
+clean_dep:
+	rm -rf ./vendors/OpenUSD/install/ && \
+		rm -rf ./vendors/OpenSubdiv/install/
 
 clean:
 	rm -rf ./build_venv && \
 		rm -rf ./build && \
 		rm -rf ./install
 
-run:
+run: build
 	LD_LIBRARY_PATH=./vendors/OpenUSD/install/lib:./vendors/OpenUSD/install/lib64:$LD_LIBRARY_PATH ./install/bin/ImGuiHydraEditor
