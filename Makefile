@@ -91,4 +91,4 @@ clean:
 		rm -rf ./install
 
 run: build
-	LD_LIBRARY_PATH=./vendors/OpenUSD/install/lib:./vendors/OpenUSD/install/lib64:$LD_LIBRARY_PATH ./install/bin/ImGuiHydraEditor test
+	LD_LIBRARY_PATH=./vendors/OpenUSD/install/lib:./vendors/OpenUSD/install/lib64:$LD_LIBRARY_PATH ./install/bin/ImGuiHydraEditor
