@@ -22,12 +22,16 @@ int InitBackend(const char* title, int width, int height)
     // Initialize glfw
     if (!glfwInit()) return -1;
 
+    #if defined(__APPLE__)
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
     glfwWindowHint(GLFW_OPENGL_PROFILE,
-                   GLFW_OPENGL_CORE_PROFILE);             // 3.2+ only
-    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);  // Required on Mac
-
+                   GLFW_OPENGL_CORE_PROFILE);
+    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
+#else
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
+#endif
 
     // Create a GLFW window
     window = glfwCreateWindow(width, height, title, NULL, NULL);
@@ -45,7 +49,11 @@ int InitBackend(const char* title, int width, int height)
     }
 
     // init imgui
+#if defined(__APPLE__)
     const char* glsl_version = "#version 150";
+#else
+    const char* glsl_version = "#version 130";
+#endif
 
     ImGui_ImplOpenGL3_Init(glsl_version);
     ImGui_ImplGlfw_InitForOpenGL(window, true);
