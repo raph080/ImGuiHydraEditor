@@ -16,16 +16,6 @@ Model::Model()
     SetEditableSceneIndex(_editableSceneIndex);
 }
 
-UsdStageRefPtr Model::GetStage()
-{
-    return _stage;
-}
-
-void Model::SetStage(UsdStageRefPtr stage)
-{
-    _stage = stage;
-}
-
 void Model::AddSceneIndexBase(HdSceneIndexBaseRefPtr sceneIndex)
 {
     _sceneIndexBases->AddInputScene(sceneIndex, SdfPath::AbsoluteRootPath());
@@ -52,16 +42,6 @@ HdSceneIndexBaseRefPtr Model::GetFinalSceneIndex()
 HdSceneIndexPrim Model::GetPrim(SdfPath primPath)
 {
     return _finalSceneIndex->GetPrim(primPath);
-}
-
-UsdPrim Model::GetUsdPrim(SdfPath path)
-{
-    return _stage->GetPrimAtPath(path);
-}
-
-UsdPrimRange Model::GetAllPrims()
-{
-    return _stage->Traverse();
 }
 
 SdfPathVector Model::GetCameras()

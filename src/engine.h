@@ -10,14 +10,12 @@
 #pragma once
 
 #include <pxr/base/tf/token.h>
-#include <pxr/imaging/glf/drawTarget.h>
 #include <pxr/imaging/hd/engine.h>
 #include <pxr/imaging/hd/pluginRenderDelegateUniqueHandle.h>
 #include <pxr/imaging/hd/renderDelegate.h>
 #include <pxr/imaging/hd/sceneIndex.h>
 #include <pxr/imaging/hdx/taskController.h>
 #include <pxr/imaging/hgi/hgi.h>
-#include <pxr/imaging/hgiInterop/hgiInterop.h>
 #include <pxr/usd/usd/prim.h>
 
 PXR_NAMESPACE_OPEN_SCOPE
@@ -126,7 +124,6 @@ class Engine {
 
     private:
         UsdStageRefPtr _stage;
-        GlfDrawTargetRefPtr _drawTarget;
         GfMatrix4d _camView, _camProj;
         int _width, _height;
 
@@ -141,7 +138,6 @@ class Engine {
         HdSceneIndexBaseRefPtr _sceneIndex;
         SdfPath _taskControllerId;
 
-        HgiInterop _interop;
         HdxSelectionTrackerSharedPtr _selTracker;
 
         TfToken _curRendererPlugin;

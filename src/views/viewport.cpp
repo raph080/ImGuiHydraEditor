@@ -174,14 +174,6 @@ void Viewport::_ConfigureImGuizmo()
 void Viewport::_UpdateGrid()
 {
     _gridSceneIndex->Populate(_isGridEnabled);
-
-    if (!_isGridEnabled) return;
-
-    GfMatrix4f viewF(_getCurViewMatrix());
-    GfMatrix4f projF(_proj);
-    GfMatrix4f identity(1);
-
-    ImGuizmo::DrawGrid(viewF.data(), projF.data(), identity.data(), 10);
 }
 
 void Viewport::_UpdateHydraRender()
@@ -203,7 +195,6 @@ void Viewport::_UpdateHydraRender()
     // do the render
     _engine->Render();
 
-    // create an imgui image with the drawtarget color data
     void* id = _engine->GetRenderBufferData();
     ImGui::Image(id, ImVec2(width, height), ImVec2(0, 1), ImVec2(1, 0));
 }
@@ -318,7 +309,7 @@ void Viewport::_ZoomActiveCam(ImVec2 mouseDeltaPos)
 void Viewport::_ZoomActiveCam(float scrollWheel)
 {
     GfVec3d camFront = (_at - _eye).GetNormalized();
-    _eye += camFront * scrollWheel / 10.f;
+    _eye += camFront * scrollWheel;
 
     _UpdateActiveCamFromViewport();
 }
