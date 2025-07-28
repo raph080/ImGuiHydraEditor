@@ -8,12 +8,17 @@
 
 PXR_NAMESPACE_OPEN_SCOPE
 
-Model::Model()
+Model::Model():
+    _editableSceneIndex(nullptr),
+    _activeSceneIndex(nullptr)
 {
     _sceneIndexBases = HdMergingSceneIndex::New();
     _finalSceneIndex = HdMergingSceneIndex::New();
-    _editableSceneIndex = _sceneIndexBases;
-    SetEditableSceneIndex(_editableSceneIndex);
+    SetEditableSceneIndex(_sceneIndexBases);
+    SetActiveSceneIndex(_finalSceneIndex);
+
+    _sceneIndexBases->SetDisplayName("SceneIndexBases");
+    _finalSceneIndex->SetDisplayName("FinalSceneIndex");
 }
 
 void Model::AddSceneIndexBase(HdSceneIndexBaseRefPtr sceneIndex)
@@ -28,7 +33,9 @@ HdSceneIndexBaseRefPtr Model::GetEditableSceneIndex()
 
 void Model::SetEditableSceneIndex(HdSceneIndexBaseRefPtr sceneIndex)
 {
-    _finalSceneIndex->RemoveInputScene(_editableSceneIndex);
+    if (_editableSceneIndex){
+        _finalSceneIndex->RemoveInputScene(_editableSceneIndex);
+    }
     _editableSceneIndex = sceneIndex;
     _finalSceneIndex->AddInputScene(_editableSceneIndex,
                                     SdfPath::AbsoluteRootPath());
@@ -37,6 +44,16 @@ void Model::SetEditableSceneIndex(HdSceneIndexBaseRefPtr sceneIndex)
 HdSceneIndexBaseRefPtr Model::GetFinalSceneIndex()
 {
     return _finalSceneIndex;
+}
+
+void Model::SetActiveSceneIndex(HdSceneIndexBaseRefPtr sceneIndex)
+{
+    _activeSceneIndex = sceneIndex;
+}
+
+HdSceneIndexBaseRefPtr Model::GetActiveSceneIndex()
+{
+    return _activeSceneIndex;
 }
 
 HdSceneIndexPrim Model::GetPrim(SdfPath primPath)
@@ -60,7 +77,18 @@ SdfPathVector Model::GetCameras()
 
 SdfPathVector Model::GetSelection()
 {
-    return _selection;
+    // return empty list if selection corresponds to no prim
+    // in the active scene index. Might be corresponding to
+    // a prim from another scene index. Let's keep the value
+    // of _selection for when the active scene index is updated
+    SdfPathVector activeSelection = {};
+    for ( auto primPath: _selection)
+    {
+        if (GetActiveSceneIndex()->GetPrim(primPath).dataSource)
+            activeSelection.push_back(primPath);
+
+    }
+    return activeSelection;
 }
 
 void Model::SetSelection(SdfPathVector primPaths)

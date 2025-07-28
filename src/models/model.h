@@ -59,6 +59,20 @@ class Model {
         void SetEditableSceneIndex(HdSceneIndexBaseRefPtr sceneIndex);
 
         /**
+         * @brief Get the Active Scene Index from the model
+         *
+         * @return HdSceneIndexBaseRefPtr the Active Scene Index
+         */
+        HdSceneIndexBaseRefPtr GetActiveSceneIndex();
+
+        /**
+         * @brief Set the Active Scene Index to the model
+         *
+         * @param sceneIndex the Active Scene Index to set to the model
+         */
+        void SetActiveSceneIndex(HdSceneIndexBaseRefPtr sceneIndex);
+
+        /**
          * @brief Get a reference to the Scene Index from the model
          *
          * @return HdSceneIndexBaseRefPtr a reference to the Scene Index
@@ -97,7 +111,7 @@ class Model {
 
     private:
         SdfPathVector _selection;
-        HdSceneIndexBaseRefPtr _editableSceneIndex;
+        HdSceneIndexBaseRefPtr _editableSceneIndex, _activeSceneIndex;
         HdMergingSceneIndexRefPtr _sceneIndexBases, _finalSceneIndex;
 };
 

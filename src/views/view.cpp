@@ -9,7 +9,6 @@ View::View(Model* model, const string label)
       _wasHovered(false),
       _wasDisplayed(true)
 {
-    _sceneIndex = GetModel()->GetFinalSceneIndex();
 };
 
 Model* View::GetModel()
@@ -28,6 +27,8 @@ const string View::GetViewLabel()
 }
 void View::Update()
 {
+    _sceneIndex = GetModel()->GetActiveSceneIndex();
+
     ImGuiIO& io = ImGui::GetIO();
 
     ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));

@@ -35,9 +35,6 @@ Viewport::Viewport(Model* model, const string label) : View(model, label)
     auto editableSceneIndex = GetModel()->GetEditableSceneIndex();
     _xformSceneIndex = XformFilterSceneIndex::New(editableSceneIndex);
     GetModel()->SetEditableSceneIndex(_xformSceneIndex);
-
-    TfToken plugin = Engine::GetDefaultRendererPlugin();
-    _engine = new Engine(GetModel()->GetFinalSceneIndex(), plugin);
 };
 
 Viewport::~Viewport()
@@ -200,6 +197,15 @@ void Viewport::_UpdateGrid()
 
 void Viewport::_UpdateHydraRender()
 {
+    if (!_engine) {
+        auto pluginId = Engine::GetDefaultRendererPlugin();
+        _engine = new Engine(_sceneIndex, pluginId);
+    }
+
+    if(_engine->GetSceneIndex() != _sceneIndex) {
+        _engine->SetSceneIndex(_sceneIndex);
+    }
+
     GfMatrix4d view = _getCurViewMatrix();
     float width = _GetViewportWidth();
     float height = _GetViewportHeight();
