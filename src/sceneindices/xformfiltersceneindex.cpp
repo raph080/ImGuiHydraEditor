@@ -12,6 +12,7 @@ XformFilterSceneIndex::XformFilterSceneIndex(
     const HdSceneIndexBaseRefPtr &inputSceneIndex)
     : HdSingleInputFilteringSceneIndexBase(inputSceneIndex)
 {
+    SetDisplayName("XformFilterSceneIndex");
 }
 
 GfMatrix4d XformFilterSceneIndex::GetXform(const SdfPath &primPath) const

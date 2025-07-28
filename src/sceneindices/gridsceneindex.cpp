@@ -4,6 +4,8 @@ PXR_NAMESPACE_OPEN_SCOPE
 
 GridSceneIndex::GridSceneIndex()
 {
+    SetDisplayName("GridSceneIndex");
+
     _gridPath = SdfPath("/Grid");
     _prim = _CreateGridPrim();
     Populate(true);

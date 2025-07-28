@@ -15,6 +15,7 @@ ColorFilterSceneIndex::ColorFilterSceneIndex(
     const HdSceneIndexBaseRefPtr &inputSceneIndex)
     : HdSingleInputFilteringSceneIndexBase(inputSceneIndex)
 {
+    SetDisplayName("ColorFilterSceneIndex");
 }
 
 GfVec3f ColorFilterSceneIndex::GetDisplayColor(const SdfPath &primPath) const
