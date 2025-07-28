@@ -31,7 +31,7 @@ TF_DECLARE_REF_PTRS(GridSceneIndex);
  * @brief Hydra Scene Index that creates a grid at the origin.
  *
  */
-class GridSceneIndex : public pxr::HdSceneIndexBase {
+class GridSceneIndex : public HdSceneIndexBase {
     public:
         /**
          * @brief Create a ref pointer to a grid scene index
@@ -40,7 +40,7 @@ class GridSceneIndex : public pxr::HdSceneIndexBase {
          */
         static GridSceneIndexRefPtr New()
         {
-            return TfCreateRefPtr(new pxr::GridSceneIndex());
+            return TfCreateRefPtr(new GridSceneIndex());
         }
 
         /**
@@ -60,31 +60,29 @@ class GridSceneIndex : public pxr::HdSceneIndexBase {
          * @brief Get the prim at the given path
          *
          * @param primPath the path to a prim
-         * @return pxr::HdSceneIndexPrim the hydra prim
+         * @return HdSceneIndexPrim the hydra prim
          */
-        virtual pxr::HdSceneIndexPrim GetPrim(
-            const pxr::SdfPath& primPath) const;
+        virtual HdSceneIndexPrim GetPrim(const SdfPath& primPath) const;
 
         /**
          * @brief Get the child prim paths of a prim at the specified path
          * 
          * @param primPath the path of the prim the get the child paths from
-         * @return pxr::SdfPathVector a list with all child prim paths
+         * @return SdfPathVector a list with all child prim paths
          */
-        virtual pxr::SdfPathVector GetChildPrimPaths(
-            const pxr::SdfPath& primPath) const;
+        virtual SdfPathVector GetChildPrimPaths(const SdfPath& primPath) const;
 
     private:
-        pxr::SdfPath _gridPath;
-        pxr::HdSceneIndexPrim _prim;
+        SdfPath _gridPath;
+        HdSceneIndexPrim _prim;
         bool _isPopulated;
 
         /**
          * @brief Create the grid hydra prim
          * 
-         * @return pxr::HdSceneIndexPrim the hydra prim of the grid
+         * @return HdSceneIndexPrim the hydra prim of the grid
          */
-        pxr::HdSceneIndexPrim _CreateGridPrim();
+        HdSceneIndexPrim _CreateGridPrim();
 };
 
 PXR_NAMESPACE_CLOSE_SCOPE

@@ -53,9 +53,9 @@ class UsdSessionLayer : public View {
         bool _isEditing;
         string _lastLoadedText;
         ImGuiWindowFlags _gizmoWindowFlags;
-        pxr::SdfLayerRefPtr _rootLayer, _sessionLayer;
-        pxr::UsdImagingStageSceneIndexRefPtr _stageSceneIndex;
-        pxr::UsdStageRefPtr _stage;
+        SdfLayerRefPtr _rootLayer, _sessionLayer;
+        UsdImagingStageSceneIndexRefPtr _stageSceneIndex;
+        UsdStageRefPtr _stage;
 
         /**
          * @brief Override of the View::Draw
@@ -121,7 +121,7 @@ class UsdSessionLayer : public View {
          *
          * @param primType the type of the prim to create
          */
-        void _CreatePrim(pxr::TfToken primType);
+        void _CreatePrim(TfToken primType);
 
         /**
          * @brief Get a Palette object for the TextEditor (ImGui plugin)

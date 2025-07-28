@@ -34,11 +34,11 @@ class ColorFilterSceneIndex : public HdSingleInputFilteringSceneIndexBase {
          * @return ColorFilterSceneIndexRefPtr the ref pointer to a color
          * filter scene index
          */
-        static pxr::ColorFilterSceneIndexRefPtr New(
-            const pxr::HdSceneIndexBaseRefPtr &inputSceneIndex)
+        static ColorFilterSceneIndexRefPtr New(
+            const HdSceneIndexBaseRefPtr &inputSceneIndex)
         {
             return TfCreateRefPtr(
-                new pxr::ColorFilterSceneIndex(inputSceneIndex));
+                new ColorFilterSceneIndex(inputSceneIndex));
         }
 
         /**
@@ -47,16 +47,16 @@ class ColorFilterSceneIndex : public HdSingleInputFilteringSceneIndexBase {
          * @param inputSceneIndex the scene index to overwrite from
          */
         ColorFilterSceneIndex(
-            const pxr::HdSceneIndexBaseRefPtr &inputSceneIndex);
+            const HdSceneIndexBaseRefPtr &inputSceneIndex);
 
         /**
          * @brief Get the constant display color of a hydra prim at the given
          * path
          *
          * @param primPath the path of the prim to get the display color from
-         * @return pxr::GfVec3f the display color of the prim
+         * @return GfVec3f the display color of the prim
          */
-        pxr::GfVec3f GetDisplayColor(const pxr::SdfPath &primPath) const;
+        GfVec3f GetDisplayColor(const SdfPath &primPath) const;
 
         /**
          * @brief Set the constant display color of a hydra prim at the given
@@ -65,21 +65,21 @@ class ColorFilterSceneIndex : public HdSingleInputFilteringSceneIndexBase {
          * @param primPath the path to the prim to set the display color
          * @param color the new constant display color to set
          */
-        void SetDisplayColor(const pxr::SdfPath &primPath, pxr::GfVec3f color);
+        void SetDisplayColor(const SdfPath &primPath, GfVec3f color);
 
         /**
          * @brief Override of
          * HdSingleInputFilteringSceneIndexBase::GetPrim
          */
-        virtual pxr::HdSceneIndexPrim GetPrim(
-            const pxr::SdfPath &primPath) const override;
+        virtual HdSceneIndexPrim GetPrim(
+            const SdfPath &primPath) const override;
 
         /**
          * @brief Override of
          * HdSingleInputFilteringSceneIndexBase::GetChildPrimPaths
          */
-        virtual pxr::SdfPathVector GetChildPrimPaths(
-            const pxr::SdfPath &primPath) const override;
+        virtual SdfPathVector GetChildPrimPaths(
+            const SdfPath &primPath) const override;
 
     protected:
         /**
@@ -87,8 +87,8 @@ class ColorFilterSceneIndex : public HdSingleInputFilteringSceneIndexBase {
          * HdSingleInputFilteringSceneIndexBase::_PrimsAdded
          */
         virtual void _PrimsAdded(
-            const pxr::HdSceneIndexBase &sender,
-            const pxr::HdSceneIndexObserver::AddedPrimEntries &entries)
+            const HdSceneIndexBase &sender,
+            const HdSceneIndexObserver::AddedPrimEntries &entries)
             override;
 
         /**
@@ -96,8 +96,8 @@ class ColorFilterSceneIndex : public HdSingleInputFilteringSceneIndexBase {
          * HdSingleInputFilteringSceneIndexBase::_PrimsRemoved
          */
         virtual void _PrimsRemoved(
-            const pxr::HdSceneIndexBase &sender,
-            const pxr::HdSceneIndexObserver::RemovedPrimEntries &entries)
+            const HdSceneIndexBase &sender,
+            const HdSceneIndexObserver::RemovedPrimEntries &entries)
             override;
 
         /**
@@ -105,12 +105,12 @@ class ColorFilterSceneIndex : public HdSingleInputFilteringSceneIndexBase {
          * HdSingleInputFilteringSceneIndexBase::_PrimsDirtied
          */
         virtual void _PrimsDirtied(
-            const pxr::HdSceneIndexBase &sender,
-            const pxr::HdSceneIndexObserver::DirtiedPrimEntries &entries)
+            const HdSceneIndexBase &sender,
+            const HdSceneIndexObserver::DirtiedPrimEntries &entries)
             override;
 
     private:
-        pxr::VtDictionary _colorDict;
+        VtDictionary _colorDict;
 };
 
 PXR_NAMESPACE_CLOSE_SCOPE

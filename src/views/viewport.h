@@ -70,14 +70,18 @@ class Viewport : public View {
         const float _FREE_CAM_FAR = 10000.f;
 
         bool _isAmbientLightEnabled, _isDomeLightEnabled, _isGridEnabled;
-        pxr::SdfPath _activeCam;
+        SdfPath _activeCam;
 
-        pxr::GfVec3d _eye, _at, _up;
-        pxr::GfMatrix4d _proj;
+        GfVec3d _eye, _at, _up;
+        GfMatrix4d _proj;
 
         Engine* _engine;
-        pxr::GridSceneIndexRefPtr _gridSceneIndex;
-        pxr::XformFilterSceneIndexRefPtr _xformSceneIndex;
+        bool _resetEngine;
+        HdSceneIndexBaseRefPtr _sceneIndexInViewport;
+        TfToken _pluginInViewport;
+
+        GridSceneIndexRefPtr _gridSceneIndex;
+        XformFilterSceneIndexRefPtr _xformSceneIndex;
         ImGuiWindowFlags _gizmoWindowFlags;
 
         ImGuizmo::OPERATION _curOperation;
@@ -185,7 +189,7 @@ class Viewport : public View {
          *
          * @param primPath the path to the camera to set as active
          */
-        void _SetActiveCam(pxr::SdfPath primPath);
+        void _SetActiveCam(SdfPath primPath);
 
         /**
          * @brief Update the viewport from the active camera
@@ -198,7 +202,7 @@ class Viewport : public View {
          *
          * @return the view matrix
          */
-        pxr::GfMatrix4d _getCurViewMatrix();
+        GfMatrix4d _getCurViewMatrix();
 
         /**
          * @brief Update active camera from viewport
@@ -216,16 +220,16 @@ class Viewport : public View {
          * @brief Convert a Hydra Prim to a GfCamera
          *
          * @param prim the Prim to create the camera from
-         * @return pxr::GfCamera the camera
+         * @return GfCamera the camera
          */
-        pxr::GfCamera _ToGfCamera(pxr::HdSceneIndexPrim prim);
+        GfCamera _ToGfCamera(HdSceneIndexPrim prim);
 
         /**
          * @brief Focus the active camera and the viewport on the given prim
          *
          * @param primPath the prim to focus on
          */
-        void _FocusOnPrim(pxr::SdfPath primPath);
+        void _FocusOnPrim(SdfPath primPath);
 
         /**
          * @brief Override of the View::_KeyPressEvent

@@ -59,7 +59,7 @@ class Outliner : public View {
          * @return the ImRect rectangle of the tree node corresponding to the
          * given 'primPath'
          */
-        ImRect _DrawPrimHierarchy(pxr::SdfPath primPath);
+        ImRect _DrawPrimHierarchy(SdfPath primPath);
 
         /**
          * @brief Compute the display flags of the given UsdPrim
@@ -75,7 +75,7 @@ class Outliner : public View {
          * contains ImGuiTreeNodeFlags_Selected
          *
          */
-        ImGuiTreeNodeFlags _ComputeDisplayFlags(pxr::SdfPath primPath);
+        ImGuiTreeNodeFlags _ComputeDisplayFlags(SdfPath primPath);
 
         /**
          * @brief Draw the hierarchy tree node of the given UsdPrim. The color
@@ -86,7 +86,7 @@ class Outliner : public View {
          * @return true if children 'primPath' must be drawn too
          * @return false otherwise
          */
-        bool _DrawHierarchyNode(pxr::SdfPath primPath);
+        bool _DrawHierarchyNode(SdfPath primPath);
 
         /**
          * @brief Check if a given prim path is parent of another prim path
@@ -97,7 +97,7 @@ class Outliner : public View {
          * @return true if 'primPath' is parent of 'childPrimPath'
          * @return false otherwise
          */
-        bool IsParentOf(pxr::SdfPath primPath, pxr::SdfPath childPrimPath);
+        bool IsParentOf(SdfPath primPath, SdfPath childPrimPath);
 
         /**
          * @brief Check if the given UsdPrim is parent of a UsdPrim within the
@@ -108,7 +108,7 @@ class Outliner : public View {
          * Model selection
          * @return false otherwise
          */
-        bool _IsParentOfModelSelection(pxr::SdfPath primPath);
+        bool _IsParentOfModelSelection(SdfPath primPath);
 
         /**
          * @brief Check if the given UsdPrim is part of the current Model
@@ -118,7 +118,7 @@ class Outliner : public View {
          * @return true if 'primPath' is part of the current Model selection
          * @return false otherwise
          */
-        bool _IsInModelSelection(pxr::SdfPath primPath);
+        bool _IsInModelSelection(SdfPath primPath);
 
         /**
          * @brief Draw the children hierarchy decoration of the outliner view

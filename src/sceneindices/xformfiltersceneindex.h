@@ -33,11 +33,11 @@ class XformFilterSceneIndex : public HdSingleInputFilteringSceneIndexBase {
          * @return XformFilterSceneIndexRefPtr the ref pointer to a xform
          * filter scene index
          */
-        static pxr::XformFilterSceneIndexRefPtr New(
-            const pxr::HdSceneIndexBaseRefPtr &inputSceneIndex)
+        static XformFilterSceneIndexRefPtr New(
+            const HdSceneIndexBaseRefPtr &inputSceneIndex)
         {
             return TfCreateRefPtr(
-                new pxr::XformFilterSceneIndex(inputSceneIndex));
+                new XformFilterSceneIndex(inputSceneIndex));
         }
 
         /**
@@ -46,15 +46,15 @@ class XformFilterSceneIndex : public HdSingleInputFilteringSceneIndexBase {
          * @param inputSceneIndex the scene index to overwrite from
          */
         XformFilterSceneIndex(
-            const pxr::HdSceneIndexBaseRefPtr &inputSceneIndex);
+            const HdSceneIndexBaseRefPtr &inputSceneIndex);
 
         /**
          * @brief Get the Xform of a hydra prim at the given path
          *
          * @param primPath the path of the prim to get the xform from
-         * @return pxr::GfMatrix4d the xform of the prim
+         * @return GfMatrix4d the xform of the prim
          */
-        pxr::GfMatrix4d GetXform(const pxr::SdfPath &primPath) const;
+        GfMatrix4d GetXform(const SdfPath &primPath) const;
 
         /**
          * @brief Set the Xform of a hydra prim at the given path
@@ -62,21 +62,21 @@ class XformFilterSceneIndex : public HdSingleInputFilteringSceneIndexBase {
          * @param primPath the path to the prim to set the xform
          * @param xform the new xform to set
          */
-        void SetXform(const pxr::SdfPath &primPath, pxr::GfMatrix4d xform);
+        void SetXform(const SdfPath &primPath, GfMatrix4d xform);
 
         /**
          * @brief Override of
          * HdSingleInputFilteringSceneIndexBase::GetPrim
          */
-        virtual pxr::HdSceneIndexPrim GetPrim(
-            const pxr::SdfPath &primPath) const override;
+        virtual HdSceneIndexPrim GetPrim(
+            const SdfPath &primPath) const override;
 
         /**
          * @brief Override of
          * HdSingleInputFilteringSceneIndexBase::GetChildPrimPaths
          */
-        virtual pxr::SdfPathVector GetChildPrimPaths(
-            const pxr::SdfPath &primPath) const override;
+        virtual SdfPathVector GetChildPrimPaths(
+            const SdfPath &primPath) const override;
 
     protected:
         /**
@@ -84,8 +84,8 @@ class XformFilterSceneIndex : public HdSingleInputFilteringSceneIndexBase {
          * HdSingleInputFilteringSceneIndexBase::_PrimsAdded
          */
         virtual void _PrimsAdded(
-            const pxr::HdSceneIndexBase &sender,
-            const pxr::HdSceneIndexObserver::AddedPrimEntries &entries)
+            const HdSceneIndexBase &sender,
+            const HdSceneIndexObserver::AddedPrimEntries &entries)
             override;
 
         /**
@@ -93,8 +93,8 @@ class XformFilterSceneIndex : public HdSingleInputFilteringSceneIndexBase {
          * HdSingleInputFilteringSceneIndexBase::_PrimsRemoved
          */
         virtual void _PrimsRemoved(
-            const pxr::HdSceneIndexBase &sender,
-            const pxr::HdSceneIndexObserver::RemovedPrimEntries &entries)
+            const HdSceneIndexBase &sender,
+            const HdSceneIndexObserver::RemovedPrimEntries &entries)
             override;
 
         /**
@@ -102,12 +102,12 @@ class XformFilterSceneIndex : public HdSingleInputFilteringSceneIndexBase {
          * HdSingleInputFilteringSceneIndexBase::_PrimsDirtied
          */
         virtual void _PrimsDirtied(
-            const pxr::HdSceneIndexBase &sender,
-            const pxr::HdSceneIndexObserver::DirtiedPrimEntries &entries)
+            const HdSceneIndexBase &sender,
+            const HdSceneIndexObserver::DirtiedPrimEntries &entries)
             override;
 
     private:
-        pxr::VtDictionary _xformDict;
+        VtDictionary _xformDict;
 };
 
 PXR_NAMESPACE_CLOSE_SCOPE

@@ -43,8 +43,8 @@ class Editor : public View {
         const string GetViewType() override;
 
     private:
-        pxr::SdfPath _prevSelection;
-        pxr::ColorFilterSceneIndexRefPtr _colorFilterSceneIndex;
+        SdfPath _prevSelection;
+        ColorFilterSceneIndexRefPtr _colorFilterSceneIndex;
 
         /**
          * @brief Override of the View::Draw
@@ -58,7 +58,7 @@ class Editor : public View {
          *
          * @return The current prim path to display the attributes from
          */
-        pxr::SdfPath _GetPrimToDisplay();
+        SdfPath _GetPrimToDisplay();
 
         /**
          * @brief Append the display color attributes of the given prim path to
