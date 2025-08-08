@@ -40,6 +40,24 @@ Engine::~Engine()
     _Clear();
 }
 
+void Engine::SetSceneIndex(HdSceneIndexBaseRefPtr newSceneIndex)
+{
+    if (_renderIndex && _sceneIndex) {
+        _renderIndex->RemoveSceneIndex(_sceneIndex);
+    }
+    
+    _sceneIndex = newSceneIndex;
+    
+    if (_renderIndex && _sceneIndex) {
+        _renderIndex->InsertSceneIndex(_sceneIndex, _taskControllerId);
+    }
+}
+
+HdSceneIndexBaseRefPtr Engine::GetSceneIndex() const
+{
+    return _sceneIndex;
+}
+
 TfTokenVector Engine::GetRendererPlugins()
 {
     HfPluginDescVector pluginDescriptors;
@@ -80,6 +98,15 @@ string Engine::GetRendererPluginName(TfToken plugin)
 #endif
 
     return pluginDescriptor.displayName;
+}
+
+void Engine::SetRendererPlugin(TfToken newPluginId)
+{
+    auto sceneIndex = _sceneIndex;
+    _Clear();
+    _curRendererPlugin = newPluginId;
+    _sceneIndex = sceneIndex;
+    _Initialize();
 }
 
 void Engine::SetCameraMatrices(GfMatrix4d view, GfMatrix4d proj)

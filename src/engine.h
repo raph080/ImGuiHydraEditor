@@ -45,6 +45,20 @@ class Engine {
         ~Engine();
 
         /**
+         *  @brief Set The Scene Index to the Hydra Engine
+         * 
+         * @param newSceneIndex the new Scene Index to set
+         */
+        void SetSceneIndex(HdSceneIndexBaseRefPtr newSceneIndex);
+
+        /**
+         * @brief Get the active Scene Index
+         *
+         * @return the active Scene Index running in Hydra
+         */
+        HdSceneIndexBaseRefPtr GetSceneIndex() const;
+
+        /**
          * @brief Get the list of available renderer plugins
          *
          * @return the available renderer plugins
@@ -71,6 +85,13 @@ class Engine {
          * @return the current renderer plugin
          */
         TfToken GetCurrentRendererPlugin();
+
+        /**
+         * @brief Set Render plugin to Hydra Engine
+         * 
+         * @param newPluginId the new plugin Id to use in Hdyra
+         */
+        void SetRendererPlugin(TfToken newPluginId);
 
         /**
          * @brief Set the matrices of the current camera

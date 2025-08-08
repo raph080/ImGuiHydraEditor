@@ -125,8 +125,7 @@ void Viewport::_DrawMenuBar()
                 bool enabled = (p == curPlugin);
                 string name = _engine->GetRendererPluginName(p);
                 if (ImGui::MenuItem(name.c_str(), NULL, enabled)) {
-                    delete _engine;
-                    _engine = new Engine(GetModel()->GetFinalSceneIndex(), p);
+                    _engine->SetRendererPlugin(p);
                 }
             }
             ImGui::EndMenu();
