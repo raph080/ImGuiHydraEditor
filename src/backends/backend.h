@@ -49,3 +49,10 @@ void ShutdownBackend();
  * @return a pointer to the texture data
  */
 void *GetPointerToTextureBackend(pxr::HdRenderBuffer* buffer, pxr::Hgi* hgi);
+
+/**
+ * @brief Request the backend to delete the texture and free the resources.
+ * @param texturePtr the pointer to the texture data
+ * @param hgi the hgi related to the buffer
+ */
+void DeleteTextureBackend(void* texturePtr, pxr::Hgi* hgi);

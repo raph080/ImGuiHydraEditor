@@ -253,3 +253,10 @@ void *GetPointerToTextureBackend(pxr::HdRenderBuffer* buffer, pxr::Hgi* hgi)
     ImTextureID textureID = (__bridge void*)mtlTex;
     return (void *)textureID;
 }
+
+void DeleteTextureBackend(void* texturePtr, pxr::Hgi* hgi)
+{
+    if(hgiTexture) {
+        hgi->DestroyTexture(&hgiTexture);
+    }
+}

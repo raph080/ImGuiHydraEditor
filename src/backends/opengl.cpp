@@ -149,3 +149,13 @@ void *GetPointerToTextureBackend(pxr::HdRenderBuffer* buffer, pxr::Hgi* hgi)
 
     return (void*)(uintptr_t)textureId;
 }
+
+void DeleteTextureBackend(void* texturePtr, pxr::Hgi* hgi)
+{
+    if (!texturePtr) return;
+
+    GLuint textureId = static_cast<GLuint>(reinterpret_cast<uintptr_t>(texturePtr));
+    if (glIsTexture(textureId)) {
+        glDeleteTextures(1, &textureId);
+    }
+}

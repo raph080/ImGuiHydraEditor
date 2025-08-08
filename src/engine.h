@@ -137,6 +137,7 @@ class Engine {
         HdRprimCollection _collection;
         HdSceneIndexBaseRefPtr _sceneIndex;
         SdfPath _taskControllerId;
+        void* _backendTexture;
 
         HdxSelectionTrackerSharedPtr _selTracker;
 

@@ -26,7 +26,8 @@ Engine::Engine(HdSceneIndexBaseRefPtr sceneIndex, TfToken plugin)
       _renderDelegate(nullptr),
       _renderIndex(nullptr),
       _taskController(nullptr),
-      _taskControllerId("/defaultTaskController")
+      _taskControllerId("/defaultTaskController"),
+      _backendTexture(nullptr)
 {
     _width = 512;
     _height = 512;
@@ -225,6 +226,12 @@ void Engine::Prepare()
 
 void Engine::Render()
 {
+    // invalidate the previous cached backend texture
+    if (_backendTexture) {
+        DeleteTextureBackend(_backendTexture, _hgi.get());
+        _backendTexture = nullptr;
+    }
+
     _taskController->SetEnablePresentation(false);
     HdTaskSharedPtrVector tasks = _taskController->GetRenderingTasks();
     _engine.Execute(_renderIndex, &tasks);
@@ -274,8 +281,12 @@ SdfPath Engine::FindIntersection(GfVec2f screenPos)
 
 void* Engine::GetRenderBufferData()
 {
-    HdRenderBuffer* buffer = _taskController->GetRenderOutput(HdAovTokens->color);
-    return GetPointerToTextureBackend(buffer, _hgi.get());
+    if (!_backendTexture) {
+        auto buffer = _taskController->GetRenderOutput(HdAovTokens->color);
+        _backendTexture = GetPointerToTextureBackend(buffer, _hgi.get());
+    }
+
+    return _backendTexture;
  }
 
 GfFrustum Engine::GetFrustum()
