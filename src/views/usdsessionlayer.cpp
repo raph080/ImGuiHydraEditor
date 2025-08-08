@@ -126,6 +126,9 @@ void UsdSessionLayer::_ClearStage()
         return;
     }
 
+    _sessionLayer->Clear();
+    _stage->SetEditTarget(_stage->GetRootLayer());
+
     for (auto prim : _stage->GetPseudoRoot().GetChildren()) {
         _stage->RemovePrim(prim.GetPath());
     }
@@ -141,9 +144,9 @@ void UsdSessionLayer::_LoadUsdStage(const string usdFilePath)
     }
 
     _ClearStage();
-    _rootLayer = SdfLayer::FindOrOpen(usdFilePath);
-    _sessionLayer = SdfLayer::CreateAnonymous();
-    _stage = UsdStage::Open(_rootLayer, _sessionLayer);
+    _stage = UsdStage::Open(usdFilePath);
+    _rootLayer = _stage->GetRootLayer();
+    _sessionLayer = _stage->GetSessionLayer();
     _stage->SetEditTarget(_sessionLayer);
     _stageSceneIndex->SetStage(_stage);
     _stageSceneIndex->SetTime(UsdTimeCode::Default());
