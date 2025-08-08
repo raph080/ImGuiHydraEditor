@@ -27,7 +27,9 @@ Engine::Engine(HdSceneIndexBaseRefPtr sceneIndex, TfToken plugin)
       _renderIndex(nullptr),
       _taskController(nullptr),
       _taskControllerId("/defaultTaskController"),
-      _backendTexture(nullptr)
+      _backendTexture(nullptr),
+      _domeLightEnabled(false),
+      _ambientLightEnabled(true)
 {
     _width = 512;
     _height = 512;
@@ -113,6 +115,8 @@ void Engine::SetCameraMatrices(GfMatrix4d view, GfMatrix4d proj)
 {
     _camView = view;
     _camProj = proj;
+
+    _taskController->SetFreeCameraMatrices(_camView, _camProj);
 }
 
 void Engine::SetSelection(SdfPathVector paths)
@@ -146,14 +150,13 @@ void Engine::SetRenderSize(int width, int height)
     _taskController->SetFraming(framing);
 }
 
-void Engine::Prepare()
-{
-    _PrepareDefaultLighting();
-    _taskController->SetFreeCameraMatrices(_camView, _camProj);
-}
-
 void Engine::Render()
 {
+    // need to update lights every frame if ambient light
+    // is on as it aim from cam
+    if (_ambientLightEnabled)
+        _UpdateLighting();
+
     // invalidate the previous cached backend texture
     if (_backendTexture) {
         DeleteTextureBackend(_backendTexture, _hgi.get());
@@ -215,6 +218,24 @@ void* Engine::GetRenderBufferData()
     }
 
     return _backendTexture;
+}
+
+void Engine::SetAmbientLightEnabled(bool state)
+{
+    _ambientLightEnabled = state;
+    _UpdateLighting();
+}
+
+void Engine::SetDomeLightEnabled(bool state)
+{
+    _domeLightEnabled = state;
+    _UpdateLighting();
+}
+
+void Engine::SetDomeLightTexturePath(string texturePath)
+{
+    _domeLightTexturePath = texturePath;
+    _UpdateLighting();
 }
 
 void Engine::_Clear()
@@ -307,13 +328,33 @@ void Engine::_Initialize()
     _taskController->SetOverrideWindowPolicy(CameraUtilFit);
 }
 
-void Engine::_PrepareDefaultLighting()
+void Engine::_UpdateLighting()
 {
-    // set a spot light to the camera position
-    GfVec3d camPos = _camView.GetInverse().ExtractTranslation();
-    GlfSimpleLight l;
-    l.SetAmbient(GfVec4f(0, 0, 0, 0));
-    l.SetPosition(GfVec4f(camPos[0], camPos[1], camPos[2], 1));
+    GlfSimpleLightVector lights;
+
+    if (_domeLightEnabled) {
+        GlfSimpleLight l;
+        l.SetHasShadow(true);
+        l.SetIsDomeLight(true);
+        l.SetAttenuation(GfVec3f(0.0f, 0.0f, 0.0f));
+        if (!_domeLightTexturePath.empty()) {
+            auto texture = SdfAssetPath(_domeLightTexturePath,_domeLightTexturePath);
+            l.SetDomeLightTextureFile(texture);
+        }
+        l.SetDiffuse(GfVec4f(1,1,1,1));
+        l.SetAmbient(GfVec4f(0,0,0,1));
+        l.SetSpecular(GfVec4f(1,1,1,1));
+        lights.push_back(l);
+    }
+
+    if (_ambientLightEnabled) {
+        // set a spot light to the camera position
+        GfVec3d camPos = _camView.GetInverse().ExtractTranslation();
+        GlfSimpleLight l;
+        l.SetAmbient(GfVec4f(0, 0, 0, 0));
+        l.SetPosition(GfVec4f(camPos[0], camPos[1], camPos[2], 1));
+        lights.push_back(l);
+    }
 
     GlfSimpleMaterial material;
     material.SetAmbient(GfVec4f(2, 2, 2, 1.0));
@@ -325,7 +366,7 @@ void Engine::_PrepareDefaultLighting()
     GlfSimpleLightingContextRefPtr lightingContextState =
         GlfSimpleLightingContext::New();
 
-    lightingContextState->SetLights({l});
+    lightingContextState->SetLights(lights);
     lightingContextState->SetMaterial(material);
     lightingContextState->SetSceneAmbient(sceneAmbient);
     lightingContextState->SetUseLighting(true);

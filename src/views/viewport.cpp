@@ -1,5 +1,6 @@
 #include "viewport.h"
 
+#include <ImGuiFileDialog.h>
 #include <pxr/base/gf/camera.h>
 #include <pxr/base/gf/frustum.h>
 #include <pxr/base/gf/matrix4f.h>
@@ -89,35 +90,35 @@ void Viewport::_Draw()
 void Viewport::_DrawMenuBar()
 {
     if (ImGui::BeginMenuBar()) {
-        if (ImGui::BeginMenu("transform")) {
-            if (ImGui::MenuItem("local translate")) {
+        if (ImGui::BeginMenu("Transform")) {
+            if (ImGui::MenuItem("Local Translate")) {
                 _curOperation = ImGuizmo::TRANSLATE;
                 _curMode = ImGuizmo::LOCAL;
             }
-            if (ImGui::MenuItem("local rotation")) {
+            if (ImGui::MenuItem("Local Rotation")) {
                 _curOperation = ImGuizmo::ROTATE;
                 _curMode = ImGuizmo::LOCAL;
             }
-            if (ImGui::MenuItem("local scale")) {
+            if (ImGui::MenuItem("Local Scale")) {
                 _curOperation = ImGuizmo::SCALE;
                 _curMode = ImGuizmo::LOCAL;
             }
-            if (ImGui::MenuItem("global translate")) {
+            if (ImGui::MenuItem("Global Translate")) {
                 _curOperation = ImGuizmo::TRANSLATE;
                 _curMode = ImGuizmo::WORLD;
             }
-            if (ImGui::MenuItem("global rotation")) {
+            if (ImGui::MenuItem("Global Rotation")) {
                 _curOperation = ImGuizmo::ROTATE;
                 _curMode = ImGuizmo::WORLD;
             }
-            if (ImGui::MenuItem("global scale")) {
+            if (ImGui::MenuItem("Global Scale")) {
                 _curOperation = ImGuizmo::SCALE;
                 _curMode = ImGuizmo::WORLD;
             }
 
             ImGui::EndMenu();
         }
-        if (ImGui::BeginMenu("renderer")) {
+        if (ImGui::BeginMenu("Renderer")) {
             // get all possible renderer plugins
             TfTokenVector plugins = _engine->GetRendererPlugins();
             TfToken curPlugin = _engine->GetCurrentRendererPlugin();
@@ -131,9 +132,9 @@ void Viewport::_DrawMenuBar()
             ImGui::EndMenu();
         }
 
-        if (ImGui::BeginMenu("cameras")) {
+        if (ImGui::BeginMenu("Cameras")) {
             bool enabled = (_activeCam.IsEmpty());
-            if (ImGui::MenuItem("free camera", NULL, &enabled)) {
+            if (ImGui::MenuItem("Free Camera", NULL, &enabled)) {
                 _SetFreeCamAsActive();
             }
             for (SdfPath path : GetModel()->GetCameras()) {
@@ -144,16 +145,37 @@ void Viewport::_DrawMenuBar()
             }
             ImGui::EndMenu();
         }
-        if (ImGui::BeginMenu("lights")) {
-            ImGui::MenuItem("ambient light", NULL, &_isAmbientLightEnabled);
-            ImGui::MenuItem("dome light", NULL, &_isDomeLightEnabled);
+        if (ImGui::BeginMenu("Lights")) {
+            bool tmpState = _isAmbientLightEnabled;
+            ImGui::MenuItem("Ambient Light", NULL, &_isAmbientLightEnabled);
+            if (_isAmbientLightEnabled != tmpState)
+                _engine->SetAmbientLightEnabled(_isAmbientLightEnabled);
+
+            tmpState = _isDomeLightEnabled;
+            ImGui::MenuItem("Dome Light", NULL, &_isDomeLightEnabled);
+            if (_isDomeLightEnabled != tmpState)
+                _engine->SetDomeLightEnabled(_isDomeLightEnabled);
+
+            if (ImGui::MenuItem("Load Dome Light Texture ...")) {
+                ImGuiFileDialog::Instance()->OpenDialog(
+                    "DomeLightFile", "Choose File", ".exr,.hdr,.png,.jpg", ".");
+            }
+
             ImGui::EndMenu();
         }
-        if (ImGui::BeginMenu("show")) {
-            ImGui::MenuItem("grid", NULL, &_isGridEnabled);
+        if (ImGui::BeginMenu("Show")) {
+            ImGui::MenuItem("Grid", NULL, &_isGridEnabled);
             ImGui::EndMenu();
         }
         ImGui::EndMenuBar();
+    }
+
+    if (ImGuiFileDialog::Instance()->Display("DomeLightFile")) {
+        if (ImGuiFileDialog::Instance()->IsOk()) {
+            string filePath = ImGuiFileDialog::Instance()->GetFilePathName();
+            _engine->SetDomeLightTexturePath(filePath);
+        }
+        ImGuiFileDialog::Instance()->Close();
     }
 }
 
@@ -189,7 +211,6 @@ void Viewport::_UpdateHydraRender()
     _engine->SetSelection(paths);
     _engine->SetRenderSize(width, height);
     _engine->SetCameraMatrices(view, _proj);
-    _engine->Prepare();
 
     // do the render
     _engine->Render();

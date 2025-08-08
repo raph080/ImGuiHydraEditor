@@ -11,46 +11,11 @@
  *
  */
 const std::string IMGUI_LAYOUT_STR = R"(
-[Window][Debug##Default]
-Pos=119,48
-Size=400,400
-Collapsed=0
-
-[Window][Dear ImGui Demo]
-Pos=661,20
-Size=550,680
-Collapsed=0
-
-[Window][Hello, world!]
-Pos=60,61
-Size=339,180
-Collapsed=0
-
 [Window][Editor]
 Pos=975,19
 Size=305,480
 Collapsed=0
 DockId=0x00000004,0
-
-[Window][Gizmo]
-Pos=310,199
-Size=929,548
-Collapsed=0
-
-[Window][Other controls]
-Pos=87,156
-Size=861,478
-Collapsed=0
-
-[Window][Graph Editor]
-Pos=624,126
-Size=624,447
-Collapsed=0
-
-[Window][DockSpaceViewport_11111111]
-Pos=0,19
-Size=1280,701
-Collapsed=0
 
 [Window][Scene Window]
 Pos=413,0
@@ -58,66 +23,11 @@ Size=750,509
 Collapsed=0
 DockId=0x00000003,0
 
-[Window][Example: Property editor]
-Pos=223,155
-Size=430,450
-Collapsed=0
-
-[Window][###AnimatedTitle]
-Pos=100,300
-Size=247,48
-Collapsed=0
-
-[Window][Same title as another window##2]
-Pos=125,391
-Size=451,61
-Collapsed=0
-
-[Window][Same title as another window##1]
-Pos=131,497
-Size=451,61
-Collapsed=0
-
-[Window][DockSpace Demo]
-Pos=0,19
-Size=1280,701
-Collapsed=0
-
-[Window][Delete?]
-Pos=484,307
-Size=311,105
-Collapsed=0
-
-[Window][Stacked 1]
-Pos=435,274
-Size=409,172
-Collapsed=0
-
 [Window][Scene graph]
 Pos=0,531
 Size=1470,275
 Collapsed=0
 DockId=0x00000002,0
-
-[Window][Example: Simple layout]
-Pos=51,238
-Size=500,440
-Collapsed=0
-
-[Window][Example: Console]
-Pos=198,55
-Size=520,600
-Collapsed=0
-
-[Window][Example: Log]
-Pos=255,35
-Size=500,400
-Collapsed=0
-
-[Window][Dear ImGui Style Editor]
-Pos=569,11
-Size=353,695
-Collapsed=0
 
 [Window][Outliner]
 Pos=0,501
@@ -156,13 +66,18 @@ Collapsed=0
 DockId=0x00000003,0
 
 [Window][Choose File##LoadFile]
-Pos=358,135
-Size=582,434
+Pos=277,155
+Size=624,351
 Collapsed=0
 
 [Window][Choose File##ExportFile]
-Pos=358,135
-Size=582,434
+Pos=277,155
+Size=624,351
+Collapsed=0
+
+[Window][Choose File##DomeLightFile]
+Pos=277,155
+Size=624,351
 Collapsed=0
 
 [Table][0xD0F0C6E3,2]
@@ -210,6 +125,26 @@ RefScale=13
 Column 0  Sort=0v
 
 [Table][0xF74273FF,4]
+RefScale=13
+Column 0  Sort=0v
+
+[Table][0xC736EC2E,4]
+RefScale=13
+Column 0  Sort=0v
+
+[Table][0x56106076,4]
+RefScale=13
+Column 0  Sort=0v
+
+[Table][0x9A17D9B2,4]
+RefScale=13
+Column 0  Sort=0v
+
+[Table][0xDE26929E,4]
+RefScale=13
+Column 0  Sort=0v
+
+[Table][0x744DC63C,4]
 RefScale=13
 Column 0  Sort=0v
 

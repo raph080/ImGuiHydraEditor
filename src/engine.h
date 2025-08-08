@@ -117,11 +117,6 @@ class Engine {
         void SetRenderSize(int width, int height);
 
         /**
-         * @brief Prepare the renderer
-         */
-        void Prepare();
-
-        /**
          * @brief Render the current state
          */
         void Render();
@@ -143,6 +138,27 @@ class Engine {
          */
         void *GetRenderBufferData();
 
+        /**
+         * @brief Set ambient light state
+         * 
+         * @param state true if ambient light is enabled
+         */
+        void SetAmbientLightEnabled(bool state);
+
+        /**
+         * @brief Set dome light state
+         * 
+         * @param state true if dome light is enabled
+         */
+        void SetDomeLightEnabled(bool state);
+
+        /**
+         * @brief Set dome light texture
+         * 
+         * @param texturePath file path to the dome light texture
+         */
+        void SetDomeLightTexturePath(string texturePath);
+
     private:
         UsdStageRefPtr _stage;
         GfMatrix4d _camView, _camProj;
@@ -159,6 +175,9 @@ class Engine {
         HdSceneIndexBaseRefPtr _sceneIndex;
         SdfPath _taskControllerId;
         void* _backendTexture;
+
+        bool _domeLightEnabled, _ambientLightEnabled;
+        string _domeLightTexturePath;
 
         HdxSelectionTrackerSharedPtr _selTracker;
 
@@ -185,9 +204,9 @@ class Engine {
         void _Initialize();
 
         /**
-         * @brief Prepare the default lighting
+         * @brief Update the default lighting (ambient and dome lights)
          */
-        void _PrepareDefaultLighting();
+        void _UpdateLighting();
 };
 
 PXR_NAMESPACE_CLOSE_SCOPE
