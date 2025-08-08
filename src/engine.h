@@ -144,36 +144,29 @@ class Engine {
         TfToken _curRendererPlugin;
 
         /**
+         * @brief Clear Hydra Engine allocation and resources
+         */
+        void _Clear();
+
+        /**
          * @brief Get the render delegate from the given renderer plugin
          *
          * @param plugin the renderer plugin
          *
          * @return the renderer delegate fro, the given renderer plugin
          */
-        static HdPluginRenderDelegateUniqueHandle GetRenderDelegateFromPlugin(
+        static HdPluginRenderDelegateUniqueHandle _GetRenderDelegateFromPlugin(
             TfToken plugin);
 
         /**
          * @brief Initialize the renderer
          */
-        void Initialize();
+        void _Initialize();
 
         /**
          * @brief Prepare the default lighting
          */
-        void PrepareDefaultLighting();
-
-        /**
-         * @brief Present the last render to the OpenGL context
-         */
-        void Present();
-
-        /**
-         * @brief Get the current frustum
-         *
-         * @return the current frustum
-         */
-        GfFrustum GetFrustum();
+        void _PrepareDefaultLighting();
 };
 
 PXR_NAMESPACE_CLOSE_SCOPE
