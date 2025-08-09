@@ -66,24 +66,7 @@ class Editor : public View {
          *
          * @param primPath the SdfPath to get the display color attributes from
          */
-        void _AppendDisplayColorAttr(pxr::SdfPath primPath);
-
-        /**
-         * @brief Append the data source content to the editor view
-         *
-         * @param containerDataSource the container data source to display
-         */
-        void _AppendDataSourceAttrs(
-            pxr::HdContainerDataSourceHandle containerDataSource);
-
-        /**
-         * @brief Append the display color attributes of the given prim
-         * path to the editor view
-         *
-         * @param primPath the SdfPath to get the display color attributes
-         * from
-         */
-        void _AppendAllPrimAttrs(pxr::SdfPath primPath);
+        void _AppendDisplayColorAttr(SdfPath primPath);
 };
 
 PXR_NAMESPACE_CLOSE_SCOPE

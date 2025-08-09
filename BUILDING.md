@@ -9,7 +9,7 @@ ImGUi Hydra has been developed on MacOS Sonora 14.5 (Macbook Air 2022 - M2).
 Required:
 * gcc compiler
 * [cmake v3.27](https://cmake.org/) or newer
-* [OpenUSD v24.08](https://github.com/PixarAnimationStudios/OpenUSD) or newer
+* [OpenUSD v25.08](https://github.com/PixarAnimationStudios/OpenUSD) or newer
 
 Embedded:
 * [imgui v1.90.9](https://github.com/ocornut/imgui)
@@ -40,7 +40,7 @@ The easy way to get a pre-built version of USD is to download the one from the [
 To build USD manually, go to the [OpenUSD release page](https://github.com/PixarAnimationStudios/OpenUSD/releases), download the last release available and build it (build info in the OpenUSD [README.md](https://github.com/PixarAnimationStudios/OpenUSD/blob/release/README.md)).
 
 Don't forget to add the --embree flag to the build command if you wish to have access to the Embree renderer from ImGui Hydra Editor.
-![embree enabled in ImGui Hydra Editor](resources/storm_embree.png)
+![embree enabled in ImGui Hydra Editor](resources/multi_renderers.png)
 
 ```bash
 python3 USD/build_scripts/build_usd.py --embree /path/to/install

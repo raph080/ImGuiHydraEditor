@@ -7,6 +7,8 @@
 #include "views/usdsessionlayer.h"
 #include "views/view.h"
 #include "views/viewport.h"
+#include "views/sceneindexview.h"
+#include "views/sceneindexattribute.h"
 
 #include <iostream>
 
@@ -32,6 +34,10 @@ void MainWindow::Update()
                     AddView(UsdSessionLayer::VIEW_TYPE);
                 if (ImGui::MenuItem(Viewport::VIEW_TYPE.c_str()))
                     AddView(Viewport::VIEW_TYPE);
+                if (ImGui::MenuItem(SceneIndexView::VIEW_TYPE.c_str()))
+                    AddView(SceneIndexView::VIEW_TYPE);
+                if (ImGui::MenuItem(SceneIndexAttribute::VIEW_TYPE.c_str()))
+                    AddView(SceneIndexAttribute::VIEW_TYPE);
 
                 ImGui::EndMenu();
             }
@@ -63,6 +69,8 @@ void MainWindow::ResetDefaultViews()
     AddView(Outliner::VIEW_TYPE);
     AddView(Editor::VIEW_TYPE);
     AddView(Viewport::VIEW_TYPE);
+    AddView(SceneIndexView::VIEW_TYPE);
+    AddView(SceneIndexAttribute::VIEW_TYPE);
 }
 
 void MainWindow::AddView(const string viewType)
@@ -95,6 +103,12 @@ void MainWindow::AddView(const string viewType)
     }
     else if (viewType == Viewport::VIEW_TYPE) {
         _views.push_back(new Viewport(_model, viewLabel));
+    }
+    else if (viewType == SceneIndexView::VIEW_TYPE) {
+        _views.push_back(new SceneIndexView(_model, viewLabel));
+    }
+    else if (viewType == SceneIndexAttribute::VIEW_TYPE) {
+        _views.push_back(new SceneIndexAttribute(_model, viewLabel));
     }
 }
 

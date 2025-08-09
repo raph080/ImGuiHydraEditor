@@ -12,10 +12,10 @@
  */
 const std::string IMGUI_LAYOUT_STR = R"(
 [Window][Editor]
-Pos=975,19
-Size=305,480
+Pos=865,19
+Size=415,93
 Collapsed=0
-DockId=0x00000004,0
+DockId=0x0000000D,0
 
 [Window][Scene Window]
 Pos=413,0
@@ -30,16 +30,16 @@ Collapsed=0
 DockId=0x00000002,0
 
 [Window][Outliner]
-Pos=0,501
-Size=272,219
+Pos=0,19
+Size=205,485
 Collapsed=0
 DockId=0x00000007,0
 
 [Window][Session Layer]
-Pos=274,501
-Size=1006,219
+Pos=865,114
+Size=415,390
 Collapsed=0
-DockId=0x00000008,0
+DockId=0x0000000E,0
 
 [Window][Session Layer Trace]
 Pos=273,661
@@ -51,19 +51,19 @@ DockId=0x0000000A,0
 Pos=1113,511
 Size=357,295
 Collapsed=0
-DockId=0x00000008,0
+DockId=0x0000000B,0
 
 [Window][flatten Stage]
 Pos=275,511
 Size=1195,295
 Collapsed=0
-DockId=0x00000008,1
+DockId=0x0000000B,1
 
 [Window][Viewport]
-Pos=0,19
-Size=973,480
+Pos=207,19
+Size=656,485
 Collapsed=0
-DockId=0x00000003,0
+DockId=0x00000008,0
 
 [Window][Choose File##LoadFile]
 Pos=277,155
@@ -79,6 +79,28 @@ Collapsed=0
 Pos=277,155
 Size=624,351
 Collapsed=0
+
+[Window][DockSpaceViewport_11111111]
+Pos=0,19
+Size=1280,701
+Collapsed=0
+
+[Window][Debug##Default]
+Pos=60,60
+Size=400,400
+Collapsed=0
+
+[Window][Scene Index View]
+Pos=0,506
+Size=860,214
+Collapsed=0
+DockId=0x00000011,0
+
+[Window][Scene Index Attribute]
+Pos=862,506
+Size=418,214
+Collapsed=0
+DockId=0x00000012,0
 
 [Table][0xD0F0C6E3,2]
 Column 0  Weight=1.0000
@@ -148,18 +170,44 @@ Column 0  Sort=0v
 RefScale=13
 Column 0  Sort=0v
 
+[Table][0xEDB79678,4]
+RefScale=13
+Column 0  Sort=0v
+
+[Table][0x41ACBBE1,4]
+RefScale=13
+Column 0  Sort=0v
+
+[Table][0xECD54214,4]
+RefScale=13
+Column 0  Sort=0v
+
+[Table][0x40CE6F8D,4]
+RefScale=13
+Column 0  Sort=0v
+
 [Docking][Data]
-DockSpace       ID=0x8B93E3BD Window=0xA787BDB4 Pos=0,19 Size=1280,701 Split=Y
-  DockNode      ID=0x00000005 Parent=0x8B93E3BD SizeRef=1470,480 Split=Y
-    DockNode    ID=0x00000001 Parent=0x00000005 SizeRef=1470,529 Split=X
-      DockNode  ID=0x00000003 Parent=0x00000001 SizeRef=750,806 CentralNode=1 Selected=0x13926F0B
-      DockNode  ID=0x00000004 Parent=0x00000001 SizeRef=305,806 Selected=0x9F27EDF6
-    DockNode    ID=0x00000002 Parent=0x00000005 SizeRef=1470,275 Selected=0xF5BE1C77
-  DockNode      ID=0x00000006 Parent=0x8B93E3BD SizeRef=1470,219 Split=Y Selected=0xA2B48D87
-    DockNode    ID=0x00000009 Parent=0x00000006 SizeRef=1197,148 Split=X Selected=0xA2B48D87
-      DockNode  ID=0x00000007 Parent=0x00000009 SizeRef=272,295 Selected=0x94263E27
-      DockNode  ID=0x00000008 Parent=0x00000009 SizeRef=1006,295 Selected=0xA2B48D87
-    DockNode    ID=0x0000000A Parent=0x00000006 SizeRef=1197,145 Selected=0xDAFD3032
+DockSpace             ID=0x8B93E3BD Window=0xA787BDB4 Pos=0,19 Size=1280,701 Split=Y
+  DockNode            ID=0x00000005 Parent=0x8B93E3BD SizeRef=1470,491 Split=Y
+    DockNode          ID=0x00000001 Parent=0x00000005 SizeRef=1470,529 Split=X
+      DockNode        ID=0x00000003 Parent=0x00000001 SizeRef=1040,806 Split=Y Selected=0x13926F0B
+        DockNode      ID=0x0000000F Parent=0x00000003 SizeRef=642,485 Split=X Selected=0x13926F0B
+          DockNode    ID=0x00000013 Parent=0x0000000F SizeRef=863,512 Split=X Selected=0x13926F0B
+            DockNode  ID=0x00000007 Parent=0x00000013 SizeRef=205,512 Selected=0x94263E27
+            DockNode  ID=0x00000008 Parent=0x00000013 SizeRef=656,512 CentralNode=1 Selected=0x13926F0B
+          DockNode    ID=0x00000014 Parent=0x0000000F SizeRef=415,512 Split=Y Selected=0x9F27EDF6
+            DockNode  ID=0x0000000D Parent=0x00000014 SizeRef=319,93 Selected=0x9F27EDF6
+            DockNode  ID=0x0000000E Parent=0x00000014 SizeRef=319,390 Selected=0xA2B48D87
+        DockNode      ID=0x00000010 Parent=0x00000003 SizeRef=642,214 Split=X Selected=0x07D9D459
+          DockNode    ID=0x00000011 Parent=0x00000010 SizeRef=860,187 Selected=0x07D9D459
+          DockNode    ID=0x00000012 Parent=0x00000010 SizeRef=418,187 Selected=0x3ADDE625
+      DockNode        ID=0x00000004 Parent=0x00000001 SizeRef=428,806 Selected=0x9F27EDF6
+    DockNode          ID=0x00000002 Parent=0x00000005 SizeRef=1470,275 Selected=0xF5BE1C77
+  DockNode            ID=0x00000006 Parent=0x8B93E3BD SizeRef=1470,208 Split=Y Selected=0xA2B48D87
+    DockNode          ID=0x00000009 Parent=0x00000006 SizeRef=1197,148 Split=X Selected=0xA2B48D87
+      DockNode        ID=0x0000000B Parent=0x00000009 SizeRef=630,219 Selected=0x07D9D459
+      DockNode        ID=0x0000000C Parent=0x00000009 SizeRef=648,219 Selected=0x3ADDE625
+    DockNode          ID=0x0000000A Parent=0x00000006 SizeRef=1197,145 Selected=0xDAFD3032
 )";
 
 void LoadDefaultLayout()
