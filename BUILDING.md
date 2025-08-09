@@ -72,6 +72,7 @@ You can also use the following flag to force the use of OpenGL (e.g. on Mac inst
 ```bash
 -DFORCE_OPENGL=ON
 ```
+**Note**: Color Correction and Multi Viewports are currently disabled with Metal backend. Make sure to use the **-DFORCE_OPENGL=ON** flag to enable those on Mac.
 
 ### Run ImGuiHydraEditor
    
