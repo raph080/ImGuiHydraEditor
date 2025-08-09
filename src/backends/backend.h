@@ -11,11 +11,12 @@
 
 #pragma once
 
-/**
- * 
- */
-#include "pxr/imaging/hd/renderBuffer.h"
-#include "pxr/imaging/hgi/hgi.h"
+#include <pxr/base/tf/token.h>
+#include <pxr/base/vt/value.h>
+#include <pxr/imaging/hgi/hgi.h>
+#include <pxr/imaging/hgi/tokens.h>
+#include <pxr/imaging/hd/renderBuffer.h>
+#include <pxr/imaging/hdx/taskController.h>
 
 /**
  * @brief Initialize the backend and create a window
@@ -41,18 +42,42 @@ void RunBackend(void (*callback)());
 void ShutdownBackend();
 
 /**
- * @brief Retrieve a pointer to texture data of the given buffer
+ * @brief Update the buffer size from the backend size
+ * 
+ * @param width the width of the new buffers
+ * @param heigt the height of the new buffers
+ */
+void UpdateBufferSizeBackend(int width, int height);
+
+/**
+ * @brief Present outputs (backend api and handle) to the given taskController
+ * 
+ * Currently, this only works for OpenGL. Indeed, HgiInterop 
+ * only supports presentation to OpenGL. If trying to present to Metal
+ * buffer: 
+ * "hgiInterop.cpp -- Unsupported destination Hgi backend: Metal"
+ * 
+ * Without presentation (for Metal), we are loosing color correction.
+ * 
+ * @param taskController the Task Controller that will be set with outputs
+ */
+void PresentBackend(pxr::HdxTaskController* taskController);
+
+/**
+ * @brief Retrieve a pointer to the buffer containing the texture
+ * 
+ * This function should only return a buffer created by the backend
+ * and related to the one presented to the Task Controller. However,
+ * Metal is not available yet as presentation output.
+ * 
+ * In order to be able to retrieve a pointer to the data for Metal,
+ * Render Buffer and Hgi are provided as arguments. This allows to
+ * get the render (without color correction) that we can convert for
+ * Metal use.
  *
- * @param buffer the hydra render buffer the texture data
+ * @param buffer the hydra render buffer
  * @param hgi the hgi related to the buffer
  * 
  * @return a pointer to the texture data
  */
 void *GetPointerToTextureBackend(pxr::HdRenderBuffer* buffer, pxr::Hgi* hgi);
-
-/**
- * @brief Request the backend to delete the texture and free the resources.
- * @param texturePtr the pointer to the texture data
- * @param hgi the hgi related to the buffer
- */
-void DeleteTextureBackend(void* texturePtr, pxr::Hgi* hgi);

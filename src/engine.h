@@ -169,8 +169,8 @@ class Engine {
 
         HdEngine _engine;
         HdPluginRenderDelegateUniqueHandle _renderDelegate;
-        HdRenderIndex *_renderIndex;
-        HdxTaskController *_taskController;
+        HdRenderIndex* _renderIndex;
+        HdxTaskController* _taskController;
         HdRprimCollection _collection;
         HdSceneIndexBaseRefPtr _sceneIndex;
         SdfPath _taskControllerId;

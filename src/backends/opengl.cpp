@@ -1,20 +1,22 @@
-#include "backend.h"
-
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
+
+#include "backend.h"
+
 #define IMGUI_DEFINE_MATH_OPERATORS
 #include <imgui.h>
 #include <imgui_impl_glfw.h>
 #include <imgui_impl_opengl3.h>
 #include <imgui_internal.h>
 
-#include "pxr/imaging/hgiGL/texture.h"
-#include "pxr/imaging/hgi/texture.h"
+#include <pxr/imaging/hgiGL/texture.h>
+#include <pxr/imaging/hgi/texture.h>
 
 #include <cstdint>
 #include <iostream>
 
 static GLFWwindow* window = nullptr;
+GLuint fbo = 0, colorTex = 0;
 
 
 int InitBackend(const char* title, int width, int height)
@@ -93,69 +95,34 @@ void RunBackend(void (*callback)())
     }
 }
 
-void *GetPointerToTextureBackend(pxr::HdRenderBuffer* buffer, pxr::Hgi* hgi)
+void UpdateBufferSizeBackend(int width, int height)
 {
-    // Note: there is more straightforward to get texture pointer.
-    // This method ensure OpenGL texture is created even if
-    // default hgi != hgiGL (e.g. on Mac).
-
-    float* pixelData = (float*)buffer->Map();
-    int width = buffer->GetWidth();
-    int height = buffer->GetHeight();
-    pxr::HdFormat hdFormat = buffer->GetFormat();
-
-    GLenum internalFormat, format, type;
-
-    switch (hdFormat) {
-        case pxr::HdFormatUNorm8Vec4:
-            internalFormat = GL_RGBA8;
-            format = GL_RGBA;
-            type = GL_UNSIGNED_BYTE;
-            break;
-        case pxr::HdFormatFloat32Vec4:
-            internalFormat = GL_RGBA32F;
-            format = GL_RGBA;
-            type = GL_FLOAT;
-            break;
-        case pxr::HdFormatFloat16Vec4:
-            internalFormat = GL_RGBA16F;
-            format = GL_RGBA;
-            type = GL_HALF_FLOAT;
-            break;
-        case pxr::HdFormatUNorm8:
-            internalFormat = GL_R8;
-            format = GL_RED;
-            type = GL_UNSIGNED_BYTE;
-            break;
-        default:
-            std::cerr << "Unhandled HdFormat in OpenGL backend." << std::endl;
-            buffer->Unmap();
-            return nullptr;
-    }
-
-    GLuint textureId;
-    glGenTextures(1, &textureId);
-    glBindTexture(GL_TEXTURE_2D, textureId);
-
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+    if (colorTex) glDeleteTextures(1, &colorTex);
+    if (fbo)   glDeleteFramebuffers(1, &fbo);
+    
+    // here is the texture provided to Hydra to render into
+    glGenTextures(1, &colorTex);
+    glBindTexture(GL_TEXTURE_2D, colorTex);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0,
+                 GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-    glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, width, height, 0, format, type, pixelData);
-    glGenerateMipmap(GL_TEXTURE_2D);
-
-    glBindTexture(GL_TEXTURE_2D, 0);
-
-    buffer->Unmap();
-
-    return (void*)(uintptr_t)textureId;
+    // here is the buffer provided to Imgui to display from
+    glGenFramebuffers(1, &fbo);
+    glBindFramebuffer(GL_FRAMEBUFFER, fbo);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
+                           GL_TEXTURE_2D, colorTex, 0);
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
-void DeleteTextureBackend(void* texturePtr, pxr::Hgi* hgi)
+void PresentBackend(pxr::HdxTaskController* taskController)
 {
-    if (!texturePtr) return;
+    taskController->SetPresentationOutput(pxr::HgiTokens->OpenGL, pxr::VtValue(uint32_t(fbo)));
+    taskController->SetEnablePresentation(true);
+}
 
-    GLuint textureId = static_cast<GLuint>(reinterpret_cast<uintptr_t>(texturePtr));
-    if (glIsTexture(textureId)) {
-        glDeleteTextures(1, &textureId);
-    }
+void* GetPointerToTextureBackend(pxr::HdRenderBuffer* buffer, pxr::Hgi* hgi)
+{
+    return (void*)(uintptr_t)colorTex;
 }

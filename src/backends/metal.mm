@@ -63,6 +63,7 @@ static int appHeight;
     [super viewDidLoad];
 
     self.mtkView.device = self.device;
+    self.mtkView.framebufferOnly = NO;
     self.mtkView.delegate = self;
 
     ImGui_ImplOSX_Init(self.view);
@@ -194,7 +195,16 @@ void ShutdownBackend()
 { 
 }
 
-void *GetPointerToTextureBackend(pxr::HdRenderBuffer* buffer, pxr::Hgi* hgi)
+void UpdateBufferSizeBackend(int width, int height)
+{
+}
+
+void PresentBackend(pxr::HdxTaskController* taskController)
+{
+    taskController->SetEnablePresentation(false);
+}
+
+void* GetPointerToTextureBackend(pxr::HdRenderBuffer* buffer, pxr::Hgi* hgi)
 {
     if (!buffer || !buffer->IsConverged()) {
         std::cerr << "Render buffer not ready." << std::endl;
@@ -252,11 +262,4 @@ void *GetPointerToTextureBackend(pxr::HdRenderBuffer* buffer, pxr::Hgi* hgi)
     id<MTLTexture> mtlTex = (id<MTLTexture>) hgiTexture->GetRawResource();
     ImTextureID textureID = (__bridge void*)mtlTex;
     return (void *)textureID;
-}
-
-void DeleteTextureBackend(void* texturePtr, pxr::Hgi* hgi)
-{
-    if(hgiTexture) {
-        hgi->DestroyTexture(&hgiTexture);
-    }
 }

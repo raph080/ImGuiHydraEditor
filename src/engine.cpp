@@ -148,6 +148,9 @@ void Engine::SetRenderSize(int width, int height)
     CameraUtilFraming framing(displayWindow, dataWindow);
 
     _taskController->SetFraming(framing);
+
+    UpdateBufferSizeBackend(_width, _height);
+    PresentBackend(_taskController);
 }
 
 void Engine::Render()
@@ -157,13 +160,6 @@ void Engine::Render()
     if (_ambientLightEnabled)
         _UpdateLighting();
 
-    // invalidate the previous cached backend texture
-    if (_backendTexture) {
-        DeleteTextureBackend(_backendTexture, _hgi.get());
-        _backendTexture = nullptr;
-    }
-
-    _taskController->SetEnablePresentation(false);
     HdTaskSharedPtrVector tasks = _taskController->GetRenderingTasks();
     _engine.Execute(_renderIndex, &tasks);
 }
@@ -212,12 +208,8 @@ SdfPath Engine::FindIntersection(GfVec2f screenPos)
 
 void* Engine::GetRenderBufferData()
 {
-    if (!_backendTexture) {
-        auto buffer = _taskController->GetRenderOutput(HdAovTokens->color);
-        _backendTexture = GetPointerToTextureBackend(buffer, _hgi.get());
-    }
-
-    return _backendTexture;
+    auto buffer = _taskController->GetRenderOutput(HdAovTokens->color);
+    return GetPointerToTextureBackend(buffer, _hgi.get());
 }
 
 void Engine::SetAmbientLightEnabled(bool state)
@@ -256,11 +248,6 @@ void Engine::_Clear()
     }
 
     _renderDelegate = nullptr;
-
-    if (_backendTexture) {
-        DeleteTextureBackend(_backendTexture, _hgi.get());
-        _backendTexture = nullptr;
-    }
 }
 
 HdPluginRenderDelegateUniqueHandle Engine::_GetRenderDelegateFromPlugin(
@@ -285,7 +272,6 @@ void Engine::_Initialize()
     _renderIndex->InsertSceneIndex(_sceneIndex, _taskControllerId);
 
     // init task controller
-
     _taskController = new HdxTaskController(_renderIndex, _taskControllerId);
 
     // init render paramss
@@ -306,14 +292,14 @@ void Engine::_Initialize()
     TfTokenVector _aovOutputs{HdAovTokens->color};
     _taskController->SetRenderOutputs(_aovOutputs);
 
-    GfVec4f clearColor = GfVec4f(.2f, .2f, .2f, 1.0f);
-    HdAovDescriptor colorAovDesc =
-        _taskController->GetRenderOutputSettings(HdAovTokens->color);
-    if (colorAovDesc.format != HdFormatInvalid) {
-        colorAovDesc.clearValue = VtValue(clearColor);
-        _taskController->SetRenderOutputSettings(HdAovTokens->color,
-                                                 colorAovDesc);
-    }
+    // GfVec4f clearColor = GfVec4f(.2f, .2f, .2f, 0.0f);
+    // HdAovDescriptor colorAovDesc =
+    //     _taskController->GetRenderOutputSettings(HdAovTokens->color);
+    // if (colorAovDesc.format != HdFormatInvalid) {
+    //     colorAovDesc.clearValue = VtValue(clearColor);
+    //     _taskController->SetRenderOutputSettings(HdAovTokens->color,
+    //                                              colorAovDesc);
+    // }
 
     // init selection
     GfVec4f selectionColor = GfVec4f(1.f, 1.f, 0.f, .5f);
@@ -326,6 +312,12 @@ void Engine::_Initialize()
     _engine.SetTaskContextData(HdxTokens->selectionState, selectionValue);
 
     _taskController->SetOverrideWindowPolicy(CameraUtilFit);
+
+    //color correction
+    HdxColorCorrectionTaskParams colorParams;
+    colorParams.colorCorrectionMode = HdxColorCorrectionTokens->sRGB;
+    colorParams.aovName = HdAovTokens->color;
+    _taskController->SetColorCorrectionParams(colorParams);
 }
 
 void Engine::_UpdateLighting()
