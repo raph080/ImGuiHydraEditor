@@ -40,7 +40,7 @@ The easy way to get a pre-built version of USD is to download the one from the [
 To build USD manually, go to the [OpenUSD release page](https://github.com/PixarAnimationStudios/OpenUSD/releases), download the last release available and build it (build info in the OpenUSD [README.md](https://github.com/PixarAnimationStudios/OpenUSD/blob/release/README.md)).
 
 Don't forget to add the --embree flag to the build command if you wish to have access to the Embree renderer from ImGui Hydra Editor.
-![embree enabled in ImGui Hydra Editor](resources/multi_renderers.png)
+![embree enabled in ImGui Hydra Editor](resources/dual_viewports.png)
 
 ```bash
 python3 USD/build_scripts/build_usd.py --embree /path/to/install

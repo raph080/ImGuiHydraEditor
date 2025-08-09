@@ -2,7 +2,7 @@
 
 ImGui Hydra Editor is a Hydra editor written in c++ with the ImGui and OpenUSD frameworks.
 
-![UI preview of ImGui Hydra Editor](resources/preview.png)
+![UI preview of ImGui Hydra Editor](resources/preview_app.png)
 
 This project acts as a playground for USD, and most particularly Hydra 2.0. Therefore, the structure of the application remains simple and contains out of the box examples.
 
@@ -15,7 +15,7 @@ To build ImGui Hydra Editor, see [BUILDING.md](BUILDING.md) instructions.
 ImGui Hydra Editor is a tool that processes data using the Hydra 2.0 Framework. Every view from the tool has access to read, insert and author the current state
 of Hydra data.
 
-![Views that interact with Hydra data](resources/views_hydra_data.png)
+![Views that interact with Hydra data](resources/hydra_data_preview.png)
 
 ### Usd Session Layer
 
@@ -59,7 +59,7 @@ ImGui Hydra Editor implements main concepts of Hydra 2.0 framework out of the bo
 
 The views in ImGui Hydra Editor make use of those various types of scene index in order to create the final data to feed to Hydra (Hydra data).
 
-![Scene indices Schema](resources/scene_indices_schema.png)
+![Scene indices Schema](resources/scene_indices_preview.png)
 
 ### HdSceneIndexBase
 
@@ -122,7 +122,7 @@ For your curiosity, here are others: [OpenMoonRay](https://docs.openmoonray.org)
 
 Once the custom render delegates are build, don't forget to set the `PXR_PLUGINPATH_NAME` environment variable before launching the application to make use of them.
 
-![Multi renderers](resources/multi_renderers.png)
+![Multi renderers](resources/dual_viewports.png)
 
 ## And more
 
