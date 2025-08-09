@@ -8,16 +8,7 @@
  */
 #pragma once
 
-#include <pxr/imaging/hd/basisCurvesSchema.h>
-#include <pxr/imaging/hd/primvarSchema.h>
-#include <pxr/imaging/hd/primvarsSchema.h>
-#include <pxr/imaging/hd/purposeSchema.h>
-#include <pxr/imaging/hd/retainedDataSource.h>
 #include <pxr/imaging/hd/sceneIndex.h>
-#include <pxr/imaging/hd/tokens.h>
-#include <pxr/imaging/hd/visibilitySchema.h>
-#include <pxr/imaging/hd/xformSchema.h>
-
 #include "pxr/pxr.h"
 
 PXR_NAMESPACE_OPEN_SCOPE
@@ -73,8 +64,8 @@ class GridSceneIndex : public HdSceneIndexBase {
         virtual SdfPathVector GetChildPrimPaths(const SdfPath& primPath) const;
 
     private:
-        SdfPath _gridPath;
-        HdSceneIndexPrim _prim;
+        SdfPath _gridPath, _matPath, _prevSurfPath;
+        HdSceneIndexPrim _gridPrim, _matPrim;
         bool _isPopulated;
 
         /**
@@ -83,6 +74,8 @@ class GridSceneIndex : public HdSceneIndexBase {
          * @return HdSceneIndexPrim the hydra prim of the grid
          */
         HdSceneIndexPrim _CreateGridPrim();
+
+        HdSceneIndexPrim _CreatePrevSurfPrim();
 };
 
 PXR_NAMESPACE_CLOSE_SCOPE

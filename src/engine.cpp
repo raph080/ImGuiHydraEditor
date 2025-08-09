@@ -292,14 +292,14 @@ void Engine::_Initialize()
     TfTokenVector _aovOutputs{HdAovTokens->color};
     _taskController->SetRenderOutputs(_aovOutputs);
 
-    // GfVec4f clearColor = GfVec4f(.2f, .2f, .2f, 0.0f);
-    // HdAovDescriptor colorAovDesc =
-    //     _taskController->GetRenderOutputSettings(HdAovTokens->color);
-    // if (colorAovDesc.format != HdFormatInvalid) {
-    //     colorAovDesc.clearValue = VtValue(clearColor);
-    //     _taskController->SetRenderOutputSettings(HdAovTokens->color,
-    //                                              colorAovDesc);
-    // }
+    GfVec4f clearColor = GfVec4f(.0f, .0f, .0f, .0f);
+    HdAovDescriptor colorAovDesc =
+        _taskController->GetRenderOutputSettings(HdAovTokens->color);
+    if (colorAovDesc.format != HdFormatInvalid) {
+        colorAovDesc.clearValue = VtValue(clearColor);
+        _taskController->SetRenderOutputSettings(HdAovTokens->color,
+                                                 colorAovDesc);
+    }
 
     // init selection
     GfVec4f selectionColor = GfVec4f(1.f, 1.f, 0.f, .5f);

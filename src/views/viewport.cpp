@@ -8,6 +8,7 @@
 #include <pxr/imaging/cameraUtil/framing.h>
 #include <pxr/imaging/hd/cameraSchema.h>
 #include <pxr/imaging/hd/extentSchema.h>
+#include <pxr/imaging/hd/xformSchema.h>
 #include <pxr/usd/usd/stage.h>
 
 PXR_NAMESPACE_OPEN_SCOPE
