@@ -1,7 +1,5 @@
 #include "engine.h"
 
-#include "backends/backend.h"
-
 #include <iostream>
 
 #include <pxr/base/gf/camera.h>
@@ -27,7 +25,6 @@ Engine::Engine(HdSceneIndexBaseRefPtr sceneIndex, TfToken plugin)
       _renderIndex(nullptr),
       _taskController(nullptr),
       _taskControllerId("/defaultTaskController"),
-      _backendTexture(nullptr),
       _domeLightEnabled(false),
       _ambientLightEnabled(true)
 {
@@ -149,8 +146,8 @@ void Engine::SetRenderSize(int width, int height)
 
     _taskController->SetFraming(framing);
 
-    UpdateBufferSizeBackend(_width, _height);
-    PresentBackend(_taskController);
+    UpdateBufferSizeBackend(_width, _height, &target);
+    PresentBackend(target, _taskController);
 }
 
 void Engine::Render()
@@ -209,7 +206,7 @@ SdfPath Engine::FindIntersection(GfVec2f screenPos)
 void* Engine::GetRenderBufferData()
 {
     auto buffer = _taskController->GetRenderOutput(HdAovTokens->color);
-    return GetPointerToTextureBackend(buffer, _hgi.get());
+    return GetPointerToTextureBackend(target, buffer, _hgi.get());
 }
 
 void Engine::SetAmbientLightEnabled(bool state)

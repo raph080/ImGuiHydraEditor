@@ -16,7 +16,6 @@
 #include <iostream>
 
 static GLFWwindow* window = nullptr;
-GLuint fbo = 0, colorTex = 0;
 
 
 int InitBackend(const char* title, int width, int height)
@@ -95,34 +94,43 @@ void RunBackend(void (*callback)())
     }
 }
 
-void UpdateBufferSizeBackend(int width, int height)
+void UpdateBufferSizeBackend(int width, int height, PresentTarget* target)
 {
-    if (colorTex) glDeleteTextures(1, &colorTex);
-    if (fbo)   glDeleteFramebuffers(1, &fbo);
+    GLuint handle = static_cast<GLuint>(target->handle.UncheckedGet<uint32_t>());
+    GLuint buffer = static_cast<GLuint>(reinterpret_cast<uintptr_t>(target->buffer));
+
+    if (buffer) glDeleteTextures(1, &buffer);
+    if (handle)   glDeleteFramebuffers(1, &handle);  
     
     // here is the texture provided to Hydra to render into
-    glGenTextures(1, &colorTex);
-    glBindTexture(GL_TEXTURE_2D, colorTex);
+    glGenTextures(1, &buffer);
+    glBindTexture(GL_TEXTURE_2D, buffer);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0,
                  GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
     // here is the buffer provided to Imgui to display from
-    glGenFramebuffers(1, &fbo);
-    glBindFramebuffer(GL_FRAMEBUFFER, fbo);
+    glGenFramebuffers(1, &handle);
+    glBindFramebuffer(GL_FRAMEBUFFER, handle);
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
-                           GL_TEXTURE_2D, colorTex, 0);
+                           GL_TEXTURE_2D, buffer, 0);
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+    *target = PresentTarget{
+        pxr::HgiTokens->OpenGL,
+        pxr::VtValue(uint32_t(handle)),
+        (void*)(uintptr_t)buffer
+    };
 }
 
-void PresentBackend(pxr::HdxTaskController* taskController)
+void PresentBackend(const PresentTarget& target, pxr::HdxTaskController* taskController)
 {
-    taskController->SetPresentationOutput(pxr::HgiTokens->OpenGL, pxr::VtValue(uint32_t(fbo)));
+    taskController->SetPresentationOutput(target.api, target.handle);
     taskController->SetEnablePresentation(true);
 }
 
-void* GetPointerToTextureBackend(pxr::HdRenderBuffer* buffer, pxr::Hgi* hgi)
+void* GetPointerToTextureBackend(const PresentTarget& target, pxr::HdRenderBuffer* buffer, pxr::Hgi* hgi)
 {
-    return (void*)(uintptr_t)colorTex;
+    return target.buffer;
 }

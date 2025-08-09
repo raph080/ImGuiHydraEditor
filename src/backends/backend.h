@@ -19,6 +19,19 @@
 #include <pxr/imaging/hdx/taskController.h>
 
 /**
+ * @brief A presentation target containing backend presentation state
+ * 
+ * @param api the backend api (OpenGL, Metal, ...)
+ * @param handle the container for hydra render
+ * @param buffer the buffer to display to ImGui
+ */
+struct PresentTarget{
+    pxr::TfToken api;
+    pxr::VtValue handle;
+    void* buffer;
+};
+
+/**
  * @brief Initialize the backend and create a window
  *
  * @param title the title of the created window
@@ -46,8 +59,9 @@ void ShutdownBackend();
  * 
  * @param width the width of the new buffers
  * @param heigt the height of the new buffers
+ * @param target the presentation target that will be updated
  */
-void UpdateBufferSizeBackend(int width, int height);
+void UpdateBufferSizeBackend(int width, int height, PresentTarget* target);
 
 /**
  * @brief Present outputs (backend api and handle) to the given taskController
@@ -59,9 +73,10 @@ void UpdateBufferSizeBackend(int width, int height);
  * 
  * Without presentation (for Metal), we are loosing color correction.
  * 
+ * @param target the presentation target
  * @param taskController the Task Controller that will be set with outputs
  */
-void PresentBackend(pxr::HdxTaskController* taskController);
+void PresentBackend(const PresentTarget& target, pxr::HdxTaskController* taskController);
 
 /**
  * @brief Retrieve a pointer to the buffer containing the texture
@@ -75,9 +90,10 @@ void PresentBackend(pxr::HdxTaskController* taskController);
  * get the render (without color correction) that we can convert for
  * Metal use.
  *
+ * @param target the presentation target
  * @param buffer the hydra render buffer
  * @param hgi the hgi related to the buffer
  * 
  * @return a pointer to the texture data
  */
-void *GetPointerToTextureBackend(pxr::HdRenderBuffer* buffer, pxr::Hgi* hgi);
+void* GetPointerToTextureBackend(const PresentTarget& target, pxr::HdRenderBuffer* buffer, pxr::Hgi* hgi);

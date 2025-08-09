@@ -9,6 +9,8 @@
  */
 #pragma once
 
+#include "backends/backend.h"
+
 #include <pxr/base/tf/token.h>
 #include <pxr/imaging/hd/engine.h>
 #include <pxr/imaging/hd/pluginRenderDelegateUniqueHandle.h>
@@ -174,7 +176,7 @@ class Engine {
         HdRprimCollection _collection;
         HdSceneIndexBaseRefPtr _sceneIndex;
         SdfPath _taskControllerId;
-        void* _backendTexture;
+        PresentTarget target;
 
         bool _domeLightEnabled, _ambientLightEnabled;
         string _domeLightTexturePath;
