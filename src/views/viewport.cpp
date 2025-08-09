@@ -23,7 +23,7 @@ Viewport::Viewport(Model* model, const string label) : View(model, label)
     _curOperation = ImGuizmo::TRANSLATE;
     _curMode = ImGuizmo::LOCAL;
 
-    _eye = GfVec3d(5, 5, 5);
+    _eye = GfVec3d(5, 3, 5);
     _at = GfVec3d(0, 0, 0);
     _up = GfVec3d::YAxis();
 

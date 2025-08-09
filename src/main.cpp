@@ -44,10 +44,10 @@ int main(int argc, const char** argv)
         return -1;
     }
 
-    mainWindow = new pxr::MainWindow(&model);
-
     ImGui::Spectrum::StyleColorsSpectrum();
     LoadDefaultOrCustomLayout();
+
+    mainWindow = new pxr::MainWindow(&model); 
 
     RunBackend(run);
 

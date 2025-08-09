@@ -36,9 +36,7 @@ void Editor::_Draw()
     SdfPath primPath = _GetPrimToDisplay();
 
     if (primPath.IsEmpty()) return;
-
     _AppendDisplayColorAttr(primPath);
-    _AppendAllPrimAttrs(primPath);
 }
 
 SdfPath Editor::_GetPrimToDisplay()
@@ -47,6 +45,10 @@ SdfPath Editor::_GetPrimToDisplay()
 
     if (primPaths.size() > 0 && !primPaths[0].IsEmpty())
         _prevSelection = primPaths[0];
+
+    // nothing selected, can we still display old selection?
+    else if (!_sceneIndex->GetPrim(_prevSelection).dataSource)
+        _prevSelection = SdfPath();
 
     return _prevSelection;
 }
@@ -61,59 +63,12 @@ void Editor::_AppendDisplayColorAttr(SdfPath primPath)
     GfVec3f prevColor = GfVec3f(color);
 
     float* data = color.data();
-    if (ImGui::CollapsingHeader("Display Color"))
+    if (ImGui::CollapsingHeader("Display Color", ImGuiTreeNodeFlags_DefaultOpen))
         ImGui::SliderFloat3("", data, 0, 1);
 
     // add opinion only if values change
     if (color != prevColor)
         _colorFilterSceneIndex->SetDisplayColor(primPath, color);
-}
-
-void Editor::_AppendDataSourceAttrs(
-    HdContainerDataSourceHandle containerDataSource)
-{
-    for (auto&& token : containerDataSource->GetNames()) {
-        auto dataSource = containerDataSource->Get(token);
-        const char* tokenText = token.GetText();
-
-        auto containerDataSource =
-            HdContainerDataSource::Cast(dataSource);
-        if (containerDataSource) {
-            bool clicked =
-                ImGui::TreeNodeEx(tokenText, ImGuiTreeNodeFlags_OpenOnArrow);
-
-            if (clicked) {
-                _AppendDataSourceAttrs(containerDataSource);
-                ImGui::TreePop();
-            }
-        }
-
-        auto sampledDataSource = HdSampledDataSource::Cast(dataSource);
-        if (sampledDataSource) {
-            ImGui::Columns(2);
-            VtValue value = sampledDataSource->GetValue(0);
-            ImGui::Text("%s", tokenText);
-            ImGui::NextColumn();
-            ImGui::BeginChild(tokenText, ImVec2(0, 14), false);
-            std::stringstream ss;
-            ss << value;
-            ImGui::Text("%s", ss.str().c_str());
-            ImGui::EndChild();
-            ImGui::Columns();
-        }
-    }
-}
-
-void Editor::_AppendAllPrimAttrs(SdfPath primPath)
-{
-    HdSceneIndexPrim prim = _sceneIndex->GetPrim(primPath);
-    TfTokenVector tokens = prim.dataSource->GetNames();
-
-    if (tokens.size() < 1) return;
-
-    if (ImGui::CollapsingHeader("Prim attributes")) {
-        _AppendDataSourceAttrs(prim.dataSource);
-    }
 }
 
 PXR_NAMESPACE_CLOSE_SCOPE
