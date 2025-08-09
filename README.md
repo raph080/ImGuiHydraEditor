@@ -31,12 +31,23 @@ The viewport view authors the transforms (translate, rotate, scale) of Hydra Pri
 
 ### Editor
 
-The Editor view allows the user to author the display color of the selected Hydra Prim. The view also displays all the Hydra attributes from the selection.
+The Editor view allows the user to author the display color of the selected Hydra Prim.
 
 ### Engine
 
 The Engine consumes Hydra data with all modifications from the views and generates an image from it.
 
+### Scene Index View
+
+The Scene Index view displays a nodal view of all available Scene Indices loaded into Hydra as well as they connections. This view also authors the **Active Scene Index** when clicking on a node. Hence all views will update its data according to the Active Scene Index.
+
+### Scene Index Attribute
+
+The Scene Index Attribute shows all the Hydra attributes from the selection. Attributes are colored based on their origin:
+
+- ${Inherited \space attribute}$
+- ${\color{orange}New \space attribute}$
+- ${\color{red}Modified \space value}$
 
 ## Scenes Indices
 
@@ -105,7 +116,9 @@ Here are the shortcuts to navigate using the mouse and the keyboard:
 
 Every renderer that implements a hydra render delegate can be used in this project to extends the renderer list.
 
-Here is an example of 4 different renderers: Storm, Embree, [Cycle](https://github.com/blender/cycles) and [Arnold](https://github.com/Autodesk/arnold-usd).
+Here is an example with two different renderers: Storm, Embree.
+
+For your curiosity, here are others: [OpenMoonRay](https://docs.openmoonray.org), [Cycle](https://github.com/blender/cycles) and [Arnold](https://github.com/Autodesk/arnold-usd).
 
 Once the custom render delegates are build, don't forget to set the `PXR_PLUGINPATH_NAME` environment variable before launching the application to make use of them.
 
@@ -115,6 +128,7 @@ Once the custom render delegates are build, don't forget to set the `PXR_PLUGINP
 
 Explore the menu bars of the application and viewports, you may find useful fonctionalities such as:
 * Create new USD objects in the scenes (Camera, Cube, ...)
+* Profile your Hydra data with Active Scene Index
 * Create new views in the main window
 * Switch the active camera to the viewport
 * Show/Hide the grid
