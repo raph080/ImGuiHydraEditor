@@ -8,6 +8,8 @@
 #include "views/view.h"
 #include "views/viewport.h"
 
+#include <iostream>
+
 PXR_NAMESPACE_OPEN_SCOPE
 
 MainWindow::MainWindow(Model* model) : _model(model)
@@ -70,6 +72,13 @@ void MainWindow::AddView(const string viewType)
     for (auto view : _views) {
         if (view->GetViewType() == viewType) occ++;
     }
+
+#if defined(__APPLE__)
+    if ( viewType == Viewport::VIEW_TYPE && occ > 1){
+        std::cerr << "Apple backend does not support multi viewports yet; Skiping." << std::endl;
+        return;
+    }
+#endif
 
     // create the unique label of the new view
     string viewLabel = viewType;

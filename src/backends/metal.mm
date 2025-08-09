@@ -195,16 +195,16 @@ void ShutdownBackend()
 { 
 }
 
-void UpdateBufferSizeBackend(int width, int height)
+void UpdateBufferSizeBackend(int width, int height, PresentTarget* target)
 {
 }
 
-void PresentBackend(pxr::HdxTaskController* taskController)
+void PresentBackend(const PresentTarget& target, pxr::HdxTaskController* taskController)
 {
     taskController->SetEnablePresentation(false);
 }
 
-void* GetPointerToTextureBackend(pxr::HdRenderBuffer* buffer, pxr::Hgi* hgi)
+void* GetPointerToTextureBackend(const PresentTarget& target, pxr::HdRenderBuffer* buffer, pxr::Hgi* hgi)
 {
     if (!buffer || !buffer->IsConverged()) {
         std::cerr << "Render buffer not ready." << std::endl;
