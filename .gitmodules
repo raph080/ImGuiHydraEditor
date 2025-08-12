@@ -17,3 +17,9 @@
 [submodule "vendors/glew"]
 	path = vendors/glew
 	url = https://github.com/Perlmint/glew-cmake.git
+[submodule "vendors/OpenUSD"]
+	path = vendors/OpenUSD
+	url = https://github.com/PixarAnimationStudios/OpenUSD.git
+[submodule "vendors/OpenSubdiv"]
+	path = vendors/OpenSubdiv
+	url = https://github.com/PixarAnimationStudios/OpenSubdiv.git

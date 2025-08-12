@@ -10,6 +10,8 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 find_package(X11)
 find_package(pxr REQUIRED)
 find_package(OpenGL REQUIRED)
+find_package(X11 REQUIRED)
+
 
 add_subdirectory(vendors)
 
