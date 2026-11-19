@@ -199,6 +199,10 @@ void UpdateBufferSizeBackend(int width, int height, PresentTarget* target)
 {
 }
 
+void ClearBufferBackend(const PresentTarget& target)
+{
+}
+
 void PresentBackend(const PresentTarget& target, pxr::HdxTaskController* taskController)
 {
     taskController->SetEnablePresentation(false);

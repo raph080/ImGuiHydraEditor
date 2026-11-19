@@ -157,6 +157,8 @@ void Engine::Render()
     if (_ambientLightEnabled)
         _UpdateLighting();
 
+    ClearBufferBackend(target);
+
     HdTaskSharedPtrVector tasks = _taskController->GetRenderingTasks();
     _engine.Execute(_renderIndex, &tasks);
 }
