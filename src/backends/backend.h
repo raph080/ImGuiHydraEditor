@@ -11,6 +11,8 @@
 
 #pragma once
 
+#include <cstdint>
+
 #include <pxr/base/tf/token.h>
 #include <pxr/base/vt/value.h>
 #include <pxr/imaging/hgi/hgi.h>
@@ -27,8 +29,10 @@
  */
 struct PresentTarget{
     pxr::TfToken api;
-    pxr::VtValue handle;
-    void* buffer;
+    pxr::VtValue handle = pxr::VtValue(uint32_t(0));
+    void* buffer = nullptr;
+    int width = 0;
+    int height = 0;
 };
 
 /**
@@ -62,6 +66,17 @@ void ShutdownBackend();
  * @param target the presentation target that will be updated
  */
 void UpdateBufferSizeBackend(int width, int height, PresentTarget* target);
+
+/**
+ * @brief Clear the presentation buffer before a new render
+ *
+ * Hydra composites its render into the presentation buffer with blending,
+ * so the buffer must be cleared first. Otherwise the previous content (or
+ * uninitialized memory on some drivers, e.g. on Windows) shows through.
+ *
+ * @param target the presentation target to clear
+ */
+void ClearBufferBackend(const PresentTarget& target);
 
 /**
  * @brief Present outputs (backend api and handle) to the given taskController

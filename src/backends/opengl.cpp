@@ -96,6 +96,11 @@ void RunBackend(void (*callback)())
 
 void UpdateBufferSizeBackend(int width, int height, PresentTarget* target)
 {
+    // the viewport asks for its size every frame: only rebuild the
+    // buffers when the size changes
+    if (target->buffer && target->width == width && target->height == height)
+        return;
+
     GLuint handle = static_cast<GLuint>(target->handle.UncheckedGet<uint32_t>());
     GLuint buffer = static_cast<GLuint>(reinterpret_cast<uintptr_t>(target->buffer));
 
@@ -120,8 +125,24 @@ void UpdateBufferSizeBackend(int width, int height, PresentTarget* target)
     *target = PresentTarget{
         pxr::HgiTokens->OpenGL,
         pxr::VtValue(uint32_t(handle)),
-        (void*)(uintptr_t)buffer
+        (void*)(uintptr_t)buffer,
+        width,
+        height
     };
+}
+
+void ClearBufferBackend(const PresentTarget& target)
+{
+    if (!target.buffer) return;
+
+    GLint previous = 0;
+    glGetIntegerv(GL_FRAMEBUFFER_BINDING, &previous);
+
+    glBindFramebuffer(GL_FRAMEBUFFER, target.handle.UncheckedGet<uint32_t>());
+    glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+    glClear(GL_COLOR_BUFFER_BIT);
+
+    glBindFramebuffer(GL_FRAMEBUFFER, static_cast<GLuint>(previous));
 }
 
 void PresentBackend(const PresentTarget& target, pxr::HdxTaskController* taskController)
